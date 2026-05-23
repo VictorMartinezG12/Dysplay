@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DysPlay{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dysPlayVerde: '#4CAF50',
+                        dysPlayAzul: '#2196F3',
+                        dysPlayFondo: '#F4F7F6',
+                        dysPlayTexto: '#2D3748',
+                    },
+                    fontFamily: {
+                        // Priorizamos Comic Sans o Verdana por accesibilidad cognitiva y dislexia
+                        dislexia: ['Comic Sans MS', 'Verdana', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-dysPlayFondo text-dysPlayTexto font-dislexia antialiased selection:bg-green-200">
+
+    <main class="min-h-screen flex items-center justify-center p-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>
