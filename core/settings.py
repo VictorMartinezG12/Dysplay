@@ -28,7 +28,6 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,8 +44,7 @@ INSTALLED_APPS = [
     'historias',
     'niveles',
     'usuarios',
-    
-    
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -79,18 +77,21 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 # Queremos que inicien sesión con su correo electrónico, no con un "username" complicado.
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False # No les pedimos un nombre de usuario obligatorio
+#ACCOUNT_AUTHENTICATION_METHOD = 'email'
+#ACCOUNT_EMAIL_REQUIRED = True
+#ACCOUNT_UNIQUE_EMAIL = True
+#ACCOUNT_USERNAME_REQUIRED = False # No les pedimos un nombre de usuario obligatorio
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*']
 
 # ¿A dónde los enviamos después de iniciar o cerrar sesión?
-LOGIN_REDIRECT_URL = '/'   # Al inicio (pronto crearemos esta ruta)
-LOGOUT_REDIRECT_URL = '/'  # Al inicio
-
-
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'# Al inicio (pronto crearemos esta ruta)
+#LOGOUT_REDIRECT_URL = '/'  # Al inicio
+ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ROOT_URLCONF = 'core.urls'
-
+ACCOUNT_LOGOUT_ON_GET = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -108,7 +109,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
@@ -118,7 +118,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -138,7 +137,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -149,7 +147,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/

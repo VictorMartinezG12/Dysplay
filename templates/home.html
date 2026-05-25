@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}¡Bienvenido a DysPlay! 🎮{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto text-center py-12 px-4">
+    <div class="bg-white p-8 rounded-3xl shadow-xl border-4 border-purple-200 dynamic-island">
+        <h1 class="text-4xl md:text-5xl font-black text-purple-600 mb-6 tracking-wide">
+            ¡Hola, {{ user.email }}! 👋
+        </h1>
+
+        <p class="text-xl text-gray-600 mb-8 font-medium">
+            ¡Qué alegría tenerte de vuelta en tu zona de juegos! ¿Qué quieres aprender hoy?
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-md mx-auto mb-8">
+            <div class="bg-amber-50 border-2 border-amber-300 p-4 rounded-2xl flex items-center justify-between">
+                <span class="text-3xl">🪙</span>
+                <div class="text-right">
+                    <p class="text-sm text-amber-700 font-bold uppercase">Mis Monedas</p>
+                    <p class="text-2xl font-black text-amber-600">{{ user.monedas }}</p>
+                </div>
+            </div>
+
+            <div class="bg-orange-50 border-2 border-orange-300 p-4 rounded-2xl flex items-center justify-between">
+                <span class="text-3xl">🔥</span>
+                <div class="text-right">
+                    <p class="text-sm text-orange-700 font-bold uppercase">Tu Racha</p>
+                    <p class="text-2xl font-black text-orange-600">{{ user.racha_dias }} días</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="/accounts/logout/" class="inline-block bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 px-6 rounded-xl transition-colors">
+            Cerrar Sesión
+        </a>
+    </div>
+</div>
+{% endblock %}

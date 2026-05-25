@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Cuenta - DysPlay{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 bg-gradient-to-b from-purple-50 to-indigo-100">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border-4 border-purple-200 p-8 transform transition-all hover:scale-[1.01]">
+
+        <div class="text-center mb-6">
+            <div class="text-5xl mb-3 animate-bounce">🦄</div>
+            <h2 class="text-3xl font-black text-purple-700 tracking-wide">¡Únete a la Aventura!</h2>
+            <p class="text-gray-500 font-medium mt-1">Crea tu cuenta para empezar a ganar monedas</p>
+        </div>
+
+        <div class="mb-6">
+            <a href="{% url 'google_login' %}" class="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg py-4 px-6 rounded-2xl shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-1 active:translate-y-0 text-center">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C18.155 1.183 15.465 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.83 11.57-11.79 0-.795-.085-1.4-.195-1.925H12.24z"/>
+                </svg>
+                Registrarse con Google
+            </a>
+        </div>
+
+        <div class="relative flex py-2 items-center mb-4">
+            <div class="flex-grow border-t border-gray-200"></div>
+            <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">O regístrate con correo</span>
+            <div class="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <form method="POST" action="{% url 'account_signup' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-sm font-bold text-gray-600 mb-1">Tu Correo Electrónico:</label>
+                <input type="email" name="email" placeholder="ejemplo@correo.com" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-colors font-medium" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-600 mb-1">Crea tu Contraseña:</label>
+                <input type="password" name="password1" placeholder="Mínimo 8 caracteres" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-colors font-medium" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-600 mb-1">Repite tu Contraseña:</label>
+                <input type="password" name="password2" placeholder="Escríbela igualito" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-colors font-medium" required>
+            </div>
+
+            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-purple-100">
+                ¡Crear mi Cuenta! 🚀
+            </button>
+        </form>
+
+        <div class="text-center mt-6 pt-4 border-t border-gray-100">
+            <p class="text-sm text-gray-500 font-medium">
+                ¿Ya tienes una cuenta?
+                <a href="{% url 'account_login' %}" class="text-purple-600 hover:text-purple-700 font-bold underline ml-1">
+                    Inicia sesión aquí
+                </a>
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
