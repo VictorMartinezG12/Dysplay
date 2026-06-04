@@ -1,39 +1,114 @@
 {% extends "base.html" %}
 
-{% block title %}¡Bienvenido a DysPlay! 🎮{% endblock %}
+{% block title %}¡Panel de Juegos - DysPlay! 🎮{% endblock %}
 
-{% block content %}
-<div class="max-w-4xl mx-auto text-center py-12 px-4">
-    <div class="bg-white p-8 rounded-3xl shadow-xl border-4 border-purple-200 dynamic-island">
-        <h1 class="text-4xl md:text-5xl font-black text-purple-600 mb-6 tracking-wide">
-            ¡Hola, {{ user.email }}! 👋
+{% block layout %}
+<main class="flex-grow w-full max-w-6xl mx-auto py-12 px-6 animate-fade-in">
+    <!-- Sección de Bienvenida -->
+    <div class="text-center mb-12">
+        <div class="inline-block text-6xl md:text-7xl mb-4 transform hover:rotate-12 transition-transform cursor-pointer select-none">
+            🦁
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 mb-3 tracking-wide">
+            ¡Hola, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username|capfirst }}{% endif %}! 👋
         </h1>
-
-        <p class="text-xl text-gray-600 mb-8 font-medium">
-            ¡Qué alegría tenerte de vuelta en tu zona de juegos! ¿Qué quieres aprender hoy?
+        <p class="text-xl md:text-2xl text-gray-600 font-bold max-w-2xl mx-auto leading-relaxed">
+            ¡Qué alegría tenerte en tu zona de juegos! ¿Qué aventura quieres iniciar hoy? 🚀
         </p>
+    </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-md mx-auto mb-8">
-            <div class="bg-amber-50 border-2 border-amber-300 p-4 rounded-2xl flex items-center justify-between">
-                <span class="text-3xl">🪙</span>
-                <div class="text-right">
-                    <p class="text-sm text-amber-700 font-bold uppercase">Mis Monedas</p>
-                    <p class="text-2xl font-black text-amber-600">{{ user.monedas }}</p>
-                </div>
-            </div>
-
-            <div class="bg-orange-50 border-2 border-orange-300 p-4 rounded-2xl flex items-center justify-between">
-                <span class="text-3xl">🔥</span>
-                <div class="text-right">
-                    <p class="text-sm text-orange-700 font-bold uppercase">Tu Racha</p>
-                    <p class="text-2xl font-black text-orange-600">{{ user.racha_dias }} días</p>
-                </div>
+    <!-- Indicadores de Progreso Rápido -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mb-12">
+        <div class="bg-amber-50 border-4 border-amber-200 p-4 rounded-3xl flex items-center justify-between shadow-soft">
+            <span class="text-4xl">🪙</span>
+            <div class="text-right">
+                <p class="text-xs text-amber-700 font-black uppercase tracking-wider">Mis Monedas</p>
+                <p class="text-3xl font-black text-amber-600">{{ user.monedas }}</p>
             </div>
         </div>
 
-        <a href="/accounts/logout/" class="inline-block bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 px-6 rounded-xl transition-colors">
-            Cerrar Sesión
-        </a>
+        <div class="bg-orange-50 border-4 border-orange-200 p-4 rounded-3xl flex items-center justify-between shadow-soft">
+            <span class="text-4xl">🔥</span>
+            <div class="text-right">
+                <p class="text-xs text-orange-700 font-black uppercase tracking-wider">Tu Racha</p>
+                <p class="text-3xl font-black text-orange-600">{{ user.racha_dias }} días</p>
+            </div>
+        </div>
     </div>
-</div>
+
+    <!-- Cuadrícula de Actividades Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- CARD 1: MAPA DE NIVELES -->
+        <a href="{% url 'niveles' %}" class="bg-white border-4 border-blue-200 hover:border-blue-500 rounded-[32px] p-8 shadow-soft hover:shadow-hard hover:-translate-y-2 active:translate-y-0 active:shadow-soft transition-all duration-200 flex flex-col items-center text-center group">
+            <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                🗺️
+            </div>
+            <h3 class="text-2xl font-black text-blue-600 mb-3">Ruta de Aprendizaje</h3>
+            <p class="text-gray-500 font-bold leading-relaxed text-sm">
+                Recorre el mapa de niveles, supera desafíos de letras y gana increíbles estrellas.
+            </p>
+            <div class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-extrabold py-3 px-6 rounded-2xl transition-colors shadow-game-primary text-sm flex items-center gap-2">
+                ¡Ir al Mapa! <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+            </div>
+        </a>
+
+        <!-- CARD 2: PERSONALIZAR AVATAR -->
+        <a href="{% url 'avatar' %}" class="bg-white border-4 border-amber-200 hover:border-amber-500 rounded-[32px] p-8 shadow-soft hover:shadow-hard hover:-translate-y-2 active:translate-y-0 active:shadow-soft transition-all duration-200 flex flex-col items-center text-center group">
+            <div class="w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                🦁
+            </div>
+            <h3 class="text-2xl font-black text-amber-600 mb-3">Personalizar León</h3>
+            <p class="text-gray-500 font-bold leading-relaxed text-sm">
+                Usa tus monedas de oro para comprar ropa, lentes y sombreros para tu león guardián.
+            </p>
+            <div class="mt-6 bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 px-6 rounded-2xl transition-colors shadow-game-warning text-sm flex items-center gap-2">
+                ¡Vestir León! <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </div>
+        </a>
+
+        <!-- CARD 3: JUGAR CON LA CÁMARA -->
+        <a href="{% url 'camara' %}" class="bg-white border-4 border-emerald-200 hover:border-emerald-500 rounded-[32px] p-8 shadow-soft hover:shadow-hard hover:-translate-y-2 active:translate-y-0 active:shadow-soft transition-all duration-200 flex flex-col items-center text-center group">
+            <div class="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                📷
+            </div>
+            <h3 class="text-2xl font-black text-emerald-600 mb-3">Cámara Mágica</h3>
+            <p class="text-gray-500 font-bold leading-relaxed text-sm">
+                Juega interactuando con la pantalla usando tus manos y gestos en tiempo real.
+            </p>
+            <div class="mt-6 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3 px-6 rounded-2xl transition-colors shadow-game-success text-sm flex items-center gap-2">
+                ¡Jugar ahora! <i data-lucide="video" class="w-4 h-4"></i>
+            </div>
+        </a>
+
+        <!-- CARD 4: HISTORIAS MÁGICAS -->
+        <a href="{% url 'historias' %}" class="bg-white border-4 border-purple-200 hover:border-purple-500 rounded-[32px] p-8 shadow-soft hover:shadow-hard hover:-translate-y-2 active:translate-y-0 active:shadow-soft transition-all duration-200 flex flex-col items-center text-center group">
+            <div class="w-20 h-20 bg-purple-50 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                📖
+            </div>
+            <h3 class="text-2xl font-black text-purple-600 mb-3">Historias Mágicas</h3>
+            <p class="text-gray-500 font-bold leading-relaxed text-sm">
+                Lee cuentos fantásticos interactivos adaptados especialmente para leer mejor.
+            </p>
+            <div class="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-extrabold py-3 px-6 rounded-2xl transition-colors shadow-game-primary text-sm flex items-center gap-2">
+                ¡Leer Cuento! <i data-lucide="book-open" class="w-4 h-4"></i>
+            </div>
+        </a>
+
+        <!-- CARD 5: VER PROGRESO / ESTADÍSTICAS -->
+        <a href="{% url 'estadisticas' %}" class="bg-white border-4 border-rose-200 hover:border-rose-500 rounded-[32px] p-8 shadow-soft hover:shadow-hard hover:-translate-y-2 active:translate-y-0 active:shadow-soft transition-all duration-200 flex flex-col items-center text-center group">
+            <div class="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                📈
+            </div>
+            <h3 class="text-2xl font-black text-rose-600 mb-3">Mi Progreso</h3>
+            <p class="text-gray-500 font-bold leading-relaxed text-sm">
+                Revisa tus estadísticas, tus medallas y ve cuánto has aprendido cada semana.
+            </p>
+            <div class="mt-6 bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3 px-6 rounded-2xl transition-colors shadow-game-warning text-sm flex items-center gap-2">
+                ¡Ver Logros! <i data-lucide="trending-up" class="w-4 h-4"></i>
+            </div>
+        </a>
+
+    </div>
+</main>
 {% endblock %}

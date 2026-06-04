@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Estadísticas - DysPlay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { display: none; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgBase: '#FDFBF7',
+                        textMain: '#2D3748',
+                        primary: '#4299E1',
+                        success: '#48BB78',
+                        reward: '#ED8936',
+                        error: '#FC8181' // Rojo pastel, nada agresivo
+                    },
+                    boxShadow: {
+                        'soft': '0px 8px 16px rgba(45, 55, 72, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
+
+    <!-- HEADER GLOBAL -->
+    <header class="w-full flex items-center justify-between p-6 md:p-8 max-w-[1200px] z-50">
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+            <span class="text-[20px] font-bold">Menú Principal</span>
+        </a>
+
+        <div class="flex items-center gap-4 bg-white px-8 py-4 rounded-full shadow-soft min-h-[64px]">
+            <i data-lucide="bar-chart-2" class="w-8 h-8 text-success"></i>
+            <span class="text-[20px] font-bold text-success">Tu Progreso</span>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR DEL DASHBOARD -->
+    <main class="w-full max-w-[1200px] px-6 md:px-8 flex-grow flex flex-col pb-16 animate-fade-in gap-8">
+
+        <!-- ============================================== -->
+        <!-- FILA 1: PERFIL Y RACHA DIARIA                    -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+
+            <!-- TARJETA DE PERFIL (Ocupa 3 columnas) -->
+            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
+                <div class="w-32 h-32 bg-primary/10 rounded-full flex flex-shrink-0 items-center justify-center text-primary shadow-sm border-4 border-primary/20">
+                    <i data-lucide="smile" class="w-16 h-16 fill-current opacity-80"></i>
+                </div>
+                <div class="flex-grow w-full text-center sm:text-left">
+                    <h1 class="text-[36px] font-bold text-textMain mb-1 leading-tight">Leo Explorer</h1>
+                    <p class="text-[20px] text-gray-500 font-semibold mb-6 flex items-center justify-center sm:justify-start gap-2">
+                        <i data-lucide="rocket" class="w-5 h-5 text-primary"></i> Nivel 12 - Astronauta Lector
+                    </p>
+
+                    <!-- Barra de progreso general -->
+                    <div class="w-full">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-[16px] text-gray-600">Progreso al Nivel 13</span>
+                            <span class="font-bold text-[16px] text-success">70%</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-6 rounded-full overflow-hidden shadow-inner">
+                            <div class="bg-success h-full rounded-full w-[70%] transition-all duration-1000 ease-out"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TARJETA DE RACHA (Ocupa 1 columna) -->
+            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft border-4 border-reward/20 flex flex-col items-center justify-center col-span-1 md:col-span-1 text-center group">
+                <div class="w-24 h-24 bg-reward/10 rounded-full flex items-center justify-center text-reward mb-4 shadow-sm border-2 border-reward/30 group-hover:scale-110 transition-transform">
+                    <i data-lucide="flame" class="w-12 h-12 fill-current"></i>
+                </div>
+                <h3 class="text-[40px] font-bold text-reward leading-none">5 Días</h3>
+                <p class="text-[18px] text-gray-500 font-bold mt-2 uppercase tracking-wider">¡En racha!</p>
+            </section>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- FILA 2: TARJETAS DE MODO (PRESTACIONES)          -->
+        <!-- ============================================== -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+
+            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="map" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
+                <span class="text-[18px] font-bold text-gray-500 mb-2">Niveles</span>
+                <span class="text-[36px] font-bold text-primary">85%</span>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-success/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="camera" class="w-10 h-10 text-success mb-4 opacity-70"></i>
+                <span class="text-[18px] font-bold text-gray-500 mb-2">Cámara</span>
+                <span class="text-[36px] font-bold text-success">92%</span>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-reward/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="star" class="w-10 h-10 text-reward mb-4 opacity-70"></i>
+                <span class="text-[18px] font-bold text-gray-500 mb-2">Desafío</span>
+                <span class="text-[36px] font-bold text-reward">78%</span>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="book-open" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
+                <span class="text-[18px] font-bold text-gray-500 mb-2">Historia</span>
+                <span class="text-[36px] font-bold text-primary">100%</span>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- FILA 3: GRÁFICO DE EVOLUCIÓN Y MEJORAS           -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+
+            <!-- GRÁFICO (Simulado con CSS) -->
+            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft flex flex-col min-h-[300px]">
+                <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
+                    <i data-lucide="trending-up" class="text-success w-8 h-8"></i>
+                    Palabras leídas (7 días)
+                </h3>
+
+                <!-- Gráfico de barras simple CSS -->
+                <div class="flex items-end justify-between h-48 mt-auto gap-2 sm:gap-4 px-2">
+                    <!-- Días anteriores (Opacos) -->
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[30%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Lu</span></div>
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[50%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ma</span></div>
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[40%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Mi</span></div>
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[65%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ju</span></div>
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[60%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Vi</span></div>
+                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[85%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Sá</span></div>
+                    <!-- Hoy (Destacado) -->
+                    <div class="w-1/7 bg-primary rounded-t-[12px] h-[95%] w-full relative shadow-sm">
+                        <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primary px-3 py-1 rounded-full text-xs shadow-sm">120</span>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primary text-sm">Hoy</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ÁREAS DE MEJORA -->
+            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft flex flex-col min-h-[300px]">
+                <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
+                    <i data-lucide="target" class="text-reward w-8 h-8"></i>
+                    Palabras a practicar
+                </h3>
+
+                <div class="flex flex-col gap-6">
+                    <!-- Palabra 1 (Rojo pastel / Error token) -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-[18px] text-textMain">Murciélago</span>
+                            <span class="font-bold text-[16px] text-error">Necesita atención</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-6 rounded-full overflow-hidden shadow-inner">
+                            <div class="bg-error h-full rounded-full w-[85%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Palabra 2 (Naranja cálido / Reward token) -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-[18px] text-textMain">Paralelepípedo</span>
+                            <span class="font-bold text-[16px] text-reward">Casi lo logras</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-6 rounded-full overflow-hidden shadow-inner">
+                            <div class="bg-reward h-full rounded-full w-[60%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Palabra 3 (Azul calmante / Primary token) -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-[18px] text-textMain">Otorrinolaringólogo</span>
+                            <span class="font-bold text-[16px] text-primary">Mejorando</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-6 rounded-full overflow-hidden shadow-inner">
+                            <div class="bg-primary h-full rounded-full w-[40%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- FILA 4: INSIGNIAS Y MEDALLAS                     -->
+        <!-- ============================================== -->
+        <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft w-full mt-4">
+            <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
+                <i data-lucide="award" class="text-success w-8 h-8"></i>
+                Tus Insignias
+            </h3>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+                <!-- Insignia 1: Desbloqueada -->
+                <div class="flex flex-col items-center text-center group cursor-pointer">
+                    <div class="w-20 h-20 bg-reward/10 rounded-full flex items-center justify-center border-4 border-reward shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <i data-lucide="flame" class="w-10 h-10 text-reward fill-current"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-textMain">Primera Racha</span>
+                </div>
+
+                <!-- Insignia 2: Desbloqueada -->
+                <div class="flex flex-col items-center text-center group cursor-pointer">
+                    <div class="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center border-4 border-success shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <i data-lucide="book" class="w-10 h-10 text-success fill-current"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-textMain">Lector Voraz</span>
+                </div>
+
+                <!-- Insignia 3: Desbloqueada -->
+                <div class="flex flex-col items-center text-center group cursor-pointer">
+                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <i data-lucide="camera" class="w-10 h-10 text-primary fill-current"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-textMain">Ojo de Águila</span>
+                </div>
+
+                <!-- Insignia 4: Bloqueada -->
+                <div class="flex flex-col items-center text-center opacity-50 grayscale filter cursor-not-allowed">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 border-gray-300 shadow-sm mb-3">
+                        <i data-lucide="star" class="w-10 h-10 text-gray-400"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-gray-500">???</span>
+                </div>
+
+                <!-- Insignia 5: Bloqueada -->
+                <div class="flex flex-col items-center text-center opacity-50 grayscale filter cursor-not-allowed">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 border-gray-300 shadow-sm mb-3">
+                        <i data-lucide="zap" class="w-10 h-10 text-gray-400"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-gray-500">???</span>
+                </div>
+
+                <!-- Insignia 6: Bloqueada -->
+                <div class="flex flex-col items-center text-center opacity-50 grayscale filter cursor-not-allowed">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 border-gray-300 shadow-sm mb-3">
+                        <i data-lucide="crown" class="w-10 h-10 text-gray-400"></i>
+                    </div>
+                    <span class="font-bold text-[14px] text-gray-500">???</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

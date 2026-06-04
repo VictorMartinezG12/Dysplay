@@ -1,41 +1,131 @@
 {% extends "base.html" %}
 
-{% block title %}Bienvenido a DysPlay 🎮{% endblock %}
+{% block title %}Bienvenido a DysPlay 🎮 - El videojuego mágico{% endblock %}
 
-{% block content %}
-<div class="min-h-[85vh] flex flex-col items-center justify-center text-center px-4 bg-gradient-to-b from-indigo-50 via-white to-purple-50">
-
-    <div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
-
-        <div class="text-7xl md:text-8xl transform hover:scale-110 transition-transform cursor-pointer select-none animate-pulse">
-            🦁
-        </div>
-
-        <h1 class="text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-            DysPlay
-        </h1>
-
-        <p class="text-xl md:text-2xl text-gray-600 font-bold max-w-lg mx-auto leading-relaxed">
-            ¡El videojuego mágico donde practicar dislexia se convierte en una gran aventura de héroes!
-        </p>
-
-        <div class="flex flex-wrap justify-center gap-4 text-sm font-bold text-gray-500 uppercase tracking-wide">
-            <span class="bg-purple-100 text-purple-700 px-4 py-2 rounded-full">🎮 Juegos Interactivos</span>
-            <span class="bg-amber-100 text-amber-700 px-4 py-2 rounded-full">🪙 Gana Monedas</span>
-            <span class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full">✨ Superación</span>
-        </div>
-
-        <div class="pt-4">
+{% block navbar %}
+<!-- Sobrescribimos el navbar para mostrar uno personalizado en el landing -->
+<nav class="bg-white/80 backdrop-blur-md border-b-4 border-purple-100 shadow-soft py-4 px-6 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <a href="{% url 'landing' %}" class="flex items-center gap-3 group">
+            <span class="text-3xl group-hover:scale-120 transition-transform duration-300">🦁</span>
+            <span class="text-2xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent tracking-wide">DysPlay</span>
+        </a>
+        
+        <div class="flex items-center gap-4">
             {% if user.is_authenticated %}
-                <a href="{% url 'home' %}" class="inline-block bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-black text-2xl py-5 px-12 rounded-3xl shadow-xl shadow-green-200 transform hover:-translate-y-1 transition-all active:translate-y-0">
-                    ¡Continuar mi Partida! 🕹️
+                <a href="{% url 'home' %}" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold py-2.5 px-6 rounded-2xl text-sm transition-all shadow-sm flex items-center gap-2">
+                    <span>Mi Panel</span> <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                 </a>
             {% else %}
-                <a href="{% url 'account_login' %}" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-2xl py-5 px-12 rounded-3xl shadow-xl shadow-purple-200 transform hover:-translate-y-1 transition-all active:translate-y-0">
-                    ¡Empezar a Jugar! 🚀
+                <a href="{% url 'account_login' %}" class="text-purple-600 hover:text-purple-850 font-extrabold text-sm md:text-base py-2 px-4 rounded-xl transition-all">
+                    Iniciar Sesión
+                </a>
+                <a href="{% url 'account_signup' %}" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold py-2.5 px-6 rounded-2xl text-sm transition-all shadow-sm">
+                    ¡Registrarse!
                 </a>
             {% endif %}
         </div>
     </div>
+</nav>
+{% endblock %}
+
+{% block layout %}
+<div class="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-purple-50 flex flex-col justify-between">
+    
+    <!-- Hero Section -->
+    <main class="max-w-6xl mx-auto px-6 py-16 md:py-24 flex-grow flex flex-col lg:flex-row items-center justify-between gap-12 animate-fade-in">
+        
+        <!-- Hero Text -->
+        <div class="flex-1 space-y-8 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 bg-purple-100/80 text-purple-700 px-4 py-2 rounded-full text-sm font-extrabold uppercase tracking-wide">
+                <span>✨</span> ¡Aventura de Aprendizaje!
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none text-gray-800">
+                El juego mágico para <br class="hidden md:inline">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600">
+                    aprender jugando
+                </span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-gray-600 font-bold max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                ¡El videojuego mágico donde superar la dislexia se convierte en una gran aventura de héroes!
+            </p>
+            
+            <div class="flex flex-wrap justify-center lg:justify-start gap-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'home' %}" class="inline-block bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-black text-2xl py-5 px-10 rounded-[28px] shadow-lg shadow-green-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-green-700">
+                        ¡Continuar Partida! 🕹️
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-2xl py-5 px-10 rounded-[28px] shadow-lg shadow-purple-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-purple-800">
+                        ¡Empezar a Jugar! 🚀
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="flex flex-wrap justify-center lg:justify-start gap-3 text-xs font-black text-gray-500 uppercase tracking-wide pt-4">
+                <span class="bg-white border-2 border-gray-100 px-4 py-2 rounded-full shadow-sm">🎮 Juegos Interactivos</span>
+                <span class="bg-white border-2 border-gray-100 px-4 py-2 rounded-full shadow-sm">🪙 Gana Monedas</span>
+                <span class="bg-white border-2 border-gray-100 px-4 py-2 rounded-full shadow-sm">⚡ Superación</span>
+            </div>
+        </div>
+        
+        <!-- Hero Graphics/Lion -->
+        <div class="flex-1 flex justify-center items-center">
+            <div class="relative">
+                <!-- Floating Effect Background Circle -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 rounded-full blur-3xl opacity-70 scale-95 animate-pulse"></div>
+                
+                <div class="relative bg-white border-4 border-purple-200 p-10 rounded-[48px] shadow-soft max-w-sm flex flex-col items-center text-center transform hover:rotate-2 transition-transform duration-300">
+                    <span class="text-9xl mb-6 select-none animate-bounce" style="animation-duration: 3s;">🦁</span>
+                    <h3 class="text-3xl font-black text-purple-700 mb-2">¡Soy Leo!</h3>
+                    <p class="text-gray-500 font-bold text-base leading-relaxed">
+                        Tu león guardián y compañero de aventuras. ¡Vísteme con accesorios mágicos y juguemos juntos!
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+    
+    <!-- Benefits/Features Section -->
+    <section class="bg-white py-16 border-t-4 border-purple-50">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-black text-gray-800 mb-12">¿Por qué jugar en DysPlay?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Benefit 1 -->
+                <div class="bg-blue-50/50 border-2 border-blue-100 p-8 rounded-3xl flex flex-col items-center">
+                    <span class="text-5xl mb-4">🎯</span>
+                    <h4 class="text-xl font-black text-blue-700 mb-2">Juegos a tu Medida</h4>
+                    <p class="text-gray-500 font-bold text-sm leading-relaxed">
+                        Desafíos de lectura y silabeo especialmente adaptados para personas con dislexia.
+                    </p>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="bg-amber-50/50 border-2 border-amber-100 p-8 rounded-3xl flex flex-col items-center">
+                    <span class="text-5xl mb-4">🪙</span>
+                    <h4 class="text-xl font-black text-amber-700 mb-2">Motivación Divertida</h4>
+                    <p class="text-gray-500 font-bold text-sm leading-relaxed">
+                        Gana monedas virtuales con cada respuesta correcta y mantén tu racha activa de juego.
+                    </p>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="bg-emerald-50/50 border-2 border-emerald-100 p-8 rounded-3xl flex flex-col items-center">
+                    <span class="text-5xl mb-4">📷</span>
+                    <h4 class="text-xl font-black text-emerald-700 mb-2">Cámara Mágica</h4>
+                    <p class="text-gray-500 font-bold text-sm leading-relaxed">
+                        Usa la cámara frontal para jugar con gestos corporales y hacer del aprendizaje algo físico y dinámico.
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
 </div>
 {% endblock %}
