@@ -6,9 +6,15 @@
     <title>Panel de Estadísticas - DysPlay</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Lexend', sans-serif; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            letter-spacing: 0.06em;
+            line-height: 1.6;
+            background-color: #FFFBEB;
+            color: #1E293B;
+        }
 
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
@@ -26,15 +32,15 @@
             theme: {
                 extend: {
                     colors: {
-                        bgBase: '#FDFBF7',
-                        textMain: '#2D3748',
-                        primary: '#4299E1',
-                        success: '#48BB78',
-                        reward: '#ED8936',
-                        error: '#FC8181' // Rojo pastel, nada agresivo
+                        bgBase: '#FFFBEB',
+                        textMain: '#1E293B',
+                        primary: '#3B82F6',
+                        success: '#10B981',
+                        reward: '#C2410C',
+                        error: '#EF4444' // Rojo suave de la especificación
                     },
                     boxShadow: {
-                        'soft': '0px 8px 16px rgba(45, 55, 72, 0.08)',
+                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
                     }
                 }
             }
@@ -65,7 +71,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 
             <!-- TARJETA DE PERFIL (Ocupa 3 columnas) -->
-            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
+            <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
                 <div class="w-32 h-32 bg-primary/10 rounded-full flex flex-shrink-0 items-center justify-center text-primary shadow-sm border-4 border-primary/20">
                     <i data-lucide="smile" class="w-16 h-16 fill-current opacity-80"></i>
                 </div>
@@ -89,7 +95,7 @@
             </section>
 
             <!-- TARJETA DE RACHA (Ocupa 1 columna) -->
-            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft border-4 border-reward/20 flex flex-col items-center justify-center col-span-1 md:col-span-1 text-center group">
+            <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-reward/20 flex flex-col items-center justify-center col-span-1 md:col-span-1 text-center group">
                 <div class="w-24 h-24 bg-reward/10 rounded-full flex items-center justify-center text-reward mb-4 shadow-sm border-2 border-reward/30 group-hover:scale-110 transition-transform">
                     <i data-lucide="flame" class="w-12 h-12 fill-current"></i>
                 </div>
@@ -104,25 +110,25 @@
         <!-- ============================================== -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
 
-            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
                 <i data-lucide="map" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Niveles</span>
                 <span class="text-[36px] font-bold text-primary">85%</span>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-success/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-success/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
                 <i data-lucide="camera" class="w-10 h-10 text-success mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Cámara</span>
                 <span class="text-[36px] font-bold text-success">92%</span>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-reward/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-reward/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
                 <i data-lucide="star" class="w-10 h-10 text-reward mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Desafío</span>
                 <span class="text-[36px] font-bold text-reward">78%</span>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
                 <i data-lucide="book-open" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Historia</span>
                 <span class="text-[36px] font-bold text-primary">100%</span>
@@ -136,7 +142,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
 
             <!-- GRÁFICO (Simulado con CSS) -->
-            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft flex flex-col min-h-[300px]">
+            <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft flex flex-col min-h-[300px]">
                 <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
                     <i data-lucide="trending-up" class="text-success w-8 h-8"></i>
                     Palabras leídas (7 días)
@@ -160,7 +166,7 @@
             </section>
 
             <!-- ÁREAS DE MEJORA -->
-            <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft flex flex-col min-h-[300px]">
+            <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft flex flex-col min-h-[300px]">
                 <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
                     <i data-lucide="target" class="text-reward w-8 h-8"></i>
                     Palabras a practicar
@@ -207,7 +213,7 @@
         <!-- ============================================== -->
         <!-- FILA 4: INSIGNIAS Y MEDALLAS                     -->
         <!-- ============================================== -->
-        <section class="bg-white p-8 md:p-10 rounded-[40px] shadow-soft w-full mt-4">
+        <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft w-full mt-4">
             <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
                 <i data-lucide="award" class="text-success w-8 h-8"></i>
                 Tus Insignias

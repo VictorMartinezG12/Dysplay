@@ -9,33 +9,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Font: Lexend (altamente recomendada para dislexia y lectura) -->
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Font: Nunito (especificada para el proyecto) -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        dysPlayVerde: '#4CAF50',
-                        dysPlayAzul: '#2196F3',
-                        dysPlayFondo: '#FDFBF7',
-                        dysPlayTexto: '#2D3748',
-                        primary: '#4299E1',
-                        success: '#48BB78',
-                        reward: '#ED8936',
-                        error: '#FC8181'
+                        dysPlayVerde: '#10B981',
+                        dysPlayAzul: '#3B82F6',
+                        dysPlayFondo: '#FFFBEB',
+                        dysPlayTexto: '#1E293B',
+                        primary: '#3B82F6',
+                        secondary: '#C2410C',
+                        success: '#10B981',
+                        reward: '#C2410C',
+                        error: '#EF4444'
                     },
                     fontFamily: {
-                        dislexia: ['Lexend', 'Comic Sans MS', 'Verdana', 'sans-serif'],
+                        dislexia: ['Nunito', 'Comic Sans MS', 'Verdana', 'sans-serif'],
                     },
                     boxShadow: {
-                        'soft': '0px 8px 24px rgba(45, 55, 72, 0.06)',
-                        'hard': '0px 8px 0px rgba(45, 55, 72, 0.12)',
+                        'soft': '0px 8px 24px rgba(30, 41, 59, 0.06)',
+                        'hard': '0px 8px 0px rgba(30, 41, 59, 0.12)',
                         'game': '0px 10px 0px #CBD5E0',
-                        'game-primary': '0px 10px 0px #2B6CB0',
-                        'game-success': '0px 10px 0px #276749',
-                        'game-warning': '0px 10px 0px #DD6B20',
+                        'game-primary': '0px 10px 0px #1D4ED8',
+                        'game-success': '0px 10px 0px #047857',
+                        'game-warning': '0px 10px 0px #9A3412',
                     }
                 }
             }
@@ -44,8 +45,10 @@
 
     <style>
         body {
-            font-family: 'Lexend', 'Comic Sans MS', 'Verdana', sans-serif;
-            background-color: #FDFBF7;
+            font-family: 'Nunito', 'Comic Sans MS', 'Verdana', sans-serif;
+            background-color: #FFFBEB;
+            letter-spacing: 0.06em;
+            line-height: 1.6;
         }
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
@@ -57,7 +60,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="text-dysPlayTexto font-dislexia antialiased min-h-screen flex flex-col selection:bg-purple-200">
+<body class="text-dysPlayTexto font-dislexia antialiased min-h-screen flex flex-col selection:bg-orange-200">
 
     {% block navbar %}
     {% if user.is_authenticated %}

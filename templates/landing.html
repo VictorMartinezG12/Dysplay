@@ -17,7 +17,7 @@
                     <span>Mi Panel</span> <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                 </a>
             {% else %}
-                <a href="{% url 'account_login' %}" class="text-purple-600 hover:text-purple-850 font-extrabold text-sm md:text-base py-2 px-4 rounded-xl transition-all">
+                <a href="{% url 'account_login' %}" class="text-purple-600 hover:text-purple-850 font-extrabold text-sm md:text-base py-2 px-4 rounded-2xl transition-all">
                     Iniciar Sesión
                 </a>
                 <a href="{% url 'account_signup' %}" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold py-2.5 px-6 rounded-2xl text-sm transition-all shadow-sm">
@@ -54,11 +54,11 @@
             
             <div class="flex flex-wrap justify-center lg:justify-start gap-4">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'home' %}" class="inline-block bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-black text-2xl py-5 px-10 rounded-[28px] shadow-lg shadow-green-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-green-700">
+                    <a href="{% url 'home' %}" class="inline-block bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-black text-2xl py-5 px-10 rounded-2xl shadow-lg shadow-green-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-green-700">
                         ¡Continuar Partida! 🕹️
                     </a>
                 {% else %}
-                    <a href="{% url 'account_login' %}" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-2xl py-5 px-10 rounded-[28px] shadow-lg shadow-purple-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-purple-800">
+                    <a href="{% url 'account_login' %}" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-2xl py-5 px-10 rounded-2xl shadow-lg shadow-purple-200 transform hover:-translate-y-1 transition-all active:translate-y-0 border-b-4 border-purple-800">
                         ¡Empezar a Jugar! 🚀
                     </a>
                 {% endif %}
@@ -77,7 +77,7 @@
                 <!-- Floating Effect Background Circle -->
                 <div class="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 rounded-full blur-3xl opacity-70 scale-95 animate-pulse"></div>
                 
-                <div class="relative bg-white border-4 border-purple-200 p-10 rounded-[48px] shadow-soft max-w-sm flex flex-col items-center text-center transform hover:rotate-2 transition-transform duration-300">
+                <div class="relative bg-white border-4 border-purple-200 p-10 rounded-2xl shadow-soft max-w-sm flex flex-col items-center text-center transform hover:rotate-2 transition-transform duration-300">
                     <span class="text-9xl mb-6 select-none animate-bounce" style="animation-duration: 3s;">🦁</span>
                     <h3 class="text-3xl font-black text-purple-700 mb-2">¡Soy Leo!</h3>
                     <p class="text-gray-500 font-bold text-base leading-relaxed">
@@ -97,7 +97,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 
                 <!-- Benefit 1 -->
-                <div class="bg-blue-50/50 border-2 border-blue-100 p-8 rounded-3xl flex flex-col items-center">
+                <div class="bg-blue-50/50 border-2 border-blue-100 p-8 rounded-2xl flex flex-col items-center">
                     <span class="text-5xl mb-4">🎯</span>
                     <h4 class="text-xl font-black text-blue-700 mb-2">Juegos a tu Medida</h4>
                     <p class="text-gray-500 font-bold text-sm leading-relaxed">
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Benefit 2 -->
-                <div class="bg-amber-50/50 border-2 border-amber-100 p-8 rounded-3xl flex flex-col items-center">
+                <div class="bg-amber-50/50 border-2 border-amber-100 p-8 rounded-2xl flex flex-col items-center">
                     <span class="text-5xl mb-4">🪙</span>
                     <h4 class="text-xl font-black text-amber-700 mb-2">Motivación Divertida</h4>
                     <p class="text-gray-500 font-bold text-sm leading-relaxed">
@@ -115,7 +115,7 @@
                 </div>
 
                 <!-- Benefit 3 -->
-                <div class="bg-emerald-50/50 border-2 border-emerald-100 p-8 rounded-3xl flex flex-col items-center">
+                <div class="bg-emerald-50/50 border-2 border-emerald-100 p-8 rounded-2xl flex flex-col items-center">
                     <span class="text-5xl mb-4">📷</span>
                     <h4 class="text-xl font-black text-emerald-700 mb-2">Cámara Mágica</h4>
                     <p class="text-gray-500 font-bold text-sm leading-relaxed">

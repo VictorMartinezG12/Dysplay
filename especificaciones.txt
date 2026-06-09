@@ -1,0 +1,136 @@
+Especificaciones de Diseño (Formato Texto)
+Paleta de Colores
+Uso	Color	Código Hex
+Primario	Azul	#3B82F6
+Secundario	Naranja	#C2410C
+Éxito	Verde	#10B981
+Error	Rojo suave	#EF4444
+Fondo	Crema	#FFFBEB
+Tarjetas	Blanco	#FFFFFF
+Texto ppal.	Gris oscuro	#1E293B
+Texto sec.	Gris medio	#64748B
+
+
+Forma y Espaciado
+
+    Bordes redondeados: 16px.
+
+    Altura mínima de botones: 48px.
+
+    Padding tarjetas: 20px.
+
+    Márgenes laterales: 24px.
+
+Tipografía y Reglas de Maquetación (CSS/Tailwind)
+
+    Familia: 'Nunito', sans-serif.
+
+    Regla Crítica de Accesibilidad: letter-spacing: 0.06em; (letras ligeramente separadas) y line-height: 1.6; (párrafos holgados).
+
+    Jerarquía de Tamaños:
+
+        Títulos Principales (H1): 32px / ExtraBold (800)
+
+        Subtítulos / Títulos de Módulos (H2): 24px / SemiBold (600)
+
+        Cuerpo de Texto (Instrucciones del juego): 18px / Regular (400)
+
+        Botones (Textos de acción): 20px / Bold (700)
+
+        Etiquetas / Textos Pequeños (Mínimo): 16px / Medium (500) (Ajustado)
+
+11. Arquitectura del Sistema y Patrones de Diseño
+11.1. Arquitectura General
+El sistema DysPlay se rige bajo un estilo arquitectónico Cliente-Servidor de Tipo
+Monolítico Híbrido, estructurado internamente de forma Multicapa y Modular por
+Funcionalidades.
+Esta organización permite centralizar la lógica del sistema y el control de datos, mientras
+delega las tareas de procesamiento pesado a microservicios externos en la nube mediante un
+esquema híbrido.
+Organización General del Sistema y Modelos Arquitectónicos Aplicados:
+Esquema Cliente-Servidor: El Cliente (Frontend) es una aplicación web responsiva
+adaptada a dispositivos móviles, tablets y computadoras, encargada de capturar las entradas de
+hardware (flujos de audio del micrófono y capturas de la cámara) y gestionar la interfaz de
+usuario. El Servidor (Backend) procesa las solicitudes, evalúa las reglas de negocio y maneja la
+persistencia de datos.
+Monolítico Híbrido: Se define como monolítico porque todo el núcleo de la aplicación,
+el sistema de autenticación y la lógica de gamificación residen en un único código base
+centralizado. Sin embargo, adopta un enfoque híbrido al conectarse de manera externa con APIs
+de nivel empresarial en la nube, evitando la necesidad de entrenar o ejecutar modelos pesados de
+Inteligencia Artificial dentro del servidor local.
+Estructura Multicapa: El backend divide sus responsabilidades en niveles bien
+definidos: la capa de presentación (vistas dinámicas), la capa de lógica de negocio (procesamiento
+de datos del juego y consumo de APIs) y la capa de acceso a datos (interacción con la base de
+datos).
+Modular por Funcionalidades (Apps de Django): Para optimizar el desarrollo
+colaborativo en GitHub y el control de tareas en Jira, el sistema se organiza en submódulos
+autónomos. Cada módulo del juego (Gestión de Usuarios, Mapa de Niveles, Cámara Inteligente,
+Evaluación de Pronunciación, Tienda de Avatares e Historias Interactivas) funciona como una
+aplicación independiente dentro del proyecto, mitigando conflictos de código (merge conflicts).
+Patrones de Diseño Utilizados:
+MVT (Model-View-Template / Variante de MVC): El sistema implementa de forma
+nativa el patrón Model-View-Controller (MVC) a través de la arquitectura de Django. El Modelo
+representa la estructura y restricciones de la base de datos; la Plantilla (Template) maneja el
+frontend visual y accesible; y la Vista (View) actúa como el controlador lógico que recibe las
+peticiones del alumno, procesa las reglas del juego y retorna la respuesta adecuada.
+Singleton: Utilizado de forma interna por el núcleo del framework para centralizar y
+garantizar una única instancia global del archivo de configuración del sistema (`settings.py`) y
+del gestor de conexiones (pool) a la base de datos, optimizando el rendimiento y el consumo de
+recursos de memoria en el servidor.
+3.2. Arquitectura Lógica
+• La división funcional de los componentes del software que integran DysPlay se
+define formalmente en cinco niveles de abstracción:
+• Frontend (Diseño e Interacción): Construido mediante HTML5 enriquecido y
+Tailwind CSS. Implementa interfaces de usuario con criterios estrictos de
+accesibilidad para la dislexia (alto contraste, jerarquías visuales marcadas y
+tipografías de alta legibilidad). Adicionalmente, utiliza JavaScript nativo en el
+cliente para el control de periféricos (activación del micrófono para lectura y
+cámara web para reconocimiento de objetos).
+• Backend (Lógica Core): Desarrollado en Python 3.12 bajo el framework Django
+6.0.5. Ejecuta las reglas del sistema de recompensas (cálculo automatizado de
+monedas y mantenimiento de rachas de días del alumno), controla las sesiones
+de usuario, gestiona el flujo de las historias interactivas y aplica los filtros de
+seguridad del servidor.
+• Base de Datos: Motor de almacenamiento relacional con integridad transaccional
+estricta (ACID). Diseñado bajo SQLite en la etapa de desarrollo por su alta
+portabilidad entre los programadores del equipo, y estructurado mediante el
+ORM de Django para migrar directamente a PostgreSQL en el entorno de
+producción para salvaguardar el progreso, monedas y perfiles de los estudiantes.
+APIs (Application Programming Interfaces): El sistema actúa como un consumidor
+de servicios distribuidos de frontera a través de dos vertientes:
+• APIs de Identidad Federada: Google Identity Platform y Microsoft Entra ID
+(Azure) bajo el estándar OAuth 2.0 para el inicio de sesión inmediato del alumno
+con sus correos institucionales.
+• APIs de Inteligencia Artificial: Azure Speech Service (Pronunciation
+Assessment) para la evaluación fonética del audio en tiempo real y Google Cloud
+Vision API para el etiquetado inteligente de objetos capturados por la cámara.
+Servicios: Middleware internos encargados de tareas secundarias críticas, como el
+sistema de mensajes y alertas en tiempo real de Django (notificaciones de logros o errores de
+inicio de sesión) y el servicio de codificación de archivos (conversión de imágenes a Base64 y
+flujos de audio a formatos compatibles con las APIs de IA).
+3.3. Justificación Técnica
+La elección de esta arquitectura y patrones de diseño responde a necesidades pedagógicas,
+técnicas y de infraestructura, ofreciendo ventajas sustanciales para el proyecto:
+• ¿Por qué se seleccionó esta arquitectura?
+Se descartó una arquitectura basada en microservicios puros debido a que elevaría
+exponencialmente los costos de infraestructura (requiriendo múltiples servidores, contenedores
+Docker y orquestadores como Kubernetes) y añadiría una latencia de red innecesaria en la
+comunicación interna. Un Monolito Modular Híbrido ofrece lo mejor de ambos mundos:
+mantiene el código limpio, separado y ordenado en módulos independientes, pero se despliega de
+forma económica y ágil en un único servidor.
+• Ventajas y Beneficios para el Proyecto:
+Desarrollo en Paralelo Eficiente: Gracias a la organización modular, un desarrollador
+puede programar la lógica del micrófono en el módulo de `pronunciacion` mientras otro diseña la
+interfaz en Tailwind dentro de `usuarios`, trabajando simultáneamente en GitHub sin interrumpir
+el progreso del otro.
+Experiencia de Usuario Fluida (Baja Latencia): Al consumir servicios en la nube de
+nivel empresarial (Google y Microsoft), el procesamiento de IA tarda menos de 3 segundos. El
+backend procesa las respuestas de inmediato y las envía al cliente sin retrasos, manteniendo la
+atención y motivación del niño con dislexia.
+Seguridad y Confiabilidad: Al utilizar el patrón MVT de Django y delegar las
+contraseñas a Google y Microsoft mediante OAuth 2.0, la plataforma adquiere inmunidad nativa
+contra inyecciones SQL y robo de credenciales, protegiendo la identidad de los menores de edad
+de la institución educativa.
+Escalabilidad y Bajo Costo: Permite iniciar el proyecto a costo cero en fases de prueba
+y garantiza que el sistema soporte el crecimiento de usuarios cuando sea desplegado en servidores
+en la nube como Amazon Web Services (AWS).

@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'historias',
     'niveles',
     'usuarios',
-
+    'servicios',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -158,3 +158,5 @@ AUTH_USER_MODEL = 'usuarios.UsuarioCustom'
 
 # En desarrollo imprimimos los correos en la consola/logs en lugar de enviarlos por SMTP real.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY')
+AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION')

@@ -6,9 +6,15 @@
     <title>Modo Niveles - DysPlay</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Lexend', sans-serif; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            letter-spacing: 0.06em;
+            line-height: 1.6;
+            background-color: #FFFBEB;
+            color: #1E293B;
+        }
 
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
@@ -36,16 +42,16 @@
             theme: {
                 extend: {
                     colors: {
-                        bgBase: '#FDFBF7',
-                        textMain: '#2D3748',
-                        primary: '#4299E1',
-                        success: '#48BB78',
-                        reward: '#ED8936',
-                        error: '#FC8181'
+                        bgBase: '#FFFBEB',
+                        textMain: '#1E293B',
+                        primary: '#3B82F6',
+                        success: '#10B981',
+                        reward: '#C2410C',
+                        error: '#EF4444'
                     },
                     boxShadow: {
-                        'soft': '0px 8px 16px rgba(45, 55, 72, 0.08)',
-                        'hard': '0px 8px 0px rgba(45, 55, 72, 0.1)',
+                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
+                        'hard': '0px 8px 0px rgba(30, 41, 59, 0.1)',
                     }
                 }
             }
@@ -54,121 +60,91 @@
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
-    <!-- HEADER GLOBAL (Botón Volver al Menú Principal) -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
         <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
             <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Menú</span>
         </a>
 
-        <!-- Saldo de estrellas/monedas -->
         <div class="flex items-center gap-3 bg-white px-6 py-4 rounded-full shadow-soft min-h-[64px]">
             <i data-lucide="star" class="w-6 h-6 fill-reward text-reward"></i>
-            <span class="text-[20px] font-bold text-reward">12</span>
+            <span class="text-[20px] font-bold text-reward">{{ progreso.puntos_acumulados|default:0 }}</span>
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <main class="w-full max-w-5xl px-6 md:px-8 flex-grow flex flex-col items-center justify-start pb-16 relative">
 
-        <!-- ============================================== -->
-        <!-- PASO 1: VISTA DEL MAPA DE NIVELES                -->
-        <!-- ============================================== -->
         <section id="view-map" class="flex flex-col items-center w-full animate-fade-in">
-
             <h1 class="text-[36px] md:text-[40px] font-bold text-primary mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
 
-            <!-- Mundo 1: Básico -->
-            <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-[40px] shadow-soft border-4 border-primary/20 relative mb-16 animate-float">
+            <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 border-primary/20 relative mb-16 animate-float">
                 <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
                     Mundo 1: Básico
                 </div>
 
                 <div class="flex justify-between items-center relative mt-6 px-4 md:px-12">
-                    <!-- Línea conectora -->
                     <div class="absolute top-1/2 left-8 right-8 h-4 bg-gray-100 -z-10 rounded-full transform -translate-y-1/2"></div>
-                    <div class="absolute top-1/2 left-8 right-1/2 h-4 bg-success -z-10 rounded-full transform -translate-y-1/2"></div>
 
-                    <!-- Nivel 1: Completado -->
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-success text-white font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#2f855a] border-4 border-white hover:scale-105 active:translate-y-2 active:shadow-none transition-all relative z-10 cursor-default">
-                        <i data-lucide="check" class="w-10 h-10"></i>
-                        <div class="absolute -bottom-2 -right-2 bg-reward border-2 border-white text-white rounded-full p-1.5 shadow-sm">
-                            <i data-lucide="star" class="w-5 h-5 fill-white"></i>
-                        </div>
-                    </button>
+                    {% for n in niveles %}
+                        {% if n.numero < progreso.nivel_actual.numero %}
+                            <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-success text-white font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#2f855a] border-4 border-white hover:scale-105 active:translate-y-2 active:shadow-none transition-all relative z-10 cursor-default" title="Nivel {{ n.numero }} Completado">
+                                <i data-lucide="check" class="w-10 h-10"></i>
+                                <div class="absolute -bottom-2 -right-2 bg-reward border-2 border-white text-white rounded-full p-1.5 shadow-sm">
+                                    <i data-lucide="star" class="w-5 h-5 fill-white"></i>
+                                </div>
+                            </button>
 
-                    <!-- Nivel 2: Desbloqueado (Activo) -->
-                    <button onclick="startExercise()" class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-primary text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primary/50">
-                        2
-                    </button>
+                        {% elif n.numero == progreso.nivel_actual.numero %}
+                            <button
+                                onclick="startExercise('{{ n.numero }}', '{{ mision_actual.frase_historia|escapejs }}', '{{ mision_actual.palabra_objetivo|escapejs }}')"
+                                class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-primary text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primary/50">
+                                {{ n.numero }}
+                            </button>
 
-                    <!-- Nivel 3: Bloqueado -->
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#cbd5e0] border-4 border-white cursor-not-allowed relative z-10 grayscale opacity-80">
-                        <i data-lucide="lock" class="w-8 h-8"></i>
-                    </button>
+                        {% else %}
+                            <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#cbd5e0] border-4 border-white cursor-not-allowed relative z-10 grayscale opacity-80" disabled>
+                                <i data-lucide="lock" class="w-8 h-8"></i>
+                            </button>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-gray-500 text-center w-full">No hay niveles configurados en el panel de Django todavía.</p>
+                    {% endfor %}
                 </div>
             </div>
 
-            <!-- Mundo 2: Intermedio (Bloqueado) -->
-            <div class="w-full max-w-2xl bg-gray-50 p-8 md:p-12 rounded-[40px] shadow-sm border-4 border-gray-200 relative mb-16 opacity-80 grayscale">
+            <div class="w-full max-w-2xl bg-gray-50 p-8 md:p-12 rounded-2xl shadow-sm border-4 border-gray-200 relative mb-16 opacity-80 grayscale">
                 <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-400 text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm flex items-center gap-2">
                     <i data-lucide="lock" class="w-5 h-5"></i> Mundo 2: Intermedio
                 </div>
-
                 <div class="flex justify-between items-center relative mt-6 px-4 md:px-12">
                     <div class="absolute top-1/2 left-8 right-8 h-4 bg-gray-200 -z-10 rounded-full transform -translate-y-1/2"></div>
-
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed relative z-10">
-                        4
-                    </button>
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed relative z-10">
-                        5
-                    </button>
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed relative z-10">
-                        6
-                    </button>
+                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>4</button>
+                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>5</button>
+                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>6</button>
                 </div>
             </div>
-
-            <!-- Mundo 3: Avanzado (Bloqueado) -->
-            <div class="w-full max-w-2xl bg-gray-50 p-8 md:p-12 rounded-[40px] shadow-sm border-4 border-gray-200 relative opacity-60 grayscale">
-                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-400 text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm flex items-center gap-2">
-                    <i data-lucide="lock" class="w-5 h-5"></i> Mundo 3: Avanzado
-                </div>
-                <!-- ... contenido similar oculto ... -->
-                <div class="h-20 flex items-center justify-center">
-                    <span class="text-gray-500 font-bold text-lg">Completa los mundos anteriores para desbloquear</span>
-                </div>
-            </div>
-
         </section>
 
-
-        <!-- ============================================== -->
-        <!-- PASO 2: VISTA DEL EJERCICIO DE LECTURA           -->
-        <!-- ============================================== -->
         <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
-            <div class="bg-white rounded-[40px] p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
+            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
 
                 <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8 shadow-sm">
                     <i data-lucide="book-open" class="w-10 h-10"></i>
                 </div>
 
-                <h2 class="text-[24px] font-bold text-gray-500 mb-2">Nivel 2</h2>
+                <h2 id="exercise-level-title" class="text-[24px] font-bold text-gray-500 mb-2">Nivel</h2>
                 <h3 class="text-[20px] font-semibold text-gray-400 mb-10">Lee en voz alta esta frase:</h3>
 
                 <div class="mb-16">
-                    <p class="text-[40px] md:text-[56px] font-bold text-textMain leading-[1.4] tracking-wide">
-                        La <span class="text-primary">mariposa</span> vuela <span class="text-success">alto</span>.
-                    </p>
+                    <p id="exercise-phrase" class="text-[32px] md:text-[44px] font-bold text-textMain leading-[1.5] tracking-wide"></p>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
-                    <button class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button onclick="leerTextoEnVozAlta()" class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
-                    <button id="btn-grabar" onclick="startRecording()" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group">
+                    <button id="btn-grabar" onclick="toggleRecording()" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group">
                         <i id="icon-mic" data-lucide="mic" class="w-8 h-8"></i>
                         <span id="text-grabar">Grabar</span>
                     </button>
@@ -176,10 +152,6 @@
             </div>
         </section>
 
-
-        <!-- ============================================== -->
-        <!-- PASO 3: VISTA DE PROCESAMIENTO (IA)              -->
-        <!-- ============================================== -->
         <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
             <div class="relative w-40 h-40 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
@@ -188,16 +160,10 @@
                     <i data-lucide="activity" class="w-16 h-16 text-primary animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando...</h2>
+            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
         </section>
 
-
-        <!-- ============================================== -->
-        <!-- PASO 4: VISTA DE RESULTADO (NIVEL COMPLETADO)    -->
-        <!-- ============================================== -->
         <section id="view-result" class="hidden flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
-
-            <!-- Confeti sutil animado simulado con emojis flotantes traseros -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none flex justify-around opacity-70 text-4xl">
                 <div class="animate-[bounce_2s_ease-in-out_infinite_0.1s]">🎉</div>
                 <div class="animate-[bounce_2.5s_ease-in-out_infinite_0.5s]">✨</div>
@@ -205,38 +171,38 @@
                 <div class="animate-[bounce_2.2s_ease-in-out_infinite_0.8s]">⭐</div>
             </div>
 
-            <div class="bg-white rounded-[40px] p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
-
+            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
                 <h2 class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Nivel Superado!</h2>
-                <p class="text-[24px] text-gray-600 mb-10">Has desbloqueado el siguiente nivel.</p>
+                <p class="text-[24px] text-gray-600 mb-10">¡Lo hiciste increíble! Sigue así.</p>
 
-                <!-- Círculo de Puntuación (CSS Conic Gradient) -->
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
-                    <div class="absolute inset-0 rounded-full" style="background: conic-gradient(#48BB78 85%, #edf2f7 0);"></div>
+                    <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#10B981 85%, #edf2f7 0);"></div>
                     <div class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
-                        <span class="text-[48px] font-bold text-success leading-none">85%</span>
+                        <span id="score-text" class="text-[48px] font-bold text-success leading-none">85%</span>
                         <span class="text-[16px] text-gray-500 font-bold uppercase tracking-widest mt-1">Precisión</span>
                     </div>
                 </div>
 
-                <!-- Recompensa -->
                 <div class="bg-reward/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-reward/20 mb-10">
                     <i data-lucide="coins" class="w-8 h-8 text-reward"></i>
-                    <span class="text-[24px] font-bold text-reward">+ 10 Monedas</span>
+                    <span class="text-[24px] font-bold text-reward">+ {{ mision_actual.nivel.puntos_recompensa|default:50 }} Monedas</span>
                 </div>
 
-                <!-- Controles -->
-                <div class="flex flex-col md:flex-row gap-6 w-full max-w-lg justify-center">
+                <form action="{% url 'guardar_progreso' %}" method="POST" class="w-full">
+                    {% csrf_token %}
+                    <input type="hidden" name="nivel_id" id="input-nivel-id" value="">
+                    <input type="hidden" name="score_obtenido" id="input-score" value="">
 
-                    <button onclick="goToMap()" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
-                        <i data-lucide="map" class="w-6 h-6"></i> Volver al Mapa
-                    </button>
+                    <div class="flex flex-col md:flex-row gap-6 w-full justify-center">
+                        <a href="{% url 'niveles' %}" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                            Volver al mapa
+                        </a>
 
-                    <button onclick="goToMap()" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
-                        Siguiente Nivel <i data-lucide="arrow-right" class="w-6 h-6"></i>
-                    </button>
-
-                </div>
+                        <button type="submit" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                            Siguiente Nivel <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </form>
 
             </div>
         </section>
@@ -246,56 +212,211 @@
     <script>
         lucide.createIcons();
 
+        // Variables de estado
+        let fraseActual = "";
+        let palabraObjetivoActual = "";
+        let nivelSeleccionado = "";
+
+        // Variables para el micrófono real (Usando AudioContext para forzar un WAV legítimo)
+        let audioContext;
+        let recorderNode;
+        let audioStream;
+        let audioBufferList = [];
+        let recordingLength = 0;
+        let isRecording = false;
+
         function changeView(hideId, showId) {
             document.getElementById(hideId).classList.add('hidden');
             document.getElementById(hideId).classList.remove('flex');
-
             document.getElementById(showId).classList.remove('hidden');
             document.getElementById(showId).classList.add('flex');
-
             lucide.createIcons();
         }
 
-        // Lógica del flujo del modo Niveles
-        function startExercise() {
-            // Ocultar cabecera global para mantener regla de enfoque único
+        function startExercise(numeroNivel, fraseHistoria, palabraObjetivo) {
+            nivelSeleccionado = numeroNivel;
+            fraseActual = fraseHistoria;
+            palabraObjetivoActual = palabraObjetivo;
+
+            document.getElementById('exercise-level-title').textContent = `Nivel ${numeroNivel}`;
+
+            let fraseModificada = fraseHistoria.replace(
+                palabraObjetivo,
+                `<span class="text-primary underline decoration-wavy decoration-2">${palabraObjetivo}</span>`
+            );
+            document.getElementById('exercise-phrase').innerHTML = fraseModificada;
+
             document.getElementById('global-header').classList.add('hidden');
             document.getElementById('global-header').classList.remove('flex');
 
             changeView('view-map', 'view-exercise');
         }
 
-        function startRecording() {
+        function leerTextoEnVozAlta() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(fraseActual);
+                utterance.lang = 'es-EC';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Controlador del Micrófono optimizado para generar un WAV compatible con Azure
+        async function toggleRecording() {
             const btnGrabar = document.getElementById('btn-grabar');
-            const iconMic = document.getElementById('icon-mic');
             const textGrabar = document.getElementById('text-grabar');
 
-            // Simular inicio de grabación
-            btnGrabar.classList.remove('bg-white', 'text-error');
-            btnGrabar.classList.add('bg-error', 'text-white', 'animate-pulse');
-            textGrabar.textContent = "Grabando...";
+            if (!isRecording) {
+                try {
+                    // Pedir stream del micrófono
+                    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-            // 2 segundos grabando, luego paso 3 (Procesamiento)
-            setTimeout(() => {
+                    // Inicializar el contexto de audio del navegador
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = audioContext.createMediaStreamSource(audioStream);
+
+                    // Capturar en mono (1 canal de entrada, 1 canal de salida)
+                    recorderNode = audioContext.createScriptProcessor(4096, 1, 1);
+                    audioBufferList = [];
+                    recordingLength = 0;
+
+                    recorderNode.onaudioprocess = (e) => {
+                        if (!isRecording) return;
+                        const channelData = e.inputBuffer.getChannelData(0);
+                        audioBufferList.push(new Float32Array(channelData));
+                        recordingLength += channelData.length;
+                    };
+
+                    source.connect(recorderNode);
+                    recorderNode.connect(audioContext.destination);
+
+                    isRecording = true;
+
+                    btnGrabar.classList.remove('bg-white', 'text-error');
+                    btnGrabar.classList.add('bg-error', 'text-white', 'animate-pulse');
+                    textGrabar.textContent = "Detener (Grabando...)";
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Por favor, permite el acceso al micrófono en el navegador para poder jugar.");
+                }
+            } else {
+                isRecording = false;
+
+                // Desconectar y apagar el micrófono en la pestaña
+                if (recorderNode) recorderNode.disconnect();
+                if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+
+                const currentSampleRate = audioContext.sampleRate;
+                if (audioContext) audioContext.close();
+
+                btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
+                btnGrabar.classList.add('bg-white', 'text-error');
+                textGrabar.textContent = "Procesando...";
+
                 changeView('view-exercise', 'view-loading');
 
-                // Paso 3: Simular 1 segundo de análisis según especificación
-                setTimeout(() => {
-                    changeView('view-loading', 'view-result');
-                }, 1000);
+                // Procesar el audio acumulado y compilarlo en un .wav estructurado real
+                const samples = flattenArray(audioBufferList, recordingLength);
+                const audioBlob = encodeWAV(samples, currentSampleRate);
 
-            }, 2000); // 2 segundos de lectura
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'grabacion.wav');
+                formData.append('palabra_objetivo', palabraObjetivoActual);
+                formData.append('nivel_id', nivelSeleccionado);
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                try {
+                    const response = await fetch("{% url 'guardar_progreso' %}", {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        const scoreAzure = Math.round(data.score);
+
+                        document.getElementById('score-text').textContent = `${scoreAzure}%`;
+                        document.getElementById('score-chart').style.background = `conic-gradient(#10B981 ${scoreAzure}%, #edf2f7 0)`;
+
+                        document.getElementById('input-nivel-id').value = nivelSeleccionado;
+                        document.getElementById('input-score').value = scoreAzure;
+
+                        changeView('view-loading', 'view-result');
+                    } else {
+                        alert("No se pudo evaluar la pronunciación. " + data.message);
+                        goToMap();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Hubo un problema comunicándose con el servidor de Azure.");
+                    goToMap();
+                }
+            }
+        }
+
+        // --- ENCODERS INTERNOS DE AUDIO ---
+        function flattenArray(channelBuffer, recordingLength) {
+            let result = new Float32Array(recordingLength);
+            let offset = 0;
+            for (let i = 0; i < channelBuffer.length; i++) {
+                let buffer = channelBuffer[i];
+                result.set(buffer, offset);
+                offset += buffer.length;
+            }
+            return result;
+        }
+
+        function writeUtfBytes(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            let buffer = new ArrayBuffer(44 + samples.length * 2);
+            let view = new DataView(buffer);
+
+            /* Escribir Cabecera RIFF legítima para archivos WAV */
+            writeUtfBytes(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeUtfBytes(view, 8, 'WAVE');
+            writeUtfBytes(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM Lineal (sin compresión)
+            view.setUint16(22, 1, true); // 1 canal (Mono)
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); // 16 bits de calidad por muestra
+            writeUtfBytes(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            // Guardar datos PCM convirtiendo float a int16
+            let offset = 44;
+            for (let i = 0; i < samples.length; i++, offset += 2) {
+                let s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
         }
 
         function goToMap() {
-            // Restaurar cabecera
             document.getElementById('global-header').classList.remove('hidden');
             document.getElementById('global-header').classList.add('flex');
 
-            changeView('view-result', 'view-map');
+            const btnGrabar = document.getElementById('btn-grabar');
+            btnGrabar.classList.add('bg-white', 'text-error');
+            btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
+            document.getElementById('text-grabar').textContent = "Grabar";
 
-            // Aquí en un entorno real se actualizaría el mapa marcando el nivel 2 como completado
-            // y desbloqueando el nivel 3. Para este mockup lo mantenemos estático o se recarga.
+            changeView('view-result', 'view-map');
+            changeView('view-exercise', 'view-map');
+            changeView('view-loading', 'view-map');
         }
     </script>
 </body>
