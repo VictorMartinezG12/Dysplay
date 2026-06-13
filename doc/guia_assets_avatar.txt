@@ -1,0 +1,47 @@
+# Guía de Assets Visuales del Avatar - DysPlay
+
+Este documento detalla cómo gestionar los recursos gráficos del sistema de avatar por capas.
+
+## 1. Estructura de Carpetas
+Todos los assets deben ubicarse en `static/avatar/`:
+- `/cuerpo/`: Imágenes para las expresiones (neutral, feliz, triste, etc.).
+- `/cabello/`: Diferentes peinados.
+- `/ropa/`: Camisetas, vestidos, disfraces.
+- `/accesorios/`: Gafas, gorros, mochilas.
+
+## 2. Especificaciones Técnicas
+- **Formato recomendado:** SVG para escalabilidad infinita o PNG con transparencia (24-bit).
+- **Tamaño base:** 512x512 píxeles (aunque el sistema los escala automáticamente).
+- **Punto de anclaje:** Todas las capas deben estar perfectamente alineadas entre sí. El cuerpo es la base y el resto de elementos deben dibujarse en la posición exacta donde deben aparecer sobre el cuerpo.
+- **Z-Index:**
+  - Cuerpo: 10
+  - Ropa: 20
+  - Cabello: 30
+  - Accesorios: 40
+
+## 3. Registro de Nuevos Ítems
+Para agregar un nuevo ítem al sistema:
+1. Sube la imagen a la carpeta correspondiente en `static/avatar/` o utiliza el panel de administración para subir un archivo al campo `imagen` del modelo `Item`.
+2. En el Admin de Django:
+   - Crea un nuevo `Item`.
+   - Selecciona la `categoría` correcta.
+   - Sube o referencia la imagen.
+   - Asegúrate de que `activo=True`.
+
+## 4. Convenciones de Nombres (Cuerpo)
+Para que el sistema de eventos funcione automáticamente, las imágenes en `static/avatar/cuerpo/` deben coincidir con los nombres de las emociones:
+- `neutral.svg`
+- `feliz.svg`
+- `triste.svg`
+- `pensando.svg`
+- `sorprendido.svg`
+- `celebrando.svg` (puedes usar feliz.svg si no tienes una específica)
+- `preocupado.svg`
+- `analizando.svg`
+- `explicando.svg`
+
+## 5. Implementación de Placeholders
+Si no se ha cargado una imagen en la base de datos para un ítem, el sistema intentará cargar:
+- `/static/avatar/ropa/estandar.svg`
+- `/static/avatar/cabello/estandar.svg`
+Si el ítem tiene una imagen cargada en el modelo `Item`, se usará `{{ item.imagen_url_segura }}`.

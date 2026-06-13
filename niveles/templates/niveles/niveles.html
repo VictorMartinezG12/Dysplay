@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modo Niveles - DysPlay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -37,32 +38,12 @@
             50% { transform: translateY(-5px); }
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgBase: '#FFFBEB',
-                        textMain: '#1E293B',
-                        primary: '#3B82F6',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444'
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
-                        'hard': '0px 8px 0px rgba(30, 41, 59, 0.1)',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Menú</span>
         </a>
 
@@ -75,10 +56,10 @@
     <main class="w-full max-w-5xl px-6 md:px-8 flex-grow flex flex-col items-center justify-start pb-16 relative">
 
         <section id="view-map" class="flex flex-col items-center w-full animate-fade-in">
-            <h1 class="text-[36px] md:text-[40px] font-bold text-primary mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
+            <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
 
-            <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 border-primary/20 relative mb-16 animate-float">
-                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
+            <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 border-primaryFijo/20 relative mb-16 animate-float">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primaryFijo text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
                     Mundo 1: Básico
                 </div>
 
@@ -96,8 +77,11 @@
 
                         {% elif n.numero == progreso.nivel_actual.numero %}
                             <button
-                                onclick="startExercise('{{ n.numero }}', '{{ mision_actual.frase_historia|escapejs }}', '{{ mision_actual.palabra_objetivo|escapejs }}')"
-                                class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-primary text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primary/50">
+                                data-action="start-exercise"
+                                data-numero-nivel="{{ n.numero }}"
+                                data-frase-historia="{{ mision_actual.frase_historia }}"
+                                data-palabra-objetivo="{{ mision_actual.palabra_objetivo }}"
+                                class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-primaryFijo text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                                 {{ n.numero }}
                             </button>
 
@@ -126,9 +110,9 @@
         </section>
 
         <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
-            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
+            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primaryFijo/20">
 
-                <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8 shadow-sm">
+                <div class="w-20 h-20 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-8 shadow-sm">
                     <i data-lucide="book-open" class="w-10 h-10"></i>
                 </div>
 
@@ -140,11 +124,11 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
-                    <button onclick="leerTextoEnVozAlta()" class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button data-action="leer-frase" class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
-                    <button id="btn-grabar" onclick="toggleRecording()" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group">
+                    <button id="btn-grabar" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group">
                         <i id="icon-mic" data-lucide="mic" class="w-8 h-8"></i>
                         <span id="text-grabar">Grabar</span>
                     </button>
@@ -155,12 +139,12 @@
         <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
             <div class="relative w-40 h-40 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
-                <div class="absolute inset-0 border-[12px] border-primary border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-[12px] border-primaryFijo border-t-transparent rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center bg-white/80 rounded-full m-2">
-                    <i data-lucide="activity" class="w-16 h-16 text-primary animate-pulse"></i>
+                    <i data-lucide="activity" class="w-16 h-16 text-primaryFijo animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
+            <h2 class="text-[36px] font-bold text-primaryFijo animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
         </section>
 
         <section id="view-result" class="hidden flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
@@ -198,7 +182,7 @@
                             Volver al mapa
                         </a>
 
-                        <button type="submit" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                        <button type="submit" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                             Siguiente Nivel <i data-lucide="arrow-right" class="w-6 h-6"></i>
                         </button>
                     </div>
@@ -209,215 +193,7 @@
 
     </main>
 
-    <script>
-        lucide.createIcons();
-
-        // Variables de estado
-        let fraseActual = "";
-        let palabraObjetivoActual = "";
-        let nivelSeleccionado = "";
-
-        // Variables para el micrófono real (Usando AudioContext para forzar un WAV legítimo)
-        let audioContext;
-        let recorderNode;
-        let audioStream;
-        let audioBufferList = [];
-        let recordingLength = 0;
-        let isRecording = false;
-
-        function changeView(hideId, showId) {
-            document.getElementById(hideId).classList.add('hidden');
-            document.getElementById(hideId).classList.remove('flex');
-            document.getElementById(showId).classList.remove('hidden');
-            document.getElementById(showId).classList.add('flex');
-            lucide.createIcons();
-        }
-
-        function startExercise(numeroNivel, fraseHistoria, palabraObjetivo) {
-            nivelSeleccionado = numeroNivel;
-            fraseActual = fraseHistoria;
-            palabraObjetivoActual = palabraObjetivo;
-
-            document.getElementById('exercise-level-title').textContent = `Nivel ${numeroNivel}`;
-
-            let fraseModificada = fraseHistoria.replace(
-                palabraObjetivo,
-                `<span class="text-primary underline decoration-wavy decoration-2">${palabraObjetivo}</span>`
-            );
-            document.getElementById('exercise-phrase').innerHTML = fraseModificada;
-
-            document.getElementById('global-header').classList.add('hidden');
-            document.getElementById('global-header').classList.remove('flex');
-
-            changeView('view-map', 'view-exercise');
-        }
-
-        function leerTextoEnVozAlta() {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(fraseActual);
-                utterance.lang = 'es-EC';
-                utterance.rate = 0.85;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // Controlador del Micrófono optimizado para generar un WAV compatible con Azure
-        async function toggleRecording() {
-            const btnGrabar = document.getElementById('btn-grabar');
-            const textGrabar = document.getElementById('text-grabar');
-
-            if (!isRecording) {
-                try {
-                    // Pedir stream del micrófono
-                    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                    // Inicializar el contexto de audio del navegador
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = audioContext.createMediaStreamSource(audioStream);
-
-                    // Capturar en mono (1 canal de entrada, 1 canal de salida)
-                    recorderNode = audioContext.createScriptProcessor(4096, 1, 1);
-                    audioBufferList = [];
-                    recordingLength = 0;
-
-                    recorderNode.onaudioprocess = (e) => {
-                        if (!isRecording) return;
-                        const channelData = e.inputBuffer.getChannelData(0);
-                        audioBufferList.push(new Float32Array(channelData));
-                        recordingLength += channelData.length;
-                    };
-
-                    source.connect(recorderNode);
-                    recorderNode.connect(audioContext.destination);
-
-                    isRecording = true;
-
-                    btnGrabar.classList.remove('bg-white', 'text-error');
-                    btnGrabar.classList.add('bg-error', 'text-white', 'animate-pulse');
-                    textGrabar.textContent = "Detener (Grabando...)";
-
-                } catch (err) {
-                    console.error(err);
-                    alert("Por favor, permite el acceso al micrófono en el navegador para poder jugar.");
-                }
-            } else {
-                isRecording = false;
-
-                // Desconectar y apagar el micrófono en la pestaña
-                if (recorderNode) recorderNode.disconnect();
-                if (audioStream) audioStream.getTracks().forEach(track => track.stop());
-
-                const currentSampleRate = audioContext.sampleRate;
-                if (audioContext) audioContext.close();
-
-                btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
-                btnGrabar.classList.add('bg-white', 'text-error');
-                textGrabar.textContent = "Procesando...";
-
-                changeView('view-exercise', 'view-loading');
-
-                // Procesar el audio acumulado y compilarlo en un .wav estructurado real
-                const samples = flattenArray(audioBufferList, recordingLength);
-                const audioBlob = encodeWAV(samples, currentSampleRate);
-
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'grabacion.wav');
-                formData.append('palabra_objetivo', palabraObjetivoActual);
-                formData.append('nivel_id', nivelSeleccionado);
-
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                try {
-                    const response = await fetch("{% url 'guardar_progreso' %}", {
-                        method: 'POST',
-                        headers: { 'X-CSRFToken': csrfToken },
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (data.status === 'success') {
-                        const scoreAzure = Math.round(data.score);
-
-                        document.getElementById('score-text').textContent = `${scoreAzure}%`;
-                        document.getElementById('score-chart').style.background = `conic-gradient(#10B981 ${scoreAzure}%, #edf2f7 0)`;
-
-                        document.getElementById('input-nivel-id').value = nivelSeleccionado;
-                        document.getElementById('input-score').value = scoreAzure;
-
-                        changeView('view-loading', 'view-result');
-                    } else {
-                        alert("No se pudo evaluar la pronunciación. " + data.message);
-                        goToMap();
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert("Hubo un problema comunicándose con el servidor de Azure.");
-                    goToMap();
-                }
-            }
-        }
-
-        // --- ENCODERS INTERNOS DE AUDIO ---
-        function flattenArray(channelBuffer, recordingLength) {
-            let result = new Float32Array(recordingLength);
-            let offset = 0;
-            for (let i = 0; i < channelBuffer.length; i++) {
-                let buffer = channelBuffer[i];
-                result.set(buffer, offset);
-                offset += buffer.length;
-            }
-            return result;
-        }
-
-        function writeUtfBytes(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-
-        function encodeWAV(samples, sampleRate) {
-            let buffer = new ArrayBuffer(44 + samples.length * 2);
-            let view = new DataView(buffer);
-
-            /* Escribir Cabecera RIFF legítima para archivos WAV */
-            writeUtfBytes(view, 0, 'RIFF');
-            view.setUint32(4, 36 + samples.length * 2, true);
-            writeUtfBytes(view, 8, 'WAVE');
-            writeUtfBytes(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true); // PCM Lineal (sin compresión)
-            view.setUint16(22, 1, true); // 1 canal (Mono)
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true); // 16 bits de calidad por muestra
-            writeUtfBytes(view, 36, 'data');
-            view.setUint32(40, samples.length * 2, true);
-
-            // Guardar datos PCM convirtiendo float a int16
-            let offset = 44;
-            for (let i = 0; i < samples.length; i++, offset += 2) {
-                let s = Math.max(-1, Math.min(1, samples[i]));
-                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-            }
-
-            return new Blob([view], { type: 'audio/wav' });
-        }
-
-        function goToMap() {
-            document.getElementById('global-header').classList.remove('hidden');
-            document.getElementById('global-header').classList.add('flex');
-
-            const btnGrabar = document.getElementById('btn-grabar');
-            btnGrabar.classList.add('bg-white', 'text-error');
-            btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
-            document.getElementById('text-grabar').textContent = "Grabar";
-
-            changeView('view-result', 'view-map');
-            changeView('view-exercise', 'view-map');
-            changeView('view-loading', 'view-map');
-        }
-    </script>
+    {{ niveles_config|json_script:"niveles-config" }}
+    <script src="{% static 'js/niveles.js' %}"></script>
 </body>
 </html>

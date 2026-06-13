@@ -22,3 +22,6 @@ db.sqlite3-journal
 # Archivos del sistema operativo
 Thumbs.db
 .DS_Store
+
+# Dependencias de Node (Tailwind build pipeline)
+node_modules/

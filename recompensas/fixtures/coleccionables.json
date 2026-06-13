@@ -1,0 +1,57 @@
+[
+    {
+        "model": "recompensas.coleccionable",
+        "pk": 1,
+        "fields": {
+            "nombre": "Tucán Curioso",
+            "tipo": "animal",
+            "imagen": "",
+            "descripcion": "Un tucán de colores que vive en la selva de las palabras.",
+            "precio_monedas": 50
+        }
+    },
+    {
+        "model": "recompensas.coleccionable",
+        "pk": 2,
+        "fields": {
+            "nombre": "Carta de Vocales Doradas",
+            "tipo": "carta",
+            "imagen": "",
+            "descripcion": "Carta especial que brilla cuando completas tus vocales.",
+            "precio_monedas": 30
+        }
+    },
+    {
+        "model": "recompensas.coleccionable",
+        "pk": 3,
+        "fields": {
+            "nombre": "El Mago de las Letras",
+            "tipo": "personaje",
+            "imagen": "",
+            "descripcion": "Un sabio personaje que ayuda a descifrar palabras difíciles.",
+            "precio_monedas": 80
+        }
+    },
+    {
+        "model": "recompensas.coleccionable",
+        "pk": 4,
+        "fields": {
+            "nombre": "Cristal de la Concentración",
+            "tipo": "objeto_magico",
+            "imagen": "",
+            "descripcion": "Un cristal que brilla cuando logras una racha perfecta.",
+            "precio_monedas": 120
+        }
+    },
+    {
+        "model": "recompensas.coleccionable",
+        "pk": 5,
+        "fields": {
+            "nombre": "Búho Sabio",
+            "tipo": "animal",
+            "imagen": "",
+            "descripcion": "Un búho que acompaña a los lectores más dedicados.",
+            "precio_monedas": 60
+        }
+    }
+]

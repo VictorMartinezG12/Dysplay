@@ -1,0 +1,69 @@
+# DYSPLAY - AVATAR MVP FINAL
+
+Este documento detalla la implementación final del módulo Avatar, diseñado para ser un compañero educativo interactivo inspirado en sistemas como Club Penguin y Duolingo.
+
+## 1. Arquitectura Visual
+El avatar se renderiza mediante un sistema de capas superpuestas (CSS z-index):
+- **Cuerpo Base (Z=10):** Cambia dinámicamente según la emoción (estado_actual).
+- **Ropa Inferior (Z=12):** Pantalones, faldas, etc.
+- **Calzado (Z=14):** Zapatos, zapatillas.
+- **Ropa Superior (Z=20):** Camisetas, abrigos.
+- **Cabello (Z=30):** Peinados.
+- **Accesorios (Z=40):** Gafas, gorras, capas.
+
+El sistema soporta archivos **PNG** y **SVG** simultáneamente mediante etiquetas `<picture>`, priorizando el arte final sobre los placeholders.
+
+## 2. Gestión de Items (Armario Mágico)
+Para agregar nuevos ítems al sistema:
+1. **Assets:** Coloca los archivos en `avatar/static/avatar/[categoría]/`.
+2. **Registro:** En el Admin de Django, crea un nuevo registro en `Item`.
+3. **Categorías soportadas:**
+   - `cabello`
+   - `ropa_superior`
+   - `ropa_inferior`
+   - `calzado`
+   - `accesorio`
+
+## 3. Sistema de Eventos (Event Bus)
+Cualquier módulo puede comunicarse con el Avatar emitiendo un `CustomEvent` en el objeto `window`.
+
+### Ejemplo de emisión:
+```javascript
+window.dispatchEvent(new CustomEvent('AVATAR_EVENT', { 
+    detail: { 
+        tipo: 'RECOMPENSA_GANADA', 
+        data: { monto: '50', unidad: 'monedas' } 
+    } 
+}));
+```
+
+### Tipos de Eventos Configurados:
+- `RECOMPENSA_GANADA`
+- `NIVEL_COMPLETADO`
+- `OBJETO_RECONOCIDO`
+- `OBJETO_NO_RECONOCIDO`
+- `ERROR_CONEXION`
+- `ERROR_PRONUNCIACION`
+- `PRONUNCIACION_CORRECTA`
+- `HISTORIA_COMPLETADA`
+
+## 4. Reacciones y Emociones
+Puedes configurar qué dice y qué cara pone el avatar ante cada evento desde la tabla `ReaccionAvatar` en el Admin. Las emociones disponibles son:
+- `neutral`
+- `feliz`
+- `triste`
+- `celebrando` (activa animación de salto)
+- `pensando`
+- `sorprendido`
+- `preocupado`
+
+## 5. Diseño Responsivo
+- **Escritorio:** El avatar aparece como un asistente lateral de tamaño generoso (160px).
+- **Tablet:** Tamaño intermedio adaptable.
+- **Móvil:** Burbuja compacta para no obstruir la interfaz del juego.
+
+## 6. Integración Global
+El avatar consume automáticamente `ConfiguracionGlobal` para:
+- Ajustar su tipografía (`tipo_fuente`).
+- Cambiar colores de bordes según el `tema_visual`.
+- Adaptarse a las preferencias de accesibilidad del usuario.

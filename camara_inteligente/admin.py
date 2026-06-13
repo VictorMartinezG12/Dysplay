@@ -1,3 +1,3 @@
 from django.contrib import admin
 
-# Register your models here.
+# Deja esto vacío por ahora o bórralo si pegaste el test completo aquí.

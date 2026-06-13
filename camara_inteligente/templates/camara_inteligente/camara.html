@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cámara Inteligente - DysPlay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -38,32 +39,13 @@
             animation: scan 2s linear infinite;
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgBase: '#FFFBEB',
-                        textMain: '#1E293B',
-                        primary: '#3B82F6',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444'
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <!-- HEADER GLOBAL -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
         <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
     </header>
@@ -79,7 +61,7 @@
             <div class="w-full flex flex-col items-center">
 
                 <!-- Título -->
-                <h1 class="text-[32px] md:text-[36px] font-bold text-primary mb-8 text-center flex items-center gap-4 drop-shadow-sm">
+                <h1 class="text-[32px] md:text-[36px] font-bold text-primaryFijo mb-8 text-center flex items-center gap-4 drop-shadow-sm">
                     <i data-lucide="camera" class="w-10 h-10"></i>
                     Cámara Inteligente
                 </h1>
@@ -100,7 +82,7 @@
 
                         <!-- Mira / Retícula -->
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div class="w-48 h-48 md:w-64 md:h-64 border-4 border-dashed border-primary rounded-2xl relative">
+                            <div class="w-48 h-48 md:w-64 md:h-64 border-4 border-dashed border-primaryFijo rounded-2xl relative">
                                 <!-- Línea de escaneo simulada -->
                                 <div class="absolute left-0 right-0 h-1 bg-success shadow-[0_0_15px_#48BB78] scanner-line"></div>
                             </div>
@@ -108,7 +90,7 @@
 
                         <!-- Botón Capturar -->
                         <button onclick="captureObject()" class="w-24 h-24 bg-white/80 backdrop-blur-sm rounded-full self-center flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform border-4 border-white group/btn">
-                            <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center group-hover/btn:bg-blue-500 transition-colors shadow-inner">
+                            <div class="w-16 h-16 bg-primaryFijo rounded-full flex items-center justify-center group-hover/btn:bg-blue-500 transition-colors shadow-inner">
                                 <i data-lucide="focus" class="w-10 h-10 text-white"></i>
                             </div>
                         </button>
@@ -125,12 +107,12 @@
         <section id="view-analyzing-obj" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-10">
             <div class="relative w-48 h-48 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
-                <div class="absolute inset-0 border-[12px] border-primary border-t-transparent border-b-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-[12px] border-primaryFijo border-t-transparent border-b-transparent rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center bg-white/80 rounded-full m-2">
-                    <i data-lucide="scan-line" class="w-20 h-20 text-primary animate-pulse"></i>
+                    <i data-lucide="scan-line" class="w-20 h-20 text-primaryFijo animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando objeto...</h2>
+            <h2 class="text-[36px] font-bold text-primaryFijo animate-pulse tracking-wide">Analizando objeto...</h2>
             <p class="text-[20px] text-gray-500 mt-4">Nuestra IA está trabajando mágicamente ✨</p>
         </section>
 
@@ -155,14 +137,14 @@
                 <!-- Frase Generada -->
                 <div class="mb-16">
                     <p class="text-[40px] md:text-[56px] font-bold text-textMain leading-[1.4] tracking-wide">
-                        El <span class="text-primary">lápiz</span> es <span class="text-reward">amarillo</span>.
+                        El <span class="text-primaryFijo">lápiz</span> es <span class="text-reward">amarillo</span>.
                     </p>
                 </div>
 
                 <!-- Controles -->
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
 
-                    <button class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
@@ -230,7 +212,7 @@
                         <i data-lucide="home" class="w-6 h-6"></i> Salir al menú
                     </button>
 
-                    <button onclick="resetCamera()" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button onclick="resetCamera()" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         Nuevo objeto <i data-lucide="camera" class="w-6 h-6"></i>
                     </button>
 

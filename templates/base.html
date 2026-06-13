@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,59 +6,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}DysPlay 🦁{% endblock %}</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (compilado) -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Font: Nunito (especificada para el proyecto) -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        dysPlayVerde: '#10B981',
-                        dysPlayAzul: '#3B82F6',
-                        dysPlayFondo: '#FFFBEB',
-                        dysPlayTexto: '#1E293B',
-                        primary: '#3B82F6',
-                        secondary: '#C2410C',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444'
-                    },
-                    fontFamily: {
-                        dislexia: ['Nunito', 'Comic Sans MS', 'Verdana', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 24px rgba(30, 41, 59, 0.06)',
-                        'hard': '0px 8px 0px rgba(30, 41, 59, 0.12)',
-                        'game': '0px 10px 0px #CBD5E0',
-                        'game-primary': '0px 10px 0px #1D4ED8',
-                        'game-success': '0px 10px 0px #047857',
-                        'game-warning': '0px 10px 0px #9A3412',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* Definición de fuentes especiales */
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('/static/fonts/OpenDyslexic-Regular.otf');
+        }
+
+        :root {
+            /* Variables de Accesibilidad (Valores por defecto) */
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+
+            /* Colores de Temas */
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', 'Comic Sans MS', 'Verdana', sans-serif;
-            background-color: #FFFBEB;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            font-size: var(--global-font-size);
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
         }
+
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body class="text-dysPlayTexto font-dislexia antialiased min-h-screen flex flex-col selection:bg-orange-200">
@@ -103,6 +115,11 @@
         {% endblock %}
     </main>
     {% endblock %}
+
+    {% if user.is_authenticated %}
+        {% include 'avatar/componente.html' %}
+        <script src="/static/js/avatar_events.js"></script>
+    {% endif %}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -1,0 +1,80 @@
+DYSPLAY - ARQUITECTURA DEL MÓDULO AVATAR (FASE 1)
+
+1. ARQUITECTURA IMPLEMENTADA
+
+Se ha implementado una arquitectura desacoplada y reactiva basada en eventos. El Avatar actúa como un "Presentador Puro" (Passive View), lo que significa que no gestiona lógica de negocio (premios, niveles, puntos), sino que reacciona a los sucesos del sistema.
+
+Componentes clave:
+- Backend (Django): Modelos de datos y suministro de reacciones vía Context Processor.
+- Frontend (JS): Event Bus centralizado que captura CustomEvents de cualquier módulo.
+- UI (CSS/Tailwind): Componente global inyectado en base.html con diseño responsive.
+
+2. MODELOS CREADOS
+
+- Item: Catálogo de objetos estéticos (ropa, cabello, accesorios, etc.).
+- Avatar: Perfil visual del usuario (nivel, estado actual).
+- InventarioAvatar: Relación de ítems desbloqueados y equipados por el usuario.
+- ReaccionAvatar: Diccionario de configuración (Evento -> Emoción + Mensaje).
+
+3. RELACIONES CREADAS
+
+- Usuario (1) <---> (1) Avatar (Relación uno a uno).
+- Avatar (1) <---> (N) InventarioAvatar (Un avatar tiene muchos ítems).
+- Item (1) <---> (N) InventarioAvatar (Un ítem puede estar en muchos inventarios).
+
+4. EVENTOS SOPORTADOS
+
+El sistema escucha el evento global 'AVATAR_EVENT' en la ventana (window).
+Tipos de eventos iniciales configurados:
+- PRONUNCIACION_CORRECTA / INCORRECTA
+- OBJETO_RECONOCIDO / NO_RECONOCIDO
+- HISTORIA_COMPLETADA
+- NIVEL_COMPLETADO
+- LOGRO_DESBLOQUEADO
+- ERROR_CONEXION / CARGA
+- RECOMPENSA_GANADA
+
+5. CÓMO OTROS MÓDULOS DEBEN COMUNICARSE CON AVATAR
+
+Cualquier módulo (Cámara, Historias, etc.) puede activar al avatar sin importar el módulo mediante JavaScript:
+
+window.dispatchEvent(new CustomEvent('AVATAR_EVENT', { 
+    detail: { 
+        tipo: 'NOMBRE_DEL_EVENTO', 
+        data: { variable: 'valor' } // Opcional para mensajes dinámicos
+    } 
+}));
+
+6. CÓMO AGREGAR NUEVAS REACCIONES
+
+No requiere código. Se deben agregar registros en la tabla 'ReaccionAvatar' a través del Admin de Django:
+1. Definir el 'tipo_evento' (ej: NUEVA_ACTIVIDAD).
+2. Elegir la emoción (feliz, pensando, etc.).
+3. Escribir el mensaje (soporta variables como {nombre}).
+4. Marcar como activo.
+
+7. CÓMO AGREGAR NUEVOS ÍTEMS
+
+A través del Admin de Django en la tabla 'Item':
+1. Crear el ítem con su categoría (cabello, ropa, accesorio).
+2. Subir la imagen (Pillow instalado).
+3. El ítem aparecerá automáticamente en el "Armario Mágico" del usuario.
+
+8. CÓMO INTEGRAR FUTUROS MÓDULOS
+
+Los futuros módulos solo necesitan conocer los nombres de los eventos. El Avatar está presente en 'base.html', por lo que siempre estará escuchando. Solo se requiere emitir el CustomEvent correspondiente desde el frontend del nuevo módulo.
+
+9. EJEMPLOS PRÁCTICOS DE USO
+
+Ejemplo para Recompensa:
+window.dispatchEvent(new CustomEvent('AVATAR_EVENT', { 
+    detail: { 
+        tipo: 'RECOMPENSA_GANADA', 
+        data: { monto: '100', unidad: 'estrellas' } 
+    } 
+}));
+
+Ejemplo para Error:
+window.dispatchEvent(new CustomEvent('AVATAR_EVENT', { 
+    detail: { tipo: 'ERROR_CONEXION' } 
+}));

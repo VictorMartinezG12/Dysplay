@@ -1,0 +1,89 @@
+<!-- Componente Global del Avatar -->
+<div id="avatar-master-container" 
+     class="fixed z-[100] flex flex-col items-end pointer-events-none transition-all duration-500
+            bottom-4 right-4 md:bottom-8 md:right-8 lg:bottom-12 lg:right-12"
+     style="font-family: '{{ config_global.tipo_fuente|default:'Nunito' }}', sans-serif;">
+    
+    <!-- Burbuja de Texto -->
+    <div id="avatar-bubble" class="hidden mb-4 mr-2 max-w-xs bg-white border-4 {% if config_global.tema_visual == 'infantil-verde' %}border-green-400{% else %}border-indigo-400{% endif %} rounded-3xl p-4 shadow-hard pointer-events-auto relative animate-fade-in">
+        <p id="avatar-text" class="text-sm md:text-base font-bold {% if config_global.tema_visual == 'infantil-verde' %}text-green-900{% else %}text-indigo-900{% endif %} leading-tight">
+            <!-- Mensaje inyectado por JS -->
+        </p>
+        <div class="absolute -bottom-3 right-8 w-6 h-6 bg-white border-r-4 border-b-4 {% if config_global.tema_visual == 'infantil-verde' %}border-green-400{% else %}border-indigo-400{% endif %} rotate-45"></div>
+    </div>
+
+    <!-- Representación Visual del Avatar -->
+    <div id="avatar-container" class="pointer-events-auto cursor-pointer transition-transform hover:scale-105 active:scale-95 relative group">
+        
+        <!-- Contenedor Responsive: Círculo en móvil, Full Body en Desktop -->
+        <div id="avatar-visual-wrapper" 
+             class="relative overflow-hidden transition-all duration-500
+                    w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-white shadow-hard 
+                    lg:w-64 lg:h-96 lg:rounded-2xl lg:border-0 lg:shadow-none lg:bg-transparent">
+            
+            <!-- Maniquí Base (cuerpo_base_1.png) -->
+            <img id="avatar-layer-body" 
+                 src="/static/avatar/cuerpo/cuerpo_base_1.png" 
+                 class="absolute inset-0 w-full h-full object-contain z-10" 
+                 alt="Cuerpo Base">
+
+            <!-- Capas de items (Mismo z-index que antes) -->
+            {% if avatar_equipados.ropa_inferior %}
+            <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[12]" alt="Ropa Inferior">
+            {% endif %}
+
+            {% if avatar_equipados.calzado %}
+            <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[14]" alt="Calzado">
+            {% endif %}
+
+            {% if avatar_equipados.ropa_superior %}
+            <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" alt="Ropa Superior">
+            {% elif avatar_equipados.ropa %}
+            <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" alt="Ropa">
+            {% endif %}
+
+            <img id="avatar-layer-cabello" 
+                 src="{% if avatar_equipados.cabello %}{{ avatar_equipados.cabello.imagen_url_segura }}{% else %}/static/avatar/cabello/estandar.svg{% endif %}" 
+                 class="absolute inset-0 w-full h-full object-contain z-30" 
+                 alt="Cabello">
+
+            {% if avatar_equipados.accesorio %}
+            <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-40" alt="Accesorio">
+            {% endif %}
+
+        </div>
+
+        <!-- Indicador de Nivel (solo visible en pequeño) -->
+        <div class="absolute -top-1 -left-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full border-2 border-white shadow-lg z-50 lg:hidden">
+            {{ avatar_user.nivel_visual }}
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-celebrando { animation: bounce 0.5s infinite; }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: scale(0.9) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .shadow-hard {
+        box-shadow: 0 8px 0 rgba(0,0,0,0.05), 0 15px 20px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ... lógica JS existente ...
+});
+</script>

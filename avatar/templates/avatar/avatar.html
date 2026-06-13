@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personalizar Avatar - DysPlay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -25,33 +26,14 @@
             scrollbar-width: none;
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgBase: '#FFFBEB',
-                        textMain: '#1E293B',
-                        primary: '#3B82F6',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444'
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen pb-16 flex flex-col items-center">
 
     <!-- COMPONENTE: HEADER (Saldo y Navegación) -->
     <header class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl">
         <!-- Botón Volver (Cumple regla de 60x60 mínimo) -->
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
 
@@ -69,15 +51,15 @@
         <!-- Usa espacios amplios (p-10) y borde suave -->
         <section class="w-full bg-white rounded-2xl p-10 shadow-soft flex flex-col items-center justify-center min-h-[320px] relative">
 
-            <h2 class="text-[32px] font-bold text-primary mb-8 flex items-center gap-4">
+            <h2 class="text-[32px] font-bold text-primaryFijo mb-8 flex items-center gap-4">
                 <i data-lucide="user" class="w-10 h-10"></i>
                 Tu Avatar
             </h2>
 
             <!-- Personaje / Avatar Mock -->
-            <div class="w-56 h-56 bg-primary/10 rounded-full border-8 border-primary/20 flex items-center justify-center relative shadow-sm animate-[bounce_4s_ease-in-out_infinite]">
+            <div class="w-56 h-56 bg-primaryFijo/10 rounded-full border-8 border-primaryFijo/20 flex items-center justify-center relative shadow-sm animate-[bounce_4s_ease-in-out_infinite]">
                  <!-- Cara Base -->
-                 <i data-lucide="smile" class="w-32 h-32 text-primary"></i>
+                 <i data-lucide="smile" class="w-32 h-32 text-primaryFijo"></i>
 
                  <!-- Accesorio Equipado (Ejemplo visual) -->
                  <div class="absolute -top-4 -right-4 w-20 h-20 bg-reward rounded-full border-4 border-white flex items-center justify-center shadow-md">
@@ -98,25 +80,25 @@
             <!-- Menú de Categorías -->
             <nav class="flex overflow-x-auto gap-4 pb-6 scrollbar-hide">
                 <!-- Pestaña Activa (Color principal) -->
-                <button class="flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="flex items-center gap-3 px-8 py-4 bg-primaryFijo text-white rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <i data-lucide="smile" class="w-6 h-6"></i>
                     Cara
                 </button>
 
                 <!-- Pestañas Inactivas (Fondo blanco) -->
-                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <i data-lucide="scissors" class="w-6 h-6"></i>
                     Cabello
                 </button>
-                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <i data-lucide="shirt" class="w-6 h-6"></i>
                     Ropa
                 </button>
-                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <i data-lucide="glasses" class="w-6 h-6"></i>
                     Accesorios
                 </button>
-                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="flex items-center gap-3 px-8 py-4 bg-white text-textMain rounded-full font-bold text-[20px] shadow-soft flex-shrink-0 min-h-[64px] hover:bg-gray-50 active:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <i data-lucide="image" class="w-6 h-6"></i>
                     Fondo
                 </button>
@@ -126,20 +108,20 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 lg:gap-8 mt-4">
 
                 <!-- Ítem 1: Equipado (Actualmente en uso) -->
-                <button class="bg-primary/10 border-4 border-primary rounded-2xl p-6 flex flex-col items-center gap-4 shadow-soft hover:-translate-y-2 transition-transform min-h-[160px] relative focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="bg-primaryFijo/10 border-4 border-primaryFijo rounded-2xl p-6 flex flex-col items-center gap-4 shadow-soft hover:-translate-y-2 transition-transform min-h-[160px] relative focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <!-- Insignia de equipado -->
-                    <div class="absolute top-4 right-4 bg-primary text-white rounded-full p-1.5 shadow-sm">
+                    <div class="absolute top-4 right-4 bg-primaryFijo text-white rounded-full p-1.5 shadow-sm">
                         <i data-lucide="check" class="w-6 h-6"></i>
                     </div>
 
-                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-primaryFijo shadow-sm">
                         <i data-lucide="smile" class="w-12 h-12"></i>
                     </div>
-                    <span class="font-bold text-[20px] text-primary">Feliz</span>
+                    <span class="font-bold text-[20px] text-primaryFijo">Feliz</span>
                 </button>
 
                 <!-- Ítem 2: Desbloqueado (Disponible para equipar) -->
-                <button class="bg-white border-4 border-transparent rounded-2xl p-6 flex flex-col items-center gap-4 shadow-soft hover:-translate-y-2 hover:border-gray-200 transition-all min-h-[160px] focus:outline-none focus:ring-4 focus:ring-primary/50">
+                <button class="bg-white border-4 border-transparent rounded-2xl p-6 flex flex-col items-center gap-4 shadow-soft hover:-translate-y-2 hover:border-gray-200 transition-all min-h-[160px] focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
                     <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-textMain shadow-sm">
                         <i data-lucide="glasses" class="w-12 h-12"></i>
                     </div>

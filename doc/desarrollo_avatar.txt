@@ -1,0 +1,367 @@
+Analiza primero la arquitectura actual del proyecto antes de realizar cambios.
+
+IMPORTANTE:
+
+- No modificar módulos existentes salvo que sea estrictamente necesario para la integración.
+- No romper funcionalidades existentes.
+- No modificar Azure Speech.
+- No modificar Azure Pronunciation Assessment.
+- No modificar Login con Google.
+- No modificar ConfiguracionGlobal.
+- Mantener compatibilidad con todos los módulos actuales.
+
+
+OBJETIVO GENERAL
+
+
+Implementar el módulo Avatar para DysPlay.
+
+DysPlay es una plataforma web educativa para niños con dislexia.
+
+El Avatar NO es solamente una personalización visual.
+
+El Avatar será:
+
+- Compañero educativo.
+- Asistente global del sistema.
+- Mensajero de eventos.
+- Representación visual del usuario.
+- Elemento persistente durante toda la navegación.
+
+Debe estar disponible globalmente desde base.html.
+
+
+REQUISITO PRINCIPAL
+
+
+El Avatar NO debe calcular lógica de negocio.
+
+NO debe:
+
+- Calcular recompensas.
+- Calcular experiencia.
+- Calcular progreso.
+- Decidir cambios de nivel.
+- Modificar monedas directamente.
+- Gestionar correos.
+- Gestionar autenticación.
+
+Su función es únicamente:
+
+- Mostrar.
+- Reaccionar.
+- Comunicar.
+
+
+ARQUITECTURA
+
+
+Implementar una arquitectura desacoplada.
+
+NO permitir:
+
+Modulo -> Avatar
+
+Permitir:
+
+Modulo -> Evento -> Avatar
+
+Diseñar un sistema basado en eventos.
+
+Ejemplos:
+
+PRONUNCIACION_CORRECTA
+PRONUNCIACION_INCORRECTA
+OBJETO_RECONOCIDO
+OBJETO_NO_RECONOCIDO
+HISTORIA_COMPLETADA
+NIVEL_COMPLETADO
+LOGRO_DESBLOQUEADO
+ERROR_CONEXION
+ERROR_CARGA
+
+El Avatar debe escuchar eventos y reaccionar.
+
+Los módulos NO deben conocer la implementación interna del Avatar.
+
+
+MODELOS
+
+
+Crear una arquitectura escalable.
+
+Avatar
+- usuario
+- nombre_avatar
+- nivel_visual
+- estado_actual
+
+Item
+- nombre
+- categoria
+- imagen
+- descripcion
+- activo
+
+Categorías iniciales:
+
+- cabello
+- ropa
+- accesorio
+
+Preparar arquitectura para futuras categorías:
+
+- mascota
+- mueble
+- decoracion
+- trofeo
+
+InventarioAvatar
+- avatar
+- item
+- desbloqueado
+- equipado
+
+ReaccionAvatar
+- tipo_evento
+- emocion
+- mensaje
+- activo
+
+
+PERSONALIZACION
+
+Permitir:
+
+- Cambiar cabello.
+- Cambiar ropa.
+- Cambiar accesorios.
+
+Toda la personalización debe venir desde base de datos.
+
+No utilizar elementos hardcodeados.
+
+El sistema debe permitir agregar nuevos ítems únicamente agregando registros en la base de datos.
+
+
+EXPRESIONES
+
+
+Implementar expresiones:
+
+- neutral
+- feliz
+- triste
+- celebrando
+- pensando
+- sorprendido
+- preocupado
+- analizando
+- explicando
+
+
+AVATAR COMO ASISTENTE GLOBAL
+
+
+El Avatar debe poder mostrar mensajes contextuales.
+
+Ejemplos:
+
+ERROR_CONEXION
+
+"Parece que hemos perdido la conexión."
+
+ERROR_CARGA
+
+"No pude cargar esta información."
+
+PRONUNCIACION_CORRECTA
+
+"¡Excelente pronunciación!"
+
+PRONUNCIACION_INCORRECTA
+
+"Intentémoslo nuevamente."
+
+OBJETO_RECONOCIDO
+
+"¡Muy bien! He reconocido el objeto."
+
+OBJETO_NO_RECONOCIDO
+
+"No pude reconocer el objeto."
+
+HISTORIA_COMPLETADA
+
+"¡Terminaste la historia!"
+
+NIVEL_COMPLETADO
+
+"¡Has completado el nivel!"
+
+LOGRO_DESBLOQUEADO
+
+"¡Nuevo logro conseguido!"
+
+
+INTEGRACION CON CAMARA INTELIGENTE
+
+
+La cámara inteligente reconoce objetos.
+
+El Avatar NO debe reconocer objetos.
+
+Debe reaccionar a eventos emitidos por la cámara.
+
+Ejemplo:
+
+OBJETO_RECONOCIDO
+
+Avatar:
+- animación feliz
+- mensaje contextual
+
+OBJETO_NO_RECONOCIDO
+
+Avatar:
+- animación pensativa
+- mensaje de ayuda
+
+
+INTEGRACION CON RECOMPENSAS
+
+
+El Avatar NO calcula recompensas.
+
+Debe aceptar payloads externos.
+
+Ejemplo:
+
+{
+  "tipo_evento":"RECOMPENSA_GANADA",
+  "monto":50,
+  "unidad":"monedas",
+  "mensaje":"¡Ganaste 50 monedas!"
+}
+
+El Avatar únicamente:
+
+- muestra mensaje
+- reproduce animación
+- celebra
+
+
+CONFIGURACION GLOBAL
+
+
+Consumir automáticamente ConfiguracionGlobal.
+
+Utilizar:
+
+- tema_visual
+- tipo_fuente
+- tamano_fuente
+- velocidad_narracion
+- tipo_voz
+- volumen_narracion
+- volumen_musica
+
+No crear configuraciones duplicadas.
+
+No crear panel propio de configuración.
+
+
+RESPONSIVE DESIGN
+
+
+REQUISITO OBLIGATORIO.
+
+Debe funcionar correctamente en:
+
+- teléfonos móviles
+- tablets
+- laptops
+- escritorio
+
+No debe:
+
+- tapar botones
+- tapar formularios
+- tapar la cámara
+- tapar controles del juego
+
+Comportamiento esperado:
+
+ESCRITORIO:
+Avatar visible permanentemente.
+
+TABLET:
+Avatar adaptable y minimizable.
+
+MOVIL:
+Avatar tipo burbuja flotante o asistente minimizado.
+
+Utilizar Tailwind Responsive Utilities.
+
+No usar tamaños fijos para componentes principales.
+
+
+BASE.HTML
+
+
+Integrar el Avatar globalmente.
+
+Debe aparecer automáticamente en:
+
+- Historias
+- Niveles
+- Desafíos
+- Cámara
+- Estadísticas
+
+Sin necesidad de duplicar código.
+
+
+FASE 1 (IMPLEMENTAR AHORA)
+
+
+Implementar únicamente:
+
+- Avatar global.
+- Personalización.
+- Inventario básico.
+- Reacciones.
+- Eventos.
+- Mensajes del sistema.
+- Responsive Design.
+
+NO IMPLEMENTAR TODAVIA:
+
+- Habitación.
+- Mascotas.
+- Tienda.
+- Lip Sync.
+- Historial de interacción avanzado.
+- IA conversacional.
+
+
+DOCUMENTACION OBLIGATORIA
+
+
+Crear un archivo:
+
+desarrollo_avatar2.txt
+
+Explicar:
+
+1. Arquitectura implementada.
+2. Modelos creados.
+3. Relaciones creadas.
+4. Eventos soportados.
+5. Cómo otros módulos deben comunicarse con Avatar.
+6. Cómo agregar nuevas reacciones.
+7. Cómo agregar nuevos ítems.
+8. Cómo integrar futuros módulos.
+9. Ejemplos prácticos de uso.
+
+Antes de modificar archivos, mostrar un plan de implementación detallado indicando qué archivos serán creados y modificados.

@@ -35,4 +35,5 @@ urlpatterns = [
     path('camara/', include('camara_inteligente.urls')),
     path('estadisticas/', include('estadisticas.urls')),
     path('historias/', include('historias.urls')),
+    path('configuracion/', include('configuracion.urls')),
 ]

@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historia Interactiva - DysPlay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -27,39 +28,19 @@
 
         ::-webkit-scrollbar { display: none; }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgBase: '#FFFBEB',
-                        textMain: '#1E293B',
-                        primary: '#3B82F6',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444',
-                        storyBg: '#1E3A8A' // Azul oscuro inmersivo ajustado a la paleta azul
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <!-- HEADER GLOBAL -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-6xl z-50 relative">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
 
         <div class="flex items-center gap-4 bg-white px-8 py-4 rounded-full shadow-soft min-h-[64px]">
-            <i data-lucide="book-open" class="w-8 h-8 text-primary"></i>
-            <span class="text-[20px] font-bold text-primary">Cuentos</span>
+            <i data-lucide="book-open" class="w-8 h-8 text-primaryFijo"></i>
+            <span class="text-[20px] font-bold text-primaryFijo">Cuentos</span>
         </div>
     </header>
 
@@ -71,17 +52,17 @@
         <!-- ============================================== -->
         <section id="view-selection" class="flex flex-col items-center w-full animate-fade-in">
 
-            <h1 class="text-[36px] md:text-[40px] font-bold text-primary mb-10 text-center drop-shadow-sm">Elige una Aventura</h1>
+            <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-10 text-center drop-shadow-sm">Elige una Aventura</h1>
 
             <!-- Grid de Historias -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl">
 
                 <!-- Historia 1: Disponible -->
-                <button onclick="startStory()" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primary/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primary/50 relative">
+                <button onclick="startStory()" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
                     <!-- Portada mockeada -->
                     <div class="w-full h-48 bg-blue-100 flex items-center justify-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-primary/20 group-hover:bg-primary/10 transition-colors"></div>
-                        <i data-lucide="flame" class="w-24 h-24 text-primary opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
+                        <div class="absolute inset-0 bg-primaryFijo/20 group-hover:bg-primaryFijo/10 transition-colors"></div>
+                        <i data-lucide="flame" class="w-24 h-24 text-primaryFijo opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
                     </div>
 
                     <!-- Info -->
@@ -99,7 +80,7 @@
                 </button>
 
                 <!-- Historia 2: Disponible -->
-                <button class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primary/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primary/50 relative">
+                <button class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
                     <div class="w-full h-48 bg-purple-100 flex items-center justify-center relative overflow-hidden">
                         <div class="absolute inset-0 bg-purple-500/20 group-hover:bg-purple-500/10 transition-colors"></div>
                         <i data-lucide="rocket" class="w-24 h-24 text-purple-500 opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
@@ -107,7 +88,7 @@
                     <div class="p-6 flex flex-col gap-4">
                         <h2 class="text-[24px] font-bold text-textMain leading-tight">Viaje a la luna</h2>
                         <div class="flex items-center justify-between mt-2">
-                            <span class="bg-primary/20 text-primary px-4 py-1.5 rounded-full font-bold text-[14px]">Intermedia</span>
+                            <span class="bg-primaryFijo/20 text-primaryFijo px-4 py-1.5 rounded-full font-bold text-[14px]">Intermedia</span>
                             <div class="flex gap-1 text-reward">
                                 <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                                 <i data-lucide="star" class="w-5 h-5 fill-current"></i>
@@ -159,7 +140,7 @@
                 <!-- Recuadro de Texto -->
                 <div class="relative z-10 bg-white/95 backdrop-blur-md rounded-2xl p-8 md:p-12 w-full max-w-3xl shadow-xl flex flex-col items-center text-center">
 
-                    <h2 class="text-[28px] font-bold text-primary mb-8 border-b-4 border-primary/20 pb-4 inline-block">El dragón perdido</h2>
+                    <h2 class="text-[28px] font-bold text-primaryFijo mb-8 border-b-4 border-primaryFijo/20 pb-4 inline-block">El dragón perdido</h2>
 
                     <p class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-12 tracking-wide text-left">
                         Había una vez un pequeño dragón llamado <span class="text-reward">Chispa</span>. Estaba triste porque no podía encontrar su cueva.
@@ -167,7 +148,7 @@
 
                     <!-- Controles -->
                     <div class="flex flex-col sm:flex-row gap-6 w-full justify-center mt-auto">
-                        <button class="bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
+                        <button class="bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
                             <i data-lucide="play" class="w-8 h-8 fill-current"></i> Reproducir narración
                         </button>
 
@@ -211,9 +192,9 @@
                     </button>
 
                     <!-- Botón Principal Recomendado -->
-                    <button onclick="submitAnswer()" class="w-full sm:w-1/2 bg-white text-primary border-4 border-primary rounded-2xl px-6 py-6 font-bold text-[22px] hover:bg-primary hover:text-white transition-colors shadow-soft flex flex-col items-center justify-center gap-3 group">
-                        <div class="bg-primary/10 p-3 rounded-full shadow-sm group-hover:bg-white transition-colors">
-                            <i data-lucide="mic" class="w-8 h-8 text-primary"></i>
+                    <button onclick="submitAnswer()" class="w-full sm:w-1/2 bg-white text-primaryFijo border-4 border-primaryFijo rounded-2xl px-6 py-6 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors shadow-soft flex flex-col items-center justify-center gap-3 group">
+                        <div class="bg-primaryFijo/10 p-3 rounded-full shadow-sm group-hover:bg-white transition-colors">
+                            <i data-lucide="mic" class="w-8 h-8 text-primaryFijo"></i>
                         </div>
                         Hablar respuesta
                     </button>
@@ -230,9 +211,9 @@
             <div class="relative w-40 h-40 mb-10 flex items-center justify-center">
                 <i data-lucide="message-square" class="w-32 h-32 text-gray-200 absolute"></i>
                 <div class="flex gap-2 relative z-10 mt-2 ml-2">
-                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0s]"></div>
-                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
-                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0.4s]"></div>
+                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0s]"></div>
+                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
+                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0.4s]"></div>
                 </div>
             </div>
             <h2 class="text-[36px] font-bold text-textMain tracking-wide animate-pulse">Pensando...</h2>
@@ -280,7 +261,7 @@
                     <button onclick="goToMenu()" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         <i data-lucide="home" class="w-6 h-6"></i> Volver al Menú
                     </button>
-                    <button onclick="resetStory()" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button onclick="resetStory()" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         Elegir otra <i data-lucide="book-open" class="w-6 h-6"></i>
                     </button>
                 </div>

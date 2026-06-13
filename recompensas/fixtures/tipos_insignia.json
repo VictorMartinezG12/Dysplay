@@ -1,0 +1,79 @@
+[
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 1,
+        "fields": {
+            "nombre": "Primeros Pasos",
+            "descripcion": "Completaste tu primer nivel. ¡Así se empieza!",
+            "imagen": "",
+            "criterio": "primer_nivel",
+            "valor_umbral": 1
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 2,
+        "fields": {
+            "nombre": "Racha de Fuego",
+            "descripcion": "Te conectaste 7 días seguidos. ¡Una semana completa de práctica!",
+            "imagen": "",
+            "criterio": "racha_7",
+            "valor_umbral": 7
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 3,
+        "fields": {
+            "nombre": "Racha Imparable",
+            "descripcion": "Te conectaste 30 días seguidos. ¡Eres todo un campeón de la constancia!",
+            "imagen": "",
+            "criterio": "racha_30",
+            "valor_umbral": 30
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 4,
+        "fields": {
+            "nombre": "Centenario de Palabras",
+            "descripcion": "Acumulaste 100 puntos practicando pronunciación.",
+            "imagen": "",
+            "criterio": "palabras_100",
+            "valor_umbral": 100
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 5,
+        "fields": {
+            "nombre": "Cuentacuentos",
+            "descripcion": "Completaste 10 historias. ¡Eres un gran lector!",
+            "imagen": "",
+            "criterio": "historias_10",
+            "valor_umbral": 10
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 6,
+        "fields": {
+            "nombre": "Explorador Nivel 5",
+            "descripcion": "Llegaste al nivel 5. ¡Sigue avanzando!",
+            "imagen": "",
+            "criterio": "nivel_5",
+            "valor_umbral": 5
+        }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 7,
+        "fields": {
+            "nombre": "Maestro Nivel 10",
+            "descripcion": "Llegaste al nivel 10. ¡Un verdadero maestro de las palabras!",
+            "imagen": "",
+            "criterio": "nivel_10",
+            "valor_umbral": 10
+        }
+    }
+]

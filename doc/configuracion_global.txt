@@ -1,0 +1,201 @@
+DYSPLAY - CONFIGURACION_GLOBAL.txt
+
+OBJETIVO
+
+Este documento define todas las configuraciones globales que afectan a la aplicación completa.
+
+Cualquier módulo nuevo desarrollado para DysPlay debe respetar estas configuraciones y evitar implementar estilos, colores o parámetros de accesibilidad de forma local.
+
+---
+
+MODULO RESPONSABLE
+
+/configuracion
+
+Responsabilidades:
+
+* Accesibilidad
+* Preferencias visuales
+* Preferencias de audio
+* Preferencias del tutor
+* Temas globales
+* Configuración del avatar
+
+---
+
+CONFIGURACIONES DE ACCESIBILIDAD
+
+1. Tipo de Fuente
+
+Valores iniciales:
+
+* OpenDyslexic
+* Lexend
+* Arial
+* Verdana
+
+Aplicación:
+
+Toda la interfaz debe utilizar variables globales de fuente.
+
+No utilizar fuentes hardcodeadas en templates.
+
+---
+
+2. Tamaño de Fuente
+
+Valores:
+
+* Pequeño
+* Normal
+* Grande
+* Extra Grande
+
+Aplicación:
+
+Mediante variables CSS globales.
+
+---
+
+3. Espaciado entre Letras
+
+Valores:
+
+* Normal
+* Medio
+* Amplio
+
+---
+
+4. Espaciado entre Palabras
+
+Valores:
+
+* Normal
+* Medio
+* Amplio
+
+---
+
+5. Temas Visuales
+
+Temas iniciales:
+
+* Claro
+* Oscuro
+* Infantil Azul
+* Infantil Verde
+
+Todos los colores deberán obtenerse desde variables globales.
+
+Prohibido utilizar colores fijos en templates.
+
+---
+
+CONFIGURACIONES DE AUDIO
+
+1. Velocidad de Narración
+
+Valores:
+
+* Lenta
+* Normal
+* Rápida
+
+Aplicable a Azure Text To Speech.
+
+---
+
+2. Tipo de Voz
+
+Valores iniciales:
+
+* Niño
+* Niña
+* Adulto Masculino
+* Adulto Femenino
+
+Aplicable a Azure Speech Services.
+
+---
+
+3. Volumen de Narración
+
+Rango:
+
+0 - 100
+
+---
+
+4. Volumen de Música
+
+Rango:
+
+0 - 100
+
+---
+
+CONFIGURACIONES DEL TUTOR
+
+Correo Principal
+
+Permite enviar:
+
+* Reportes semanales
+* Reportes mensuales
+* Alertas de progreso
+
+Campo:
+
+correo_tutor
+
+---
+
+CONFIGURACIONES DEL AVATAR
+
+El avatar debe respetar:
+
+* Tema actual
+* Accesibilidad activa
+* Preferencias visuales del usuario
+
+Las futuras extensiones deberán incluir:
+
+* Mascotas
+* Habitación
+* Tienda
+* Logros
+
+---
+
+REGLAS PARA DESARROLLADORES
+
+1. No crear colores fijos en módulos.
+2. No crear fuentes fijas en módulos.
+3. Consumir siempre la configuración global.
+4. Utilizar variables CSS globales.
+5. Utilizar servicios compartidos para acceder a configuraciones.
+
+---
+
+EXTENSIONES FUTURAS
+
+* Reportes automáticos por correo.
+* Exportación PDF para tutores.
+* Configuración avanzada de accesibilidad.
+* Temas personalizados.
+* Sistema de eventos especiales.
+Resume exactamente los cambios que acabas de realizar.
+
+Indica:
+
+1. Archivos creados.
+2. Archivos modificados.
+3. Modelos agregados.
+4. Views agregadas.
+5. Templates agregados.
+6. Variables CSS globales creadas.
+7. Archivos pendientes de implementación.
+
+No generes nuevo código.
+Solo describe los cambios realizados

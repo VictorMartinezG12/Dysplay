@@ -1,11 +1,15 @@
+import logging
 import os
-import tempfile
+
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
 from .models import Nivel, ProgresoEstudiante, MisionVocabulario
-from servicios.utils import evaluar_pronunciacion
+from . import services
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -27,52 +31,69 @@ def niveles_view(request):
         'niveles': niveles,
         'progreso': progreso,
         'mision_actual': mision_actual,
+        'niveles_config': {
+            'url_guardar_progreso': reverse('guardar_progreso'),
+        },
     }
     return render(request, 'niveles/niveles.html', context)
 
 
 @login_required
 def guardar_progreso(request):
-    if request.method == 'POST':
-        # CASO A: El Javascript nos envía el audio para evaluar en Azure
-        if request.FILES.get('audio'):
-            audio_file = request.FILES.get('audio')
-            palabra_objetivo = request.POST.get('palabra_objetivo')
-            nivel_id = request.POST.get('nivel_id')
+    if request.method != 'POST':
+        return redirect('niveles')
 
-            if not audio_file or not palabra_objetivo:
-                return JsonResponse({'status': 'error', 'message': 'Faltan datos de audio o palabra.'})
+    # CASO A: El Javascript nos envía el audio para evaluar en Azure
+    if request.FILES.get('audio'):
+        return _evaluar_audio_y_responder(request)
 
-            # Guardar el audio temporalmente para que Azure lo pueda leer
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_audio:
-                for chunk in audio_file.chunks():
-                    temp_audio.write(chunk)
-                temp_audio_path = temp_audio.name
+    # CASO B: El niño presionó el botón final de "Siguiente Nivel" (sin audio)
+    return _registrar_avance_nivel(request)
 
-            try:
-                # Enviar a tu función global de Azure
-                resultado_azure = evaluar_pronunciacion(temp_audio_path, palabra_objetivo)
-                os.remove(temp_audio_path)  # Limpiar el archivo
 
-                if resultado_azure['status'] == 'success':
-                    return JsonResponse({
-                        'status': 'success',
-                        'score': resultado_azure['score_global']
-                    })
-                else:
-                    return JsonResponse({'status': 'error', 'message': resultado_azure['message']})
+def _evaluar_audio_y_responder(request):
+    """Orquesta la evaluación de pronunciación y devuelve el JSON al frontend."""
+    palabra_objetivo = request.POST.get('palabra_objetivo')
+    nivel_id = request.POST.get('nivel_id')
 
-            except Exception as e:
-                if os.path.exists(temp_audio_path):
-                    os.remove(temp_audio_path)
-                return JsonResponse({'status': 'error', 'message': str(e)})
+    if not palabra_objetivo:
+        return JsonResponse({'status': 'error', 'message': 'Faltan datos de audio o palabra.'})
 
-        # CASO B: El niño presionó el botón final de "Siguiente Nivel"
-        else:
-            nivel_id = request.POST.get('nivel_id')
-            score = request.POST.get('score_obtenido')
+    ruta_audio_temporal = None
+    try:
+        ruta_audio_temporal = services.procesar_audio_subido(request.FILES.get('audio'))
+        resultado_azure = services.evaluar_pronunciacion_azure(ruta_audio_temporal, palabra_objetivo)
 
-            # (Más adelante aquí pondremos la lógica para subir de nivel en la base de datos)
-            return redirect('niveles')
+        if resultado_azure['status'] != 'success':
+            return JsonResponse({'status': 'error', 'message': resultado_azure['message']})
 
+        services.guardar_progreso_estudiante(request.user, nivel_id, resultado_azure)
+        recompensas = services.calcular_recompensas(request.user, resultado_azure['score_global'], nivel_id)
+
+        return JsonResponse({
+            'status': 'success',
+            'score': resultado_azure['score_global'],
+            'monedas_ganadas': recompensas['monedas_ganadas'],
+            'monedas_totales': recompensas['monedas_totales'],
+        })
+    except Exception as e:
+        logger.error(f"Error en guardar_progreso: {e}", exc_info=True)
+        return JsonResponse(
+            {'status': 'error', 'message': 'Ocurrió un error al procesar tu intento. Inténtalo de nuevo.'},
+            status=500,
+        )
+    finally:
+        if ruta_audio_temporal and os.path.exists(ruta_audio_temporal):
+            os.remove(ruta_audio_temporal)
+
+
+def _registrar_avance_nivel(request):
+    """Persiste el avance de nivel al pulsar 'Siguiente Nivel' y redirige al mapa."""
+    nivel_id = request.POST.get('nivel_id')
+    score = request.POST.get('score_obtenido')
+    try:
+        resultado = {'score_global': float(score or 0)}
+        services.guardar_progreso_estudiante(request.user, nivel_id, resultado)
+    except Exception as e:
+        logger.error(f"Error en guardar_progreso (CASO B): {e}", exc_info=True)
     return redirect('niveles')

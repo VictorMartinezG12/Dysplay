@@ -1,0 +1,62 @@
+[
+    {
+        "model": "recompensas.mascota",
+        "pk": 1,
+        "fields": {
+            "nombre": "Chispa",
+            "especie": "dragon",
+            "imagen_base": "",
+            "imagen_feliz": "",
+            "imagen_triste": "",
+            "precio_monedas": 200
+        }
+    },
+    {
+        "model": "recompensas.mascota",
+        "pk": 2,
+        "fields": {
+            "nombre": "Toby",
+            "especie": "perro",
+            "imagen_base": "",
+            "imagen_feliz": "",
+            "imagen_triste": "",
+            "precio_monedas": 100
+        }
+    },
+    {
+        "model": "recompensas.mascota",
+        "pk": 3,
+        "fields": {
+            "nombre": "Mishi",
+            "especie": "gato",
+            "imagen_base": "",
+            "imagen_feliz": "",
+            "imagen_triste": "",
+            "precio_monedas": 100
+        }
+    },
+    {
+        "model": "recompensas.mascota",
+        "pk": 4,
+        "fields": {
+            "nombre": "Byte",
+            "especie": "robot",
+            "imagen_base": "",
+            "imagen_feliz": "",
+            "imagen_triste": "",
+            "precio_monedas": 150
+        }
+    },
+    {
+        "model": "recompensas.mascota",
+        "pk": 5,
+        "fields": {
+            "nombre": "Luna",
+            "especie": "unicornio",
+            "imagen_base": "",
+            "imagen_feliz": "",
+            "imagen_triste": "",
+            "precio_monedas": 300
+        }
+    }
+]

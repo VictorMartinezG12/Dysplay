@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Estadísticas - DysPlay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -27,32 +28,13 @@
 
         ::-webkit-scrollbar { display: none; }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgBase: '#FFFBEB',
-                        textMain: '#1E293B',
-                        primary: '#3B82F6',
-                        success: '#10B981',
-                        reward: '#C2410C',
-                        error: '#EF4444' // Rojo suave de la especificación
-                    },
-                    boxShadow: {
-                        'soft': '0px 8px 16px rgba(30, 41, 59, 0.08)',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <!-- HEADER GLOBAL -->
     <header class="w-full flex items-center justify-between p-6 md:p-8 max-w-[1200px] z-50">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Menú Principal</span>
         </a>
 
@@ -72,13 +54,13 @@
 
             <!-- TARJETA DE PERFIL (Ocupa 3 columnas) -->
             <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
-                <div class="w-32 h-32 bg-primary/10 rounded-full flex flex-shrink-0 items-center justify-center text-primary shadow-sm border-4 border-primary/20">
+                <div class="w-32 h-32 bg-primaryFijo/10 rounded-full flex flex-shrink-0 items-center justify-center text-primaryFijo shadow-sm border-4 border-primaryFijo/20">
                     <i data-lucide="smile" class="w-16 h-16 fill-current opacity-80"></i>
                 </div>
                 <div class="flex-grow w-full text-center sm:text-left">
                     <h1 class="text-[36px] font-bold text-textMain mb-1 leading-tight">Leo Explorer</h1>
                     <p class="text-[20px] text-gray-500 font-semibold mb-6 flex items-center justify-center sm:justify-start gap-2">
-                        <i data-lucide="rocket" class="w-5 h-5 text-primary"></i> Nivel 12 - Astronauta Lector
+                        <i data-lucide="rocket" class="w-5 h-5 text-primaryFijo"></i> Nivel 12 - Astronauta Lector
                     </p>
 
                     <!-- Barra de progreso general -->
@@ -110,10 +92,10 @@
         <!-- ============================================== -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
 
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
-                <i data-lucide="map" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primaryFijo/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="map" class="w-10 h-10 text-primaryFijo mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Niveles</span>
-                <span class="text-[36px] font-bold text-primary">85%</span>
+                <span class="text-[36px] font-bold text-primaryFijo">85%</span>
             </div>
 
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-success/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
@@ -128,10 +110,10 @@
                 <span class="text-[36px] font-bold text-reward">78%</span>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
-                <i data-lucide="book-open" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primaryFijo/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="book-open" class="w-10 h-10 text-primaryFijo mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Historia</span>
-                <span class="text-[36px] font-bold text-primary">100%</span>
+                <span class="text-[36px] font-bold text-primaryFijo">100%</span>
             </div>
 
         </section>
@@ -151,16 +133,16 @@
                 <!-- Gráfico de barras simple CSS -->
                 <div class="flex items-end justify-between h-48 mt-auto gap-2 sm:gap-4 px-2">
                     <!-- Días anteriores (Opacos) -->
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[30%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Lu</span></div>
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[50%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ma</span></div>
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[40%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Mi</span></div>
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[65%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ju</span></div>
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[60%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Vi</span></div>
-                    <div class="w-1/7 bg-primary/20 hover:bg-primary/40 rounded-t-[12px] h-[85%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Sá</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[30%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Lu</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[50%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ma</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[40%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Mi</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[65%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Ju</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[60%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Vi</span></div>
+                    <div class="w-1/7 bg-primaryFijo/20 hover:bg-primaryFijo/40 rounded-t-[12px] h-[85%] w-full transition-colors relative group"><span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">Sá</span></div>
                     <!-- Hoy (Destacado) -->
-                    <div class="w-1/7 bg-primary rounded-t-[12px] h-[95%] w-full relative shadow-sm">
-                        <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primary px-3 py-1 rounded-full text-xs shadow-sm">120</span>
-                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primary text-sm">Hoy</span>
+                    <div class="w-1/7 bg-primaryFijo rounded-t-[12px] h-[95%] w-full relative shadow-sm">
+                        <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primaryFijo px-3 py-1 rounded-full text-xs shadow-sm">120</span>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primaryFijo text-sm">Hoy</span>
                     </div>
                 </div>
             </section>
@@ -199,10 +181,10 @@
                     <div>
                         <div class="flex justify-between mb-2">
                             <span class="font-bold text-[18px] text-textMain">Otorrinolaringólogo</span>
-                            <span class="font-bold text-[16px] text-primary">Mejorando</span>
+                            <span class="font-bold text-[16px] text-primaryFijo">Mejorando</span>
                         </div>
                         <div class="w-full bg-gray-100 h-6 rounded-full overflow-hidden shadow-inner">
-                            <div class="bg-primary h-full rounded-full w-[40%]"></div>
+                            <div class="bg-primaryFijo h-full rounded-full w-[40%]"></div>
                         </div>
                     </div>
                 </div>
@@ -238,8 +220,8 @@
 
                 <!-- Insignia 3: Desbloqueada -->
                 <div class="flex flex-col items-center text-center group cursor-pointer">
-                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                        <i data-lucide="camera" class="w-10 h-10 text-primary fill-current"></i>
+                    <div class="w-20 h-20 bg-primaryFijo/10 rounded-full flex items-center justify-center border-4 border-primaryFijo shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <i data-lucide="camera" class="w-10 h-10 text-primaryFijo fill-current"></i>
                     </div>
                     <span class="font-bold text-[14px] text-textMain">Ojo de Águila</span>
                 </div>

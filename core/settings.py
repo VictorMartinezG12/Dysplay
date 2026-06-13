@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'historias',
     'niveles',
     'usuarios',
+    'recompensas',
+    'desafio',
+    'configuracion',
     'servicios',
     'allauth',
     'allauth.account',
@@ -101,6 +104,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'configuracion.context_processors.configuracion_global',
+                'avatar.context_processors.avatar_global',
             ],
         },
     },
@@ -154,9 +159,14 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 AUTH_USER_MODEL = 'usuarios.UsuarioCustom'
 
 # En desarrollo imprimimos los correos en la consola/logs en lugar de enviarlos por SMTP real.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY')
 AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION')
+GOOGLE_VISION_KEY = os.environ.get('GOOGLE_VISION_KEY')

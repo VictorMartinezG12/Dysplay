@@ -1,0 +1,230 @@
+OBJETIVO
+
+Completar el módulo Avatar de DysPlay hasta dejarlo en estado MVP funcional inspirado en Club Penguin, Habbo Hotel y sistemas de avatar educativos.
+
+IMPORTANTE:
+
+* No crear imágenes complejas.
+* No utilizar IA generativa.
+* No generar PNG.
+* Utilizar SVG simples como placeholders.
+* Mantener compatibilidad futura con PNG, WebP y SVG.
+* Mantener arquitectura desacoplada.
+* Mantener compatibilidad con ConfiguracionGlobal.
+* Mantener compatibilidad con móviles, tablets y escritorio.
+
+---
+
+ARQUITECTURA VISUAL
+
+Implementar sistema por capas:
+
+1. Cuerpo Base
+2. Ropa
+3. Cabello
+4. Accesorios
+
+Cada capa debe renderizarse mediante imágenes superpuestas utilizando z-index.
+
+Ejemplo:
+
+Cuerpo -> z-index 10
+Ropa -> z-index 20
+Cabello -> z-index 30
+Accesorios -> z-index 40
+
+---
+
+ASSETS
+
+Verificar que todos los assets vivan dentro del módulo:
+
+avatar/static/avatar/
+
+Crear estructura:
+
+avatar/static/avatar/cuerpo/
+avatar/static/avatar/cabello/
+avatar/static/avatar/ropa/
+avatar/static/avatar/accesorios/
+
+Crear placeholders SVG mínimos para:
+
+Cuerpo:
+
+* neutral
+* feliz
+* triste
+* pensando
+* sorprendido
+
+Cabello:
+
+* cabello_01
+* cabello_02
+* cabello_03
+
+Ropa:
+
+* ropa_01
+* ropa_02
+* ropa_03
+
+Accesorios:
+
+* lentes
+* gorra
+* capa
+
+---
+
+ADMIN
+
+Verificar que estén registrados:
+
+* Avatar
+* Item
+* InventarioAvatar
+* ReaccionAvatar
+
+Agregar:
+
+* filtros
+* búsqueda
+* columnas útiles
+
+---
+
+PERSONALIZACIÓN
+
+Mejorar pantalla personalizar_avatar:
+
+* Vista previa grande.
+* Cambio instantáneo sin recargar.
+* Categorías:
+
+  * Cabello
+  * Ropa
+  * Accesorios
+
+Mostrar:
+
+* Equipado
+* Disponible
+* Bloqueado
+
+---
+
+INVENTARIO
+
+Permitir:
+
+* Equipar
+* Desequipar
+
+Garantizar:
+
+* Un solo cabello equipado.
+* Una sola ropa equipada.
+* Múltiples accesorios si el modelo lo permite.
+
+---
+
+EVENTOS DEL AVATAR
+
+Mantener Event Bus existente.
+
+Agregar reacciones para:
+
+* RECOMPENSA_GANADA
+* NIVEL_COMPLETADO
+* OBJETO_RECONOCIDO
+* ERROR_CONEXION
+* ERROR_PRONUNCIACION
+* PRONUNCIACION_CORRECTA
+* HISTORIA_COMPLETADA
+
+Cada evento debe:
+
+* Cambiar emoción.
+* Mostrar mensaje.
+* Reproducir animación CSS simple.
+
+---
+
+RESPONSIVE
+
+Desktop:
+
+* Avatar asistente lateral.
+
+Tablet:
+
+* Avatar compacto.
+
+Móvil:
+
+* Avatar tipo burbuja flotante.
+
+No debe romper layouts.
+
+No debe tapar formularios.
+
+---
+
+CONFIGURACIÓN GLOBAL
+
+Respetar:
+
+* tipo_fuente
+* tema_visual
+* colores globales
+* volumen
+* velocidad narración
+
+No usar colores hardcodeados.
+
+---
+
+PORTABILIDAD
+
+Todo lo relacionado al Avatar debe vivir dentro del módulo avatar.
+
+Evitar dependencias innecesarias.
+
+Evitar lógica específica de otros módulos.
+
+---
+
+DOCUMENTACIÓN
+
+Generar:
+
+doc/avatar_mvp_final.txt
+
+Explicar:
+
+* Cómo agregar nuevos cabellos.
+* Cómo agregar nueva ropa.
+* Cómo agregar accesorios.
+* Cómo crear nuevas reacciones.
+* Cómo emitir eventos desde otros módulos.
+
+---
+
+RESTRICCIÓN IMPORTANTE
+
+No implementar nuevas características experimentales.
+
+No modificar módulos externos.
+
+No tocar:
+
+* Cámara Inteligente
+* Historias
+* Niveles
+* Desafíos
+
+Solo integrar puntos de conexión mediante eventos.
+
+Si detectas una decisión arquitectónica crítica, detener la ejecución y consultar antes de continuar.
