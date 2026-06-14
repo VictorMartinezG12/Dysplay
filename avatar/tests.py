@@ -64,7 +64,7 @@ class AvatarModelTests(TestCase):
 class ReactionsTests(TestCase):
     """Tests para el catálogo de reacciones (C.2)."""
 
-    def test_reacciones_contiene_los_siete_tipos_esperados(self):
+    def test_reacciones_contiene_los_tipos_esperados(self):
         tipos_esperados = {
             'pronunciacion_correcta',
             'pronunciacion_incorrecta',
@@ -73,6 +73,7 @@ class ReactionsTests(TestCase):
             'insignia_nueva',
             'bienvenida_diaria',
             'historia_completada',
+            'desafio_completado',
         }
         self.assertEqual(set(REACCIONES.keys()), tipos_esperados)
 

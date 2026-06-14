@@ -41,6 +41,10 @@ REACCIONES = {
     'historia_completada': [
         '¡Historia terminada! ¡Eres todo un lector!',
     ],
+    'desafio_completado': [
+        '¡Desafío de hoy completado! ¡Vuelve mañana por uno nuevo!',
+        '¡Lo lograste todo! El reino te lo agradece.',
+    ],
 }
 
 

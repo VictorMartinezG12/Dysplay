@@ -75,5 +75,16 @@
             "criterio": "nivel_10",
             "valor_umbral": 10
         }
+    },
+    {
+        "model": "recompensas.tipoinsignia",
+        "pk": 8,
+        "fields": {
+            "nombre": "Aventurero Diario",
+            "descripcion": "Completaste un desafío diario completo. ¡El reino te lo agradece!",
+            "imagen": "",
+            "criterio": "desafio_diario",
+            "valor_umbral": 1
+        }
     }
 ]

@@ -181,6 +181,12 @@ def verificar_y_otorgar_insignias(usuario):
             # preparado para cuando dicho módulo registre el progreso.
             criterio_cumplido = False
 
+        elif tipo.criterio == 'desafio_diario':
+            # Import local para evitar dependencias circulares: `desafio`
+            # depende de `recompensas` a nivel de modelos.
+            from desafio.models import ProgresoDesafio
+            criterio_cumplido = ProgresoDesafio.objects.filter(usuario=usuario, completado=True).exists()
+
         if criterio_cumplido:
             insignia = Insignia.objects.create(usuario=usuario, tipo_insignia=tipo, mostrada=False)
             insignias_nuevas.append(insignia)

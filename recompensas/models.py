@@ -13,6 +13,7 @@ class TipoInsignia(models.Model):
         ('historias_10', 'Completar 10 historias'),
         ('nivel_5', 'Alcanzar el nivel 5'),
         ('nivel_10', 'Alcanzar el nivel 10'),
+        ('desafio_diario', 'Completar un desafío diario'),
     ]
 
     nombre = models.CharField(max_length=100)
