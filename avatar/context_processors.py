@@ -1,4 +1,5 @@
 from .models import Avatar, ReaccionAvatar, InventarioAvatar
+from .reactions import obtener_reaccion
 from recompensas.models import Insignia, MascotaUsuario
 from recompensas.services import get_evento_activo
 import json
@@ -47,6 +48,14 @@ def avatar_global(request):
         except MascotaUsuario.DoesNotExist:
             mascota_usuario = None
 
+        # Frase contextual de bienvenida: usa la frase personalizada del
+        # avatar si el usuario la definió; de lo contrario, una variante
+        # aleatoria del catálogo de reacciones.
+        if avatar_obj.frase_bienvenida:
+            avatar_frase_contextual = avatar_obj.frase_bienvenida
+        else:
+            avatar_frase_contextual = obtener_reaccion('bienvenida_diaria')
+
         return {
             'avatar_user': avatar_obj,
             'avatar_equipados': equipados,
@@ -56,6 +65,7 @@ def avatar_global(request):
             'monedas_usuario': request.user.monedas,
             'racha_dias': request.user.racha_dias,
             'evento_activo': get_evento_activo(),
+            'avatar_frase_contextual': avatar_frase_contextual,
         }
 
     return {}

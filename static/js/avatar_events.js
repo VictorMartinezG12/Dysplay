@@ -4,6 +4,11 @@
  */
 
 class AvatarSystem {
+    /**
+     * Crea el sistema de avatar a partir del diccionario de reacciones
+     * inyectado desde el backend.
+     * @param {Object<string, {emocion: string, mensaje: string}>} reacciones - Mapa de tipo de evento a reacción.
+     */
     constructor(reacciones) {
         this.reacciones = reacciones || {};
         this.avatarElement = document.getElementById('avatar-container');
@@ -14,9 +19,14 @@ class AvatarSystem {
         this.init();
     }
 
+    /**
+     * Inicializa el sistema de avatar: registra el listener de eventos
+     * globales y muestra el saludo contextual inicial si está disponible.
+     * @returns {void}
+     */
     init() {
         console.log("🦁 Avatar System Initialized");
-        
+
         // Escuchar eventos globales del sistema
         window.addEventListener('AVATAR_EVENT', (e) => {
             const { tipo, data } = e.detail;
@@ -25,12 +35,42 @@ class AvatarSystem {
 
         // Eventos de prueba (pueden eliminarse luego)
         window.avatarTest = (tipo) => {
-            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', { 
-                detail: { tipo: tipo, data: {} } 
+            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+                detail: { tipo: tipo, data: {} }
             }));
         };
+
+        // Mostrar la frase contextual de saludo al cargar la página, si existe.
+        this.mostrarFraseContextual();
     }
 
+    /**
+     * Lee la frase contextual inyectada por el backend (si existe) y la
+     * muestra en la burbuja del avatar como saludo inicial.
+     * @returns {void}
+     */
+    mostrarFraseContextual() {
+        const fraseElement = document.getElementById('avatar-frase-contextual-data');
+        if (!fraseElement) return;
+
+        try {
+            const frase = JSON.parse(fraseElement.textContent);
+            if (frase) {
+                this.setEmocion('feliz');
+                this.mostrarMensaje(frase);
+            }
+        } catch (error) {
+            console.warn('⚠️ No se pudo leer la frase contextual del avatar:', error);
+        }
+    }
+
+    /**
+     * Aplica la reacción configurada para un tipo de evento: cambia la
+     * emoción del avatar y muestra el mensaje correspondiente.
+     * @param {string} tipo - Tipo de evento (clave del diccionario de reacciones).
+     * @param {Object<string, string>} [data] - Variables para interpolar en el mensaje (ej: {objeto: 'manzana'}).
+     * @returns {void}
+     */
     reaccionar(tipo, data) {
         const reaccion = this.reacciones[tipo];
         if (!reaccion) {
@@ -56,6 +96,12 @@ class AvatarSystem {
         this.mostrarMensaje(mensaje);
     }
 
+    /**
+     * Cambia la clase CSS de emoción aplicada al avatar y dispara la
+     * animación de rebote si corresponde.
+     * @param {string} emocion - Nueva emoción (neutral, feliz, triste, celebrando, etc.).
+     * @returns {void}
+     */
     setEmocion(emocion) {
         if (!this.avatarElement) return;
         
@@ -73,6 +119,12 @@ class AvatarSystem {
         }
     }
 
+    /**
+     * Muestra un mensaje en la burbuja de texto del avatar durante unos
+     * segundos y luego la oculta automáticamente.
+     * @param {string} texto - Mensaje a mostrar en la burbuja.
+     * @returns {void}
+     */
     mostrarMensaje(texto) {
         if (!this.bubbleElement || !this.textElement) return;
 

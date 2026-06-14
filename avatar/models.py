@@ -12,6 +12,8 @@ class Item(models.Model):
         ('mueble', 'Mueble'),
         ('decoracion', 'Decoración'),
         ('trofeo', 'Trofeo'),
+        ('habitacion', 'Habitación'),
+        ('fondo', 'Fondo'),
     ]
 
     nombre = models.CharField(max_length=100)
@@ -19,6 +21,16 @@ class Item(models.Model):
     imagen = models.ImageField(upload_to='avatar/items/', blank=True, null=True)
     descripcion = models.TextField(blank=True)
     activo = models.BooleanField(default=True)
+    # Precio en monedas para comprar el ítem en la tienda (Módulo C.3).
+    precio_monedas = models.IntegerField(default=0)
+    # Evento especial al que pertenece este ítem, si es exclusivo de temporada.
+    evento_especial = models.ForeignKey(
+        'recompensas.EventoEspecial',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='items_avatar'
+    )
 
     def __str__(self):
         return f"[{self.get_categoria_display()}] {self.nombre}"
@@ -65,6 +77,20 @@ class Avatar(models.Model):
         max_length=20,
         choices=ESTADO_CHOICES,
         default='neutral'
+    )
+
+    # Frase personalizada que el avatar usa como saludo (Módulo C.1).
+    frase_bienvenida = models.CharField(max_length=150, blank=True)
+
+    PERSONALIDAD_CHOICES = [
+        ('animado', 'Animado'),
+        ('tranquilo', 'Tranquilo'),
+        ('gracioso', 'Gracioso'),
+    ]
+    personalidad = models.CharField(
+        max_length=20,
+        choices=PERSONALIDAD_CHOICES,
+        default='animado'
     )
 
     def __str__(self):
@@ -115,3 +141,44 @@ class ReaccionAvatar(models.Model):
 
     def __str__(self):
         return f"Reacción: {self.tipo_evento}"
+
+
+class CasaAvatar(models.Model):
+    """Representa la habitación/casa personalizable del avatar de un usuario."""
+
+    avatar = models.OneToOneField(
+        Avatar,
+        on_delete=models.CASCADE,
+        related_name='casa'
+    )
+    cama = models.ForeignKey(
+        Item,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='casas_con_cama'
+    )
+    cuadro = models.ForeignKey(
+        Item,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='casas_con_cuadro'
+    )
+    alfombra = models.ForeignKey(
+        Item,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='casas_con_alfombra'
+    )
+    lampara = models.ForeignKey(
+        Item,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='casas_con_lampara'
+    )
+
+    def __str__(self):
+        return f"Casa de {self.avatar.usuario.username}"

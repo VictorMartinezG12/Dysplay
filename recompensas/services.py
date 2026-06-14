@@ -21,6 +21,11 @@ from .models import EventoEspecial, Insignia, TipoInsignia
 logger = logging.getLogger(__name__)
 
 
+class SaldoInsuficienteError(Exception):
+    """Se lanza cuando un usuario no tiene suficientes monedas para una compra."""
+    pass
+
+
 def otorgar_monedas(usuario, cantidad, concepto):
     """
     Otorga (o resta) monedas a un usuario de forma atómica.
@@ -55,6 +60,61 @@ def otorgar_monedas(usuario, cantidad, concepto):
 
     logger.info(
         "Movimiento de monedas: usuario=%s cantidad=%s concepto=%s saldo_final=%s",
+        usuario.pk, cantidad, concepto, usuario_actualizado.monedas,
+    )
+
+    return usuario_actualizado.monedas
+
+
+def cobrar_monedas(usuario, cantidad, concepto):
+    """
+    Descuenta monedas a un usuario de forma atómica, validando saldo.
+
+    Bloquea la fila del usuario con `select_for_update` dentro de una
+    transacción atómica, verifica que `usuario.monedas >= cantidad` y, si
+    es así, descuenta `cantidad` usando una expresión `F()` para evitar
+    condiciones de carrera. Si el saldo es insuficiente, no modifica nada
+    y lanza `SaldoInsuficienteError`.
+
+    Args:
+        usuario: instancia de `UsuarioCustom` al que se le cobran monedas.
+        cantidad (int): cantidad de monedas a descontar (debe ser positiva).
+        concepto (str): descripción breve del motivo del cobro, usada
+            únicamente para el registro en el log.
+
+    Returns:
+        int: saldo de monedas actualizado del usuario tras el cobro.
+
+    Raises:
+        SaldoInsuficienteError: si el usuario no tiene monedas suficientes.
+    """
+    UsuarioCustom = usuario.__class__
+
+    with transaction.atomic():
+        # select_for_update bloquea la fila del usuario hasta el final de la
+        # transacción para evitar lecturas/escrituras concurrentes inconsistentes.
+        usuario_actualizado = UsuarioCustom.objects.select_for_update().get(pk=usuario.pk)
+
+        if usuario_actualizado.monedas < cantidad:
+            logger.info(
+                "Cobro rechazado por saldo insuficiente: usuario=%s cantidad=%s "
+                "concepto=%s saldo_actual=%s",
+                usuario.pk, cantidad, concepto, usuario_actualizado.monedas,
+            )
+            raise SaldoInsuficienteError(
+                f"Saldo insuficiente para el usuario {usuario.pk}"
+            )
+
+        usuario_actualizado.monedas = F('monedas') - cantidad
+        usuario_actualizado.save(update_fields=['monedas'])
+        usuario_actualizado.refresh_from_db(fields=['monedas'])
+
+    # Reflejamos el nuevo saldo en la instancia recibida para que el
+    # llamador no necesite recargarla manualmente.
+    usuario.monedas = usuario_actualizado.monedas
+
+    logger.info(
+        "Cobro de monedas: usuario=%s cantidad=%s concepto=%s saldo_final=%s",
         usuario.pk, cantidad, concepto, usuario_actualizado.monedas,
     )
 

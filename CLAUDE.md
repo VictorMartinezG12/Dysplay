@@ -16,7 +16,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 |---|---|---|---|
 | A - Infraestructura crítica | Completado | Alto | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-13) |
 | B - Recompensas unificado | Completado | Alto | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-13) |
-| C - Avatar avanzado | Pendiente | Medio | Lógica primero, assets al final |
+| C - Avatar avanzado | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | D - Mapa de niveles | Pendiente | Alto | Cambia modelo Nivel |
 | E - Desafío diario | Pendiente | Medio | |
 | F - Historias | Pendiente | Bajo | |

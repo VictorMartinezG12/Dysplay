@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Casa - DysPlay{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl w-full">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 class="text-3xl font-black text-orange-600 text-center sm:text-left">¡Mi casa! 🏠</h1>
+
+        <div class="flex items-center justify-center gap-3">
+            <div class="flex items-center gap-2 bg-amber-50 border-2 border-amber-200 px-4 py-2 rounded-full text-amber-700 font-extrabold text-base shadow-sm">
+                <span class="text-lg" aria-hidden="true">🪙</span>
+                <span id="casa-monedas-valor">{{ monedas_usuario }}</span>
+                <span class="sr-only">monedas disponibles</span>
+            </div>
+            <a href="{% url 'avatar:personalizar' %}" class="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 min-h-[48px]">
+                <i data-lucide="shirt" class="w-5 h-5" aria-hidden="true"></i>
+                <span>Mi Armario</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensaje accesible de estado (éxito/error de compras y colocaciones) -->
+    <div id="casa-mensaje" role="status" aria-live="polite" class="hidden mb-4 rounded-2xl border-4 p-4 font-bold text-base"></div>
+
+    <!-- Habitación isométrica -->
+    <div class="bg-white rounded-3xl shadow-soft border-4 border-orange-100 p-6 md:p-8 mb-8">
+        <h2 class="text-xl md:text-2xl font-black text-orange-600 mb-6 flex items-center gap-3">
+            <i data-lucide="layout-dashboard" class="w-7 h-7" aria-hidden="true"></i>
+            La habitación de {{ avatar.nombre_avatar }}
+        </h2>
+
+        <div class="room-iso mx-auto">
+            <!-- Pared de fondo -->
+            <div class="room-pared">
+                <!-- Cuadro -->
+                <div class="room-slot room-slot-cuadro" data-slot="cuadro">
+                    {% if casa.cuadro %}
+                        <img src="{{ casa.cuadro.imagen_url_segura }}" alt="Cuadro: {{ casa.cuadro.nombre }}" class="room-item-img">
+                    {% else %}
+                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para un cuadro de pared">
+                            <i data-lucide="image" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Lámpara -->
+                <div class="room-slot room-slot-lampara" data-slot="lampara">
+                    {% if casa.lampara %}
+                        <img src="{{ casa.lampara.imagen_url_segura }}" alt="Lámpara: {{ casa.lampara.nombre }}" class="room-item-img">
+                    {% else %}
+                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una lámpara">
+                            <i data-lucide="lamp" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Piso -->
+            <div class="room-piso">
+                <!-- Alfombra -->
+                <div class="room-slot room-slot-alfombra" data-slot="alfombra">
+                    {% if casa.alfombra %}
+                        <img src="{{ casa.alfombra.imagen_url_segura }}" alt="Alfombra: {{ casa.alfombra.nombre }}" class="room-item-img">
+                    {% else %}
+                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una alfombra">
+                            <i data-lucide="square" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Cama -->
+                <div class="room-slot room-slot-cama" data-slot="cama">
+                    {% if casa.cama %}
+                        <img src="{{ casa.cama.imagen_url_segura }}" alt="Cama: {{ casa.cama.nombre }}" class="room-item-img">
+                    {% else %}
+                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una cama">
+                            <i data-lucide="bed" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Avatar parado en su habitación -->
+                <div class="room-slot room-slot-avatar" aria-hidden="true">
+                    <img src="/static/avatar/cuerpo/cuerpo_base_1.png" alt="" class="room-item-img">
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de slots actuales -->
+        <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 text-center">
+            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
+                <dt class="text-xs font-black text-orange-700 uppercase">Cama</dt>
+                <dd class="font-bold text-sm mt-1">{{ casa.cama.nombre|default:'Vacío' }}</dd>
+            </div>
+            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
+                <dt class="text-xs font-black text-orange-700 uppercase">Cuadro</dt>
+                <dd class="font-bold text-sm mt-1">{{ casa.cuadro.nombre|default:'Vacío' }}</dd>
+            </div>
+            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
+                <dt class="text-xs font-black text-orange-700 uppercase">Alfombra</dt>
+                <dd class="font-bold text-sm mt-1">{{ casa.alfombra.nombre|default:'Vacío' }}</dd>
+            </div>
+            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
+                <dt class="text-xs font-black text-orange-700 uppercase">Lámpara</dt>
+                <dd class="font-bold text-sm mt-1">{{ casa.lampara.nombre|default:'Vacío' }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Mis ítems de habitación -->
+        <div class="bg-white rounded-3xl shadow-soft border-4 border-purple-100 p-6 md:p-8">
+            <h2 class="text-xl md:text-2xl font-black text-purple-600 mb-6 flex items-center gap-3">
+                <i data-lucide="package" class="w-7 h-7" aria-hidden="true"></i>
+                Mis ítems de habitación
+            </h2>
+
+            <div class="space-y-4">
+                {% for inv in items_disponibles %}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-purple-50 border-2 border-purple-200 rounded-2xl p-4">
+                    <div class="flex items-center gap-4 flex-1">
+                        {% if inv.item.imagen %}
+                            <img src="{{ inv.item.imagen_url_segura }}" alt="{{ inv.item.nombre }}" class="w-16 h-16 object-contain rounded-xl bg-white border-2 border-purple-100">
+                        {% else %}
+                            <div class="w-16 h-16 flex items-center justify-center text-3xl rounded-xl bg-white border-2 border-purple-100" aria-hidden="true">🎁</div>
+                        {% endif %}
+                        <div>
+                            <p class="font-black text-purple-900">{{ inv.item.nombre }}</p>
+                            <p class="text-sm font-bold text-purple-500">{{ inv.item.get_categoria_display }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label for="slot-select-{{ inv.item.id }}" class="sr-only">Elegir ubicación para {{ inv.item.nombre }}</label>
+                        <select id="slot-select-{{ inv.item.id }}" class="slot-select min-h-[48px] rounded-xl border-2 border-purple-200 bg-white px-3 text-base font-bold text-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-200">
+                            <option value="cama">Cama</option>
+                            <option value="cuadro">Cuadro</option>
+                            <option value="alfombra">Alfombra</option>
+                            <option value="lampara">Lámpara</option>
+                        </select>
+                        <button type="button"
+                                class="btn-colocar min-h-[48px] px-5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-base shadow-hard hover:scale-105 active:scale-95 transition-transform"
+                                data-item-id="{{ inv.item.id }}"
+                                data-item-nombre="{{ inv.item.nombre }}">
+                            Colocar
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="py-12 flex flex-col items-center text-gray-400 text-center">
+                    <i data-lucide="ghost" class="w-16 h-16 mb-4 opacity-20" aria-hidden="true"></i>
+                    <p class="font-bold text-base">Todavía no tienes ítems de habitación.</p>
+                    <p class="text-sm mt-1">¡Visita la tienda para conseguir tu primera decoración!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tienda de la casa -->
+        <div class="bg-white rounded-3xl shadow-soft border-4 border-amber-100 p-6 md:p-8">
+            <h2 class="text-xl md:text-2xl font-black text-amber-600 mb-6 flex items-center gap-3">
+                <i data-lucide="store" class="w-7 h-7" aria-hidden="true"></i>
+                Tienda de la casa
+            </h2>
+
+            <div class="space-y-4">
+                {% for item in items_tienda %}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
+                    <div class="flex items-center gap-4 flex-1">
+                        {% if item.imagen %}
+                            <img src="{{ item.imagen_url_segura }}" alt="{{ item.nombre }}" class="w-16 h-16 object-contain rounded-xl bg-white border-2 border-amber-100">
+                        {% else %}
+                            <div class="w-16 h-16 flex items-center justify-center text-3xl rounded-xl bg-white border-2 border-amber-100" aria-hidden="true">🛍️</div>
+                        {% endif %}
+                        <div>
+                            <p class="font-black text-amber-900">{{ item.nombre }}</p>
+                            <p class="text-sm font-bold text-amber-500">{{ item.get_categoria_display }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1 font-black text-amber-700 text-base">
+                            <span aria-hidden="true">🪙</span>{{ item.precio_monedas }}
+                        </span>
+                        <button type="button"
+                                class="btn-comprar min-h-[48px] px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-base shadow-hard hover:scale-105 active:scale-95 transition-transform"
+                                data-item-id="{{ item.id }}"
+                                data-item-nombre="{{ item.nombre }}"
+                                data-item-precio="{{ item.precio_monedas }}">
+                            Comprar
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="py-12 flex flex-col items-center text-gray-400 text-center">
+                    <i data-lucide="sparkles" class="w-16 h-16 mb-4 opacity-20" aria-hidden="true"></i>
+                    <p class="font-bold text-base">No hay nuevos ítems en la tienda por ahora.</p>
+                    <p class="text-sm mt-1">¡Vuelve más tarde para ver novedades!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuración para casa.js -->
+<script type="application/json" id="casa-config-data">
+{
+    "urlComprarItem": "{% url 'avatar:comprar_item' %}",
+    "urlColocarItem": "{% url 'avatar:colocar_item' %}",
+    "csrfToken": "{{ csrf_token }}"
+}
+</script>
+
+<style>
+    /* Vista "isométrica" simple de la habitación, sin librerías externas */
+    .room-iso {
+        max-width: 480px;
+        width: 100%;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        border: 4px solid #FED7AA;
+        box-shadow: 0 8px 0 rgba(0,0,0,0.05), 0 15px 20px rgba(0,0,0,0.08);
+    }
+
+    .room-pared {
+        position: relative;
+        height: 160px;
+        background: linear-gradient(180deg, #BFDBFE 0%, #E0F2FE 100%);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 1rem;
+    }
+
+    .room-piso {
+        position: relative;
+        height: 180px;
+        background: linear-gradient(180deg, #FDE68A 0%, #FBBF24 100%);
+        transform: perspective(400px) rotateX(8deg);
+        transform-origin: top;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 1.5rem 1rem 1rem;
+    }
+
+    .room-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 96px;
+        height: 96px;
+    }
+
+    .room-slot-avatar {
+        width: 72px;
+        height: 110px;
+    }
+
+    .room-item-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+    }
+
+    .room-placeholder {
+        width: 100%;
+        height: 100%;
+        border: 3px dashed rgba(30, 41, 59, 0.2);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.4);
+    }
+
+    @media (min-width: 640px) {
+        .room-slot { width: 120px; height: 120px; }
+        .room-slot-avatar { width: 90px; height: 140px; }
+    }
+</style>
+<script src="/static/js/avatar/casa.js"></script>
+{% endblock %}

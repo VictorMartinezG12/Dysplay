@@ -118,6 +118,10 @@
 
     {% if user.is_authenticated %}
         {% include 'avatar/componente.html' %}
+        <!-- Datos de reacciones del avatar (ya serializados como JSON desde el backend) -->
+        <script type="application/json" id="avatar-reacciones-data">{{ reacciones_json|safe }}</script>
+        <!-- Frase contextual de saludo del avatar -->
+        <script type="application/json" id="avatar-frase-contextual-data">"{{ avatar_frase_contextual|escapejs }}"</script>
         <script src="/static/js/avatar_events.js"></script>
     {% endif %}
 
