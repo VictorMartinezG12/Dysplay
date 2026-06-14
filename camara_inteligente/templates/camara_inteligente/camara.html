@@ -66,11 +66,12 @@
                     Cámara Inteligente
                 </h1>
 
-                <!-- Recuadro simulando cámara -->
+                <!-- Recuadro de la cámara -->
                 <div class="relative w-full max-w-2xl h-[400px] md:h-[480px] bg-gray-100 rounded-2xl overflow-hidden border-8 border-white shadow-soft relative group">
 
-                    <!-- Imagen de fondo simulada de la cámara (borrosa para simular enfoque) -->
-                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550592704-6c76defa9985?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')] bg-cover bg-center opacity-40 blur-sm group-hover:blur-0 transition-all duration-1000"></div>
+                    <!-- Video en vivo de la cámara del dispositivo -->
+                    <video id="video-camara" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
+                    <canvas id="canvas-captura" class="hidden"></canvas>
 
                     <!-- Capa superior del visor -->
                     <div class="absolute inset-0 flex flex-col justify-between p-6 md:p-10 z-10">
@@ -89,7 +90,7 @@
                         </div>
 
                         <!-- Botón Capturar -->
-                        <button onclick="captureObject()" class="w-24 h-24 bg-white/80 backdrop-blur-sm rounded-full self-center flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform border-4 border-white group/btn">
+                        <button id="btn-capturar" class="w-24 h-24 bg-white/80 backdrop-blur-sm rounded-full self-center flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform border-4 border-white group/btn">
                             <div class="w-16 h-16 bg-primaryFijo rounded-full flex items-center justify-center group-hover/btn:bg-blue-500 transition-colors shadow-inner">
                                 <i data-lucide="focus" class="w-10 h-10 text-white"></i>
                             </div>
@@ -127,28 +128,26 @@
                 <div class="flex flex-col items-center mb-8 relative">
                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-success/10 rounded-full blur-2xl"></div>
                     <div class="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center text-success mb-4 shadow-sm border-2 border-success/30">
-                        <i data-lucide="pencil" class="w-10 h-10"></i>
+                        <i data-lucide="sparkles" class="w-10 h-10"></i>
                     </div>
-                    <h2 class="text-[32px] md:text-[36px] font-bold text-success drop-shadow-sm">¡Encontré un Lápiz!</h2>
+                    <h2 id="exercise-titulo" class="text-[32px] md:text-[36px] font-bold text-success drop-shadow-sm">¡Encontré algo!</h2>
                 </div>
 
                 <h3 class="text-[24px] font-semibold text-gray-400 mb-10">Ahora lee en voz alta:</h3>
 
                 <!-- Frase Generada -->
                 <div class="mb-16">
-                    <p class="text-[40px] md:text-[56px] font-bold text-textMain leading-[1.4] tracking-wide">
-                        El <span class="text-primaryFijo">lápiz</span> es <span class="text-reward">amarillo</span>.
-                    </p>
+                    <p id="frase-generada" class="text-[40px] md:text-[56px] font-bold text-textMain leading-[1.4] tracking-wide"></p>
                 </div>
 
                 <!-- Controles -->
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
 
-                    <button class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button id="btn-escuchar" class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
-                    <button id="btn-grabar" onclick="startRecording()" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group relative">
+                    <button id="btn-grabar" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[24px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4 group relative">
                         <i id="icon-mic" data-lucide="mic" class="w-8 h-8 relative z-10"></i>
                         <span id="text-grabar" class="relative z-10">Grabar</span>
                     </button>
@@ -187,32 +186,33 @@
 
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
 
-                <h2 class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Increíble!</h2>
-                <p class="text-[24px] text-gray-600 mb-10">Leíste correctamente el objeto.</p>
+                <h2 id="resultado-titulo" class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Increíble!</h2>
+                <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-2">Leíste correctamente la frase.</p>
+                <p id="resultado-mensaje-avatar" class="text-[18px] text-gray-500 mb-8"></p>
 
                 <!-- Círculo de Puntuación -->
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
-                    <div class="absolute inset-0 rounded-full" style="background: conic-gradient(#48BB78 98%, #edf2f7 0);"></div>
+                    <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#48BB78 0%, #edf2f7 0);"></div>
                     <div class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
-                        <span class="text-[48px] font-bold text-success leading-none">98%</span>
+                        <span id="score-text" class="text-[48px] font-bold text-success leading-none">0%</span>
                         <span class="text-[16px] text-gray-500 font-bold uppercase tracking-widest mt-1">Precisión</span>
                     </div>
                 </div>
 
                 <!-- Recompensa en Monedas -->
-                <div class="bg-reward/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-reward/20 mb-10">
+                <div id="caja-monedas" class="hidden bg-reward/10 rounded-full px-8 py-4 items-center gap-3 border-2 border-reward/20 mb-10">
                     <i data-lucide="coins" class="w-8 h-8 text-reward"></i>
-                    <span class="text-[24px] font-bold text-reward">+ 15 Monedas</span>
+                    <span id="monedas-ganadas-text" class="text-[24px] font-bold text-reward"></span>
                 </div>
 
                 <!-- Botones de Acción Final -->
                 <div class="flex flex-col md:flex-row gap-6 w-full max-w-lg justify-center">
 
-                    <button onclick="goToMenu()" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button id="btn-salir-menu" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         <i data-lucide="home" class="w-6 h-6"></i> Salir al menú
                     </button>
 
-                    <button onclick="resetCamera()" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button id="btn-nuevo-objeto" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         Nuevo objeto <i data-lucide="camera" class="w-6 h-6"></i>
                     </button>
 
@@ -222,71 +222,8 @@
 
     </main>
 
-    <script>
-        lucide.createIcons();
-
-        function changeView(hideId, showId) {
-            document.getElementById(hideId).classList.add('hidden');
-            document.getElementById(hideId).classList.remove('flex');
-
-            document.getElementById(showId).classList.remove('hidden');
-            document.getElementById(showId).classList.add('flex');
-
-            lucide.createIcons();
-        }
-
-        // Paso 1 al 2 al 3 (Visor -> Análisis Visual -> Ejercicio)
-        function captureObject() {
-            document.getElementById('global-header').classList.add('hidden');
-            document.getElementById('global-header').classList.remove('flex');
-
-            changeView('view-camera', 'view-analyzing-obj');
-
-            // Simula tiempo de análisis del objeto (IA Visual)
-            setTimeout(() => {
-                changeView('view-analyzing-obj', 'view-exercise');
-            }, 2000);
-        }
-
-        // Paso 3 al 4 (Ejercicio -> Grabación -> Resultado)
-        function startRecording() {
-            const btnGrabar = document.getElementById('btn-grabar');
-            const textGrabar = document.getElementById('text-grabar');
-
-            // Simular grabación de voz
-            btnGrabar.classList.remove('bg-white', 'text-error');
-            btnGrabar.classList.add('bg-error', 'text-white', 'animate-pulse');
-            textGrabar.textContent = "Grabando...";
-
-            setTimeout(() => {
-                // Termina de grabar, evalúa pronunciación
-                changeView('view-exercise', 'view-analyzing-voice');
-
-                // Simula 1 segundo de evaluación solicitado en el prompt
-                setTimeout(() => {
-                    changeView('view-analyzing-voice', 'view-result');
-                }, 1000);
-
-            }, 2000); // 2 segundos leyendo
-        }
-
-        function goToMenu() {
-            window.location.href = "{% url 'home' %}";
-        }
-
-        function resetCamera() {
-            // Restaurar estado original
-            document.getElementById('global-header').classList.remove('hidden');
-            document.getElementById('global-header').classList.add('flex');
-
-            const btnGrabar = document.getElementById('btn-grabar');
-            const textGrabar = document.getElementById('text-grabar');
-            btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
-            btnGrabar.classList.add('bg-white', 'text-error');
-            textGrabar.textContent = "Grabar";
-
-            changeView('view-result', 'view-camera');
-        }
-    </script>
+    {% csrf_token %}
+    {{ camara_config|json_script:"camara-config" }}
+    <script src="{% static 'js/camara_inteligente/camara.js' %}"></script>
 </body>
 </html>

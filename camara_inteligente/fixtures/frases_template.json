@@ -1,0 +1,602 @@
+[
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 1,
+        "fields": {
+            "objeto_keyword": "lápiz",
+            "frase_plantilla": "El lápiz es largo y amarillo. Sirve para escribir y dibujar.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 2,
+        "fields": {
+            "objeto_keyword": "libro",
+            "frase_plantilla": "El libro tiene muchas páginas llenas de historias.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 3,
+        "fields": {
+            "objeto_keyword": "manzana",
+            "frase_plantilla": "La manzana es roja y muy jugosa.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 4,
+        "fields": {
+            "objeto_keyword": "perro",
+            "frase_plantilla": "El perro mueve la cola porque está feliz.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 5,
+        "fields": {
+            "objeto_keyword": "gato",
+            "frase_plantilla": "El gato duerme acurrucado en el sofá.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 6,
+        "fields": {
+            "objeto_keyword": "silla",
+            "frase_plantilla": "La silla tiene cuatro patas de madera.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 7,
+        "fields": {
+            "objeto_keyword": "mesa",
+            "frase_plantilla": "La mesa es grande y redonda.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 8,
+        "fields": {
+            "objeto_keyword": "auto",
+            "frase_plantilla": "El auto rojo avanza muy rápido por la calle.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 9,
+        "fields": {
+            "objeto_keyword": "pelota",
+            "frase_plantilla": "La pelota es redonda y rebota muy alto.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 10,
+        "fields": {
+            "objeto_keyword": "zapato",
+            "frase_plantilla": "El zapato es cómodo para caminar y correr.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 11,
+        "fields": {
+            "objeto_keyword": "taza",
+            "frase_plantilla": "La taza está llena de chocolate caliente.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 12,
+        "fields": {
+            "objeto_keyword": "botella",
+            "frase_plantilla": "La botella tiene agua fresca para beber.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 13,
+        "fields": {
+            "objeto_keyword": "flor",
+            "frase_plantilla": "La flor amarilla huele muy dulce.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 14,
+        "fields": {
+            "objeto_keyword": "árbol",
+            "frase_plantilla": "El árbol tiene hojas verdes y ramas altas.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 15,
+        "fields": {
+            "objeto_keyword": "casa",
+            "frase_plantilla": "La casa tiene un techo rojo y ventanas grandes.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 16,
+        "fields": {
+            "objeto_keyword": "reloj",
+            "frase_plantilla": "El reloj marca las horas con sus dos agujas.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 17,
+        "fields": {
+            "objeto_keyword": "teléfono",
+            "frase_plantilla": "El teléfono sirve para llamar y enviar mensajes.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 18,
+        "fields": {
+            "objeto_keyword": "computadora",
+            "frase_plantilla": "La computadora ayuda a escribir y jugar juegos educativos.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 19,
+        "fields": {
+            "objeto_keyword": "bicicleta",
+            "frase_plantilla": "La bicicleta tiene dos ruedas y un timbre.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 20,
+        "fields": {
+            "objeto_keyword": "pájaro",
+            "frase_plantilla": "El pájaro canta muy bonito en la mañana.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 21,
+        "fields": {
+            "objeto_keyword": "pez",
+            "frase_plantilla": "El pez nada feliz dentro de la pecera.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 22,
+        "fields": {
+            "objeto_keyword": "plátano",
+            "frase_plantilla": "El plátano es amarillo y muy dulce.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 23,
+        "fields": {
+            "objeto_keyword": "naranja",
+            "frase_plantilla": "La naranja es redonda y tiene jugo de naranja.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 24,
+        "fields": {
+            "objeto_keyword": "pan",
+            "frase_plantilla": "El pan recién horneado huele delicioso.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 25,
+        "fields": {
+            "objeto_keyword": "cuchara",
+            "frase_plantilla": "La cuchara sirve para comer la sopa caliente.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 26,
+        "fields": {
+            "objeto_keyword": "tenedor",
+            "frase_plantilla": "El tenedor tiene puntas para pinchar la comida.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 27,
+        "fields": {
+            "objeto_keyword": "plato",
+            "frase_plantilla": "El plato está lleno de comida rica.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 28,
+        "fields": {
+            "objeto_keyword": "cama",
+            "frase_plantilla": "La cama es suave y muy cómoda para dormir.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 29,
+        "fields": {
+            "objeto_keyword": "lámpara",
+            "frase_plantilla": "La lámpara da luz cuando está oscuro.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 30,
+        "fields": {
+            "objeto_keyword": "ventana",
+            "frase_plantilla": "La ventana deja entrar la luz del sol.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 31,
+        "fields": {
+            "objeto_keyword": "puerta",
+            "frase_plantilla": "La puerta se abre para entrar a la casa.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 32,
+        "fields": {
+            "objeto_keyword": "sombrero",
+            "frase_plantilla": "El sombrero protege la cabeza del sol.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 33,
+        "fields": {
+            "objeto_keyword": "camisa",
+            "frase_plantilla": "La camisa azul tiene botones.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 34,
+        "fields": {
+            "objeto_keyword": "bolso",
+            "frase_plantilla": "El bolso guarda muchas cosas importantes.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 35,
+        "fields": {
+            "objeto_keyword": "llave",
+            "frase_plantilla": "La llave abre la puerta de la casa.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 36,
+        "fields": {
+            "objeto_keyword": "tijeras",
+            "frase_plantilla": "Las tijeras cortan papel con cuidado.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 37,
+        "fields": {
+            "objeto_keyword": "bolígrafo",
+            "frase_plantilla": "El bolígrafo escribe con tinta azul.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 38,
+        "fields": {
+            "objeto_keyword": "cuaderno",
+            "frase_plantilla": "El cuaderno tiene hojas para escribir y dibujar.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 39,
+        "fields": {
+            "objeto_keyword": "regla",
+            "frase_plantilla": "La regla sirve para medir y dibujar líneas rectas.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 40,
+        "fields": {
+            "objeto_keyword": "mochila",
+            "frase_plantilla": "La mochila lleva los libros para la escuela.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 41,
+        "fields": {
+            "objeto_keyword": "sombrilla",
+            "frase_plantilla": "La sombrilla protege de la lluvia.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 42,
+        "fields": {
+            "objeto_keyword": "lentes",
+            "frase_plantilla": "Los lentes ayudan a ver mejor de cerca.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 43,
+        "fields": {
+            "objeto_keyword": "espejo",
+            "frase_plantilla": "El espejo refleja mi cara cuando me miro.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 44,
+        "fields": {
+            "objeto_keyword": "calcetín",
+            "frase_plantilla": "El calcetín mantiene mis pies calientitos.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 45,
+        "fields": {
+            "objeto_keyword": "globo",
+            "frase_plantilla": "El globo rojo flota muy alto en el cielo.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 46,
+        "fields": {
+            "objeto_keyword": "cometa",
+            "frase_plantilla": "La cometa vuela alto cuando hace viento.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 47,
+        "fields": {
+            "objeto_keyword": "tambor",
+            "frase_plantilla": "El tambor hace un sonido fuerte cuando lo toco.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 48,
+        "fields": {
+            "objeto_keyword": "guitarra",
+            "frase_plantilla": "La guitarra tiene cuerdas que suenan muy bonito.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 49,
+        "fields": {
+            "objeto_keyword": "piano",
+            "frase_plantilla": "El piano tiene teclas blancas y negras.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 50,
+        "fields": {
+            "objeto_keyword": "muñeca",
+            "frase_plantilla": "La muñeca tiene un vestido rosado muy bonito.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 51,
+        "fields": {
+            "objeto_keyword": "tren",
+            "frase_plantilla": "El tren avanza por las vías haciendo mucho ruido.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 52,
+        "fields": {
+            "objeto_keyword": "avión",
+            "frase_plantilla": "El avión vuela muy alto entre las nubes.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 53,
+        "fields": {
+            "objeto_keyword": "barco",
+            "frase_plantilla": "El barco navega despacio sobre el mar azul.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 54,
+        "fields": {
+            "objeto_keyword": "vela",
+            "frase_plantilla": "La vela se enciende y da una luz suave.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 55,
+        "fields": {
+            "objeto_keyword": "huevo",
+            "frase_plantilla": "El huevo es ovalado y de color blanco.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 56,
+        "fields": {
+            "objeto_keyword": "zanahoria",
+            "frase_plantilla": "La zanahoria es naranja y muy crujiente.",
+            "nivel_dificultad": 2,
+            "recompensa_monedas": 10
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 57,
+        "fields": {
+            "objeto_keyword": "fresa",
+            "frase_plantilla": "La fresa es roja y tiene semillas pequeñas.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 58,
+        "fields": {
+            "objeto_keyword": "uva",
+            "frase_plantilla": "La uva es pequeña, redonda y muy dulce.",
+            "nivel_dificultad": 1,
+            "recompensa_monedas": 5
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 59,
+        "fields": {
+            "objeto_keyword": "casco",
+            "frase_plantilla": "El casco protege la cabeza cuando ando en bicicleta.",
+            "nivel_dificultad": 4,
+            "recompensa_monedas": 20
+        }
+    },
+    {
+        "model": "camara_inteligente.frasetemplate",
+        "pk": 60,
+        "fields": {
+            "objeto_keyword": "mariposa",
+            "frase_plantilla": "La mariposa tiene alas de muchos colores.",
+            "nivel_dificultad": 3,
+            "recompensa_monedas": 15
+        }
+    }
+]
