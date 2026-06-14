@@ -1,0 +1,168 @@
+[
+    {
+        "model": "historias.historia",
+        "pk": 1,
+        "fields": {
+            "titulo": "El dragón perdido",
+            "portada": "",
+            "descripcion_corta": "Ayuda a Chispa el dragón a encontrar el camino a casa.",
+            "nivel_dificultad": "facil",
+            "duracion_estimada_minutos": 3,
+            "recompensa_monedas": 15,
+            "activa": true,
+            "orden": 1
+        }
+    },
+    {
+        "model": "historias.historia",
+        "pk": 2,
+        "fields": {
+            "titulo": "Viaje a la luna",
+            "portada": "",
+            "descripcion_corta": "Acompaña a la tripulación en su viaje hacia la Luna.",
+            "nivel_dificultad": "medio",
+            "duracion_estimada_minutos": 4,
+            "recompensa_monedas": 20,
+            "activa": true,
+            "orden": 2
+        }
+    },
+    {
+        "model": "historias.historia",
+        "pk": 3,
+        "fields": {
+            "titulo": "El misterio del reloj",
+            "portada": "",
+            "descripcion_corta": "Descubre por qué el reloj del abuelo dejó de sonar.",
+            "nivel_dificultad": "dificil",
+            "duracion_estimada_minutos": 6,
+            "recompensa_monedas": 25,
+            "activa": true,
+            "orden": 3
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 1,
+        "fields": {
+            "historia": 1,
+            "orden": 1,
+            "texto_narracion": "Había una vez un pequeño dragón llamado Chispa. Estaba muy triste porque no podía encontrar el camino a su cueva.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "¿Qué crees que hizo Chispa?",
+            "tipo_respuesta": "elegir"
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 2,
+        "fields": {
+            "historia": 1,
+            "orden": 3,
+            "texto_narracion": "Juntos encontraron la cueva escondida detrás de una cascada. ¡Chispa por fin estaba en casa!",
+            "audio_narracion": "",
+            "pregunta_interactiva": "",
+            "tipo_respuesta": ""
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 3,
+        "fields": {
+            "historia": 1,
+            "orden": 2,
+            "texto_narracion": "Aun llorando, sus amigos lo encontraron y decidieron ayudarlo a buscar de todas formas.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "",
+            "tipo_respuesta": ""
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 4,
+        "fields": {
+            "historia": 2,
+            "orden": 1,
+            "texto_narracion": "La nave despegó rumbo al espacio. La tripulación debía recordar el nombre del satélite natural de la Tierra para continuar el viaje.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "Escribe el nombre del satélite natural de la Tierra.",
+            "tipo_respuesta": "escribir"
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 5,
+        "fields": {
+            "historia": 2,
+            "orden": 2,
+            "texto_narracion": "¡Correcto! La nave llegó sin problemas a la Luna y la tripulación pudo explorar su superficie.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "",
+            "tipo_respuesta": ""
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 6,
+        "fields": {
+            "historia": 3,
+            "orden": 1,
+            "texto_narracion": "El reloj del abuelo había dejado de sonar. Para despertarlo, alguien debía repetir su sonido en voz alta.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "Repite en voz alta: tic tac",
+            "tipo_respuesta": "pronunciar"
+        }
+    },
+    {
+        "model": "historias.fragmentohistoria",
+        "pk": 7,
+        "fields": {
+            "historia": 3,
+            "orden": 2,
+            "texto_narracion": "¡El reloj volvió a sonar! El misterio quedó resuelto.",
+            "audio_narracion": "",
+            "pregunta_interactiva": "",
+            "tipo_respuesta": ""
+        }
+    },
+    {
+        "model": "historias.opcionrespuesta",
+        "pk": 1,
+        "fields": {
+            "fragmento": 1,
+            "texto": "Pidió ayuda a sus amigos",
+            "es_correcta": true,
+            "fragmento_siguiente": 2
+        }
+    },
+    {
+        "model": "historias.opcionrespuesta",
+        "pk": 2,
+        "fields": {
+            "fragmento": 1,
+            "texto": "Se quedó llorando solo",
+            "es_correcta": false,
+            "fragmento_siguiente": 3
+        }
+    },
+    {
+        "model": "historias.opcionrespuesta",
+        "pk": 3,
+        "fields": {
+            "fragmento": 4,
+            "texto": "luna",
+            "es_correcta": true,
+            "fragmento_siguiente": null
+        }
+    },
+    {
+        "model": "historias.opcionrespuesta",
+        "pk": 4,
+        "fields": {
+            "fragmento": 6,
+            "texto": "tic tac",
+            "es_correcta": true,
+            "fragmento_siguiente": null
+        }
+    }
+]

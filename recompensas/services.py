@@ -177,9 +177,10 @@ def verificar_y_otorgar_insignias(usuario):
             criterio_cumplido = usuario.racha_dias >= tipo.valor_umbral
 
         elif tipo.criterio == 'historias_10':
-            # El módulo de historias todavía no expone un contador; se deja
-            # preparado para cuando dicho módulo registre el progreso.
-            criterio_cumplido = False
+            # Import local para evitar dependencias circulares: `historias`
+            # depende de `recompensas` a nivel de servicios.
+            from historias.services import obtener_historias_completadas
+            criterio_cumplido = obtener_historias_completadas(usuario) >= tipo.valor_umbral
 
         elif tipo.criterio == 'desafio_diario':
             # Import local para evitar dependencias circulares: `desafio`

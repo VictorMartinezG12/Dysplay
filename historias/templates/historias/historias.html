@@ -33,7 +33,7 @@
 
     <!-- HEADER GLOBAL -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-6xl z-50 relative">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
+        <a href="{% if lectura %}{% url 'historias' %}{% else %}{% url 'home' %}{% endif %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
             <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
@@ -47,61 +47,18 @@
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="w-full max-w-6xl px-6 md:px-8 flex-grow flex flex-col items-center justify-center pb-16 relative">
 
+        {% if not lectura %}
         <!-- ============================================== -->
-        <!-- PASO 1: SELECCIÓN DE HISTORIAS                   -->
+        <!-- SELECCIÓN DE HISTORIAS                          -->
         <!-- ============================================== -->
         <section id="view-selection" class="flex flex-col items-center w-full animate-fade-in">
 
             <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-10 text-center drop-shadow-sm">Elige una Aventura</h1>
 
-            <!-- Grid de Historias -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl">
-
-                <!-- Historia 1: Disponible -->
-                <button onclick="startStory()" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
-                    <!-- Portada mockeada -->
-                    <div class="w-full h-48 bg-blue-100 flex items-center justify-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-primaryFijo/20 group-hover:bg-primaryFijo/10 transition-colors"></div>
-                        <i data-lucide="flame" class="w-24 h-24 text-primaryFijo opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
-                    </div>
-
-                    <!-- Info -->
-                    <div class="p-6 flex flex-col gap-4">
-                        <h2 class="text-[24px] font-bold text-textMain leading-tight">El dragón perdido</h2>
-                        <div class="flex items-center justify-between mt-2">
-                            <span class="bg-success/20 text-success px-4 py-1.5 rounded-full font-bold text-[14px]">Dificultad Básica</span>
-                            <div class="flex gap-1 text-reward">
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-
-                <!-- Historia 2: Disponible -->
-                <button class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
-                    <div class="w-full h-48 bg-purple-100 flex items-center justify-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-purple-500/20 group-hover:bg-purple-500/10 transition-colors"></div>
-                        <i data-lucide="rocket" class="w-24 h-24 text-purple-500 opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
-                    </div>
-                    <div class="p-6 flex flex-col gap-4">
-                        <h2 class="text-[24px] font-bold text-textMain leading-tight">Viaje a la luna</h2>
-                        <div class="flex items-center justify-between mt-2">
-                            <span class="bg-primaryFijo/20 text-primaryFijo px-4 py-1.5 rounded-full font-bold text-[14px]">Intermedia</span>
-                            <div class="flex gap-1 text-reward">
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-
-                <!-- Historia 3: Bloqueada -->
-                <button class="bg-gray-50 rounded-2xl overflow-hidden shadow-sm border-4 border-transparent cursor-not-allowed text-left flex flex-col opacity-70 grayscale relative">
+                {% for historia in historias %}
+                {% if historia.estado == 'bloqueada' %}
+                <div class="bg-gray-50 rounded-2xl overflow-hidden shadow-sm border-4 border-transparent text-left flex flex-col opacity-70 grayscale relative">
                     <div class="absolute inset-0 bg-white/40 z-20 flex items-center justify-center backdrop-blur-[2px]">
                         <div class="bg-textMain text-white rounded-full p-4">
                             <i data-lucide="lock" class="w-8 h-8"></i>
@@ -111,64 +68,80 @@
                         <i data-lucide="clock" class="w-24 h-24 text-gray-400 opacity-50"></i>
                     </div>
                     <div class="p-6 flex flex-col gap-4">
-                        <h2 class="text-[24px] font-bold text-gray-500 leading-tight">El misterio del reloj</h2>
+                        <h2 class="text-[24px] font-bold text-gray-500 leading-tight">{{ historia.titulo }}</h2>
                         <div class="flex items-center justify-between mt-2">
-                            <span class="bg-gray-300 text-gray-600 px-4 py-1.5 rounded-full font-bold text-[14px]">Avanzada</span>
+                            <span class="bg-gray-300 text-gray-600 px-4 py-1.5 rounded-full font-bold text-[14px]">{{ historia.nivel_dificultad_display }}</span>
                             <div class="flex gap-1 text-gray-400">
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                <span class="font-bold">x8</span>
+                                {% for _ in historia.rango_estrellas %}<i data-lucide="star" class="w-5 h-5 fill-current"></i>{% endfor %}
                             </div>
                         </div>
                     </div>
-                </button>
+                </div>
+                {% else %}
+                <a href="?historia={{ historia.id }}" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
+                    {% if historia.estado == 'completada' %}
+                    <div class="absolute top-3 right-3 z-10 bg-success text-white rounded-full p-2 shadow-sm">
+                        <i data-lucide="check" class="w-5 h-5"></i>
+                    </div>
+                    {% endif %}
+                    <div class="w-full h-48 flex items-center justify-center relative overflow-hidden
+                        {% if historia.nivel_dificultad == 'dificil' %}bg-amber-100{% elif historia.nivel_dificultad == 'medio' %}bg-purple-100{% else %}bg-blue-100{% endif %}">
+                        {% if historia.portada_url %}
+                        <img src="{{ historia.portada_url }}" alt="{{ historia.titulo }}" class="absolute inset-0 w-full h-full object-cover">
+                        {% else %}
+                        <div class="absolute inset-0 {% if historia.nivel_dificultad == 'dificil' %}bg-amber-500/20 group-hover:bg-amber-500/10{% elif historia.nivel_dificultad == 'medio' %}bg-purple-500/20 group-hover:bg-purple-500/10{% else %}bg-primaryFijo/20 group-hover:bg-primaryFijo/10{% endif %} transition-colors"></div>
+                        <i data-lucide="book-open" class="w-24 h-24 {% if historia.nivel_dificultad == 'dificil' %}text-amber-500{% elif historia.nivel_dificultad == 'medio' %}text-purple-500{% else %}text-primaryFijo{% endif %} opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
+                        {% endif %}
+                    </div>
 
+                    <div class="p-6 flex flex-col gap-4">
+                        <h2 class="text-[24px] font-bold text-textMain leading-tight">{{ historia.titulo }}</h2>
+                        <p class="text-[16px] text-gray-500">{{ historia.descripcion_corta }}</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="{% if historia.nivel_dificultad == 'dificil' %}bg-amber-100 text-amber-600{% elif historia.nivel_dificultad == 'medio' %}bg-primaryFijo/20 text-primaryFijo{% else %}bg-success/20 text-success{% endif %} px-4 py-1.5 rounded-full font-bold text-[14px]">{{ historia.nivel_dificultad_display }}</span>
+                            <div class="flex gap-1 text-reward">
+                                {% for _ in historia.rango_estrellas %}<i data-lucide="star" class="w-5 h-5 fill-current"></i>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                {% endif %}
+                {% endfor %}
             </div>
         </section>
 
-
+        {% else %}
         <!-- ============================================== -->
-        <!-- PASO 2: NARRACIÓN DE LA HISTORIA                 -->
+        <!-- LECTURA: NARRACIÓN + INTERACCIÓN                -->
         <!-- ============================================== -->
-        <section id="view-narration" class="hidden flex-col items-center justify-center w-full max-w-4xl animate-fade-in mt-4">
-
-            <!-- Contenedor inmersivo con imagen de fondo simulada -->
+        <section id="view-narration" class="flex flex-col items-center justify-center w-full max-w-4xl animate-fade-in mt-4">
             <div class="relative w-full rounded-2xl overflow-hidden shadow-soft bg-storyBg min-h-[500px] flex flex-col items-center justify-center p-8 md:p-12 border-8 border-white group">
-
-                <!-- Fondo simulado -->
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1590141510427-418d53d2d0b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center opacity-30 mix-blend-overlay"></div>
 
-                <!-- Recuadro de Texto -->
                 <div class="relative z-10 bg-white/95 backdrop-blur-md rounded-2xl p-8 md:p-12 w-full max-w-3xl shadow-xl flex flex-col items-center text-center">
+                    <h2 class="text-[28px] font-bold text-primaryFijo mb-8 border-b-4 border-primaryFijo/20 pb-4 inline-block">{{ lectura.historia.titulo }}</h2>
 
-                    <h2 class="text-[28px] font-bold text-primaryFijo mb-8 border-b-4 border-primaryFijo/20 pb-4 inline-block">El dragón perdido</h2>
+                    <p id="narracion-texto" class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-12 tracking-wide text-left"></p>
 
-                    <p class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-12 tracking-wide text-left">
-                        Había una vez un pequeño dragón llamado <span class="text-reward">Chispa</span>. Estaba triste porque no podía encontrar su cueva.
-                    </p>
-
-                    <!-- Controles -->
                     <div class="flex flex-col sm:flex-row gap-6 w-full justify-center mt-auto">
-                        <button class="bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
+                        <button id="btn-escuchar" type="button" class="bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
                             <i data-lucide="play" class="w-8 h-8 fill-current"></i> Reproducir narración
                         </button>
 
-                        <button onclick="triggerInteraction()" class="bg-success text-white border-4 border-success rounded-full px-8 py-5 font-bold text-[22px] shadow-[0_6px_0_#2f855a] hover:-translate-y-1 hover:shadow-[0_8px_0_#2f855a] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-4">
+                        <button id="btn-continuar" type="button" class="bg-success text-white border-4 border-success rounded-full px-8 py-5 font-bold text-[22px] shadow-[0_6px_0_#2f855a] hover:-translate-y-1 hover:shadow-[0_8px_0_#2f855a] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-4">
                             Continuar <i data-lucide="arrow-right" class="w-8 h-8"></i>
                         </button>
                     </div>
                 </div>
-
             </div>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- PASO 3: INTERACCIÓN (PAUSA Y PREGUNTA)           -->
+        <!-- INTERACCIÓN: PAUSA Y PREGUNTA                   -->
         <!-- ============================================== -->
         <section id="view-interaction" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-reward/30 relative overflow-hidden">
 
-                <!-- Indicador de Pausa -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 bg-reward text-white px-8 py-2 rounded-b-3xl font-bold text-xl flex items-center gap-2 shadow-sm">
                     <i data-lucide="pause-circle" class="w-6 h-6"></i> ¡Pausa en la historia!
                 </div>
@@ -177,35 +150,31 @@
                     <i data-lucide="help-circle" class="w-12 h-12"></i>
                 </div>
 
-                <h3 class="text-[36px] md:text-[44px] font-bold text-textMain leading-[1.4] mb-16">
-                    ¿Qué crees que <span class="text-reward border-b-4 border-reward">hizo</span> el dragón?
-                </h3>
+                <h3 id="pregunta-texto" class="text-[36px] md:text-[44px] font-bold text-textMain leading-[1.4] mb-16"></h3>
 
-                <!-- Botones de Acción (Enfoque en accesibilidad) -->
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
+                <!-- Opciones (tipo='elegir') -->
+                <div id="bloque-elegir" class="hidden flex-col sm:flex-row items-center justify-center gap-6 w-full flex-wrap"></div>
 
-                    <button onclick="submitAnswer()" class="w-full sm:w-1/2 bg-gray-50 text-textMain border-4 border-gray-200 rounded-full px-6 py-6 font-bold text-[22px] hover:bg-gray-100 hover:border-gray-300 transition-colors flex flex-col items-center justify-center gap-3">
-                        <div class="bg-white p-3 rounded-full shadow-sm">
-                            <i data-lucide="keyboard" class="w-8 h-8 text-gray-500"></i>
-                        </div>
-                        Escribir respuesta
+                <!-- Respuesta escrita (tipo='escribir') -->
+                <div id="bloque-escribir" class="hidden flex-col items-center justify-center gap-6 w-full">
+                    <input id="input-escribir" type="text" class="w-full max-w-md bg-gray-50 border-4 border-gray-200 rounded-full px-8 py-5 font-bold text-[22px] text-center focus:outline-none focus:border-primaryFijo" placeholder="Escribe tu respuesta...">
+                    <button id="btn-enviar-escribir" type="button" class="bg-primaryFijo text-white border-4 border-primaryFijo rounded-full px-10 py-5 font-bold text-[22px] hover:bg-primaryFijo/90 transition-colors flex items-center justify-center gap-4">
+                        Enviar <i data-lucide="send" class="w-7 h-7"></i>
                     </button>
+                </div>
 
-                    <!-- Botón Principal Recomendado -->
-                    <button onclick="submitAnswer()" class="w-full sm:w-1/2 bg-white text-primaryFijo border-4 border-primaryFijo rounded-2xl px-6 py-6 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors shadow-soft flex flex-col items-center justify-center gap-3 group">
-                        <div class="bg-primaryFijo/10 p-3 rounded-full shadow-sm group-hover:bg-white transition-colors">
-                            <i data-lucide="mic" class="w-8 h-8 text-primaryFijo"></i>
-                        </div>
-                        Hablar respuesta
+                <!-- Respuesta hablada (tipo='pronunciar') -->
+                <div id="bloque-pronunciar" class="hidden flex-col items-center justify-center gap-6 w-full">
+                    <button id="btn-grabar" type="button" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[22px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4">
+                        <i data-lucide="mic" class="w-8 h-8"></i>
+                        <span id="text-grabar">Grabar</span>
                     </button>
-
                 </div>
             </div>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- PASO 4A: PENSANDO (CARGA)                        -->
+        <!-- PENSANDO (CARGA)                                -->
         <!-- ============================================== -->
         <section id="view-thinking" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
             <div class="relative w-40 h-40 mb-10 flex items-center justify-center">
@@ -219,102 +188,47 @@
             <h2 class="text-[36px] font-bold text-textMain tracking-wide animate-pulse">Pensando...</h2>
         </section>
 
-
         <!-- ============================================== -->
-        <!-- PASO 4B: DESENLACE Y RESULTADO                   -->
+        <!-- DESENLACE Y RESULTADO                           -->
         <!-- ============================================== -->
         <section id="view-resolution" class="hidden flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
 
-            <div class="absolute inset-0 overflow-hidden pointer-events-none flex justify-around opacity-80 text-4xl">
-                <div class="animate-[bounce_2s_ease-in-out_infinite_0.1s]">🐉</div>
-                <div class="animate-[bounce_2.5s_ease-in-out_infinite_0.5s]">💎</div>
-                <div class="animate-[bounce_3s_ease-in-out_infinite_0.2s]">🎉</div>
-            </div>
-
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
 
-                <h2 class="text-[36px] md:text-[44px] font-bold text-success mb-6 drop-shadow-sm leading-tight">
-                    ¡Conseguiste que el dragón encontrara su tesoro!
-                </h2>
+                <h2 id="resolucion-titulo" class="text-[36px] md:text-[44px] font-bold text-success mb-6 drop-shadow-sm leading-tight"></h2>
+                <p id="resolucion-mensaje-avatar" class="text-[22px] text-gray-600 mb-10"></p>
 
-                <p class="text-[22px] text-gray-600 mb-10">Tu respuesta fue brillante y ayudó a Chispa.</p>
-
-                <!-- Resumen y Recompensas -->
-                <div class="flex flex-wrap justify-center gap-6 mb-12 w-full">
-                    <div class="bg-gray-50 rounded-2xl p-6 flex flex-col items-center min-w-[180px] border-4 border-transparent">
-                        <span class="text-gray-500 font-bold mb-2 text-[18px]">Aciertos</span>
-                        <span class="text-[36px] font-bold text-textMain flex items-center gap-3">
-                            <i data-lucide="check-circle-2" class="w-10 h-10 text-success"></i> 1/1
-                        </span>
-                    </div>
+                <!-- Resumen final (solo cuando la historia se completó) -->
+                <div id="resumen-final" class="hidden flex-wrap justify-center gap-6 mb-12 w-full">
                     <div class="bg-reward/10 rounded-2xl p-6 flex flex-col items-center min-w-[180px] border-4 border-transparent">
                         <span class="text-gray-500 font-bold mb-2 text-[18px]">Recompensas</span>
                         <div class="flex items-center gap-4 text-[28px] font-bold text-reward mt-1">
-                            <span class="flex items-center gap-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i> +3</span>
-                            <span class="flex items-center gap-1"><i data-lucide="coins" class="w-8 h-8"></i> +20</span>
+                            <span id="resumen-monedas" class="flex items-center gap-1"><i data-lucide="coins" class="w-8 h-8"></i> +0</span>
                         </div>
+                    </div>
+                    <div id="resumen-insignia" class="hidden bg-success/10 rounded-2xl p-6 flex flex-col items-center min-w-[180px] border-4 border-transparent">
+                        <i data-lucide="award" class="w-10 h-10 text-success mb-2"></i>
+                        <span class="text-success font-bold text-[16px]">¡Nueva insignia!</span>
                     </div>
                 </div>
 
-                <!-- Botones Finales -->
+                <!-- Botones -->
                 <div class="flex flex-col md:flex-row gap-6 w-full max-w-lg justify-center">
-                    <button onclick="goToMenu()" class="w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <a id="btn-volver-menu" href="{% url 'historias' %}" class="hidden w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         <i data-lucide="home" class="w-6 h-6"></i> Volver al Menú
-                    </button>
-                    <button onclick="resetStory()" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
-                        Elegir otra <i data-lucide="book-open" class="w-6 h-6"></i>
+                    </a>
+                    <button id="btn-siguiente-fragmento" type="button" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                        Continuar <i data-lucide="arrow-right" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
         </section>
+        {% endif %}
 
     </main>
 
-    <script>
-        lucide.createIcons();
-
-        function changeView(hideId, showId) {
-            document.getElementById(hideId).classList.add('hidden');
-            document.getElementById(hideId).classList.remove('flex');
-
-            document.getElementById(showId).classList.remove('hidden');
-            document.getElementById(showId).classList.add('flex');
-
-            lucide.createIcons();
-        }
-
-        // De Selección a Narración
-        function startStory() {
-            document.getElementById('global-header').classList.add('hidden');
-            document.getElementById('global-header').classList.remove('flex');
-            changeView('view-selection', 'view-narration');
-        }
-
-        // De Narración a Pregunta Interactiva
-        function triggerInteraction() {
-            changeView('view-narration', 'view-interaction');
-        }
-
-        // Al enviar respuesta: Cargando -> Desenlace
-        function submitAnswer() {
-            changeView('view-interaction', 'view-thinking');
-
-            // Simula estado de pensamiento/análisis por 2 segundos
-            setTimeout(() => {
-                changeView('view-thinking', 'view-resolution');
-            }, 2000);
-        }
-
-        // Acciones finales
-        function goToMenu() {
-            window.location.href = "{% url 'home' %}";
-        }
-
-        function resetStory() {
-            document.getElementById('global-header').classList.remove('hidden');
-            document.getElementById('global-header').classList.add('flex');
-            changeView('view-resolution', 'view-selection');
-        }
-    </script>
+    {% csrf_token %}
+    {{ historias_config|json_script:"historias-config" }}
+    <script src="{% static 'js/historias/historias.js' %}"></script>
 </body>
 </html>
