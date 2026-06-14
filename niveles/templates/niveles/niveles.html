@@ -58,55 +58,7 @@
         <section id="view-map" class="flex flex-col items-center w-full animate-fade-in">
             <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
 
-            <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 border-primaryFijo/20 relative mb-16 animate-float">
-                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primaryFijo text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
-                    Mundo 1: Básico
-                </div>
-
-                <div class="flex justify-between items-center relative mt-6 px-4 md:px-12">
-                    <div class="absolute top-1/2 left-8 right-8 h-4 bg-gray-100 -z-10 rounded-full transform -translate-y-1/2"></div>
-
-                    {% for n in niveles %}
-                        {% if n.numero < progreso.nivel_actual.numero %}
-                            <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-success text-white font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#2f855a] border-4 border-white hover:scale-105 active:translate-y-2 active:shadow-none transition-all relative z-10 cursor-default" title="Nivel {{ n.numero }} Completado">
-                                <i data-lucide="check" class="w-10 h-10"></i>
-                                <div class="absolute -bottom-2 -right-2 bg-reward border-2 border-white text-white rounded-full p-1.5 shadow-sm">
-                                    <i data-lucide="star" class="w-5 h-5 fill-white"></i>
-                                </div>
-                            </button>
-
-                        {% elif n.numero == progreso.nivel_actual.numero %}
-                            <button
-                                data-action="start-exercise"
-                                data-numero-nivel="{{ n.numero }}"
-                                data-frase-historia="{{ mision_actual.frase_historia }}"
-                                data-palabra-objetivo="{{ mision_actual.palabra_objetivo }}"
-                                class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-primaryFijo text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
-                                {{ n.numero }}
-                            </button>
-
-                        {% else %}
-                            <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#cbd5e0] border-4 border-white cursor-not-allowed relative z-10 grayscale opacity-80" disabled>
-                                <i data-lucide="lock" class="w-8 h-8"></i>
-                            </button>
-                        {% endif %}
-                    {% empty %}
-                        <p class="text-gray-500 text-center w-full">No hay niveles configurados en el panel de Django todavía.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="w-full max-w-2xl bg-gray-50 p-8 md:p-12 rounded-2xl shadow-sm border-4 border-gray-200 relative mb-16 opacity-80 grayscale">
-                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-400 text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm flex items-center gap-2">
-                    <i data-lucide="lock" class="w-5 h-5"></i> Mundo 2: Intermedio
-                </div>
-                <div class="flex justify-between items-center relative mt-6 px-4 md:px-12">
-                    <div class="absolute top-1/2 left-8 right-8 h-4 bg-gray-200 -z-10 rounded-full transform -translate-y-1/2"></div>
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>4</button>
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>5</button>
-                    <button class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-sm border-4 border-white cursor-not-allowed z-10" disabled>6</button>
-                </div>
-            </div>
+            {% include 'niveles/mapa.html' %}
         </section>
 
         <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
@@ -156,8 +108,10 @@
             </div>
 
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
-                <h2 class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Nivel Superado!</h2>
-                <p class="text-[24px] text-gray-600 mb-10">¡Lo hiciste increíble! Sigue así.</p>
+                <h2 id="resultado-titulo" class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Nivel Superado!</h2>
+                <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-6">¡Lo hiciste increíble! Sigue así.</p>
+
+                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primaryFijo mb-8"></p>
 
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
                     <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#10B981 85%, #edf2f7 0);"></div>
@@ -167,9 +121,11 @@
                     </div>
                 </div>
 
+                <div id="resultado-palabras" class="hidden flex flex-wrap items-center justify-center gap-3 mb-8"></div>
+
                 <div class="bg-reward/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-reward/20 mb-10">
                     <i data-lucide="coins" class="w-8 h-8 text-reward"></i>
-                    <span class="text-[24px] font-bold text-reward">+ {{ mision_actual.nivel.puntos_recompensa|default:50 }} Monedas</span>
+                    <span id="resultado-monedas" class="text-[24px] font-bold text-reward">+ {{ mision_actual.nivel.puntos_recompensa|default:50 }} Monedas</span>
                 </div>
 
                 <form action="{% url 'guardar_progreso' %}" method="POST" class="w-full">
@@ -182,14 +138,31 @@
                             Volver al mapa
                         </a>
 
-                        <button type="submit" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                        <button type="submit" id="btn-siguiente-nivel" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                             Siguiente Nivel <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                        </button>
+
+                        <button type="button" id="btn-reintentar" class="hidden w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                            Reintentar <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
                         </button>
                     </div>
                 </form>
 
             </div>
         </section>
+
+        <div id="modal-narrativa" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-6" role="dialog" aria-modal="true" aria-labelledby="narrativa-titulo">
+            <div class="bg-white rounded-2xl p-10 md:p-12 shadow-soft w-full max-w-lg flex flex-col items-center text-center border-4 border-primaryFijo/20 animate-fade-in">
+                <div class="w-16 h-16 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-6 shadow-sm">
+                    <i data-lucide="sparkles" class="w-8 h-8"></i>
+                </div>
+                <h2 id="narrativa-titulo" class="text-[28px] font-bold text-primaryFijo mb-4">Una nueva aventura...</h2>
+                <p id="narrativa-texto" class="text-[20px] text-textMain leading-[1.6] mb-8"></p>
+                <button id="btn-comenzar-narrativa" class="w-full sm:w-auto bg-primaryFijo text-white px-10 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 min-h-[48px]">
+                    ¡Comenzar! <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
 
     </main>
 

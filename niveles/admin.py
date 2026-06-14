@@ -3,7 +3,8 @@ from .models import Nivel, MisionVocabulario, ProgresoEstudiante
 
 @admin.register(Nivel)
 class NivelAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'titulo', 'puntos_recompensa')
+    list_display = ('numero', 'titulo', 'puntos_recompensa', 'zona', 'orden_en_zona')
+    list_filter = ('zona',)
     ordering = ('numero',)
 
 @admin.register(MisionVocabulario)

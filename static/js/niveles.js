@@ -43,13 +43,17 @@
     /**
      * Inicia el ejercicio de un nivel: guarda los datos de la misión actual,
      * actualiza el título y resalta la palabra objetivo dentro de la frase,
-     * oculta el encabezado global y cambia a la vista de ejercicio.
+     * oculta el encabezado global y cambia a la vista de ejercicio. Si el
+     * nivel tiene una narrativa de introducción, muestra primero el modal
+     * `#modal-narrativa` y posterga el cambio de vista hasta que el
+     * estudiante presione "¡Comenzar!".
      * @param {string} numeroNivel - Número del nivel seleccionado.
      * @param {string} fraseHistoria - Frase completa que el estudiante debe leer.
      * @param {string} palabraObjetivo - Palabra objetivo dentro de la frase.
+     * @param {string} [narrativaIntro] - Texto narrativo de introducción del nivel (puede ser vacío).
      * @returns {void}
      */
-    function startExercise(numeroNivel, fraseHistoria, palabraObjetivo) {
+    function startExercise(numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro) {
         nivelSeleccionado = numeroNivel;
         fraseActual = fraseHistoria;
         palabraObjetivoActual = palabraObjetivo;
@@ -61,6 +65,31 @@
             `<span class="text-primaryFijo underline decoration-wavy decoration-2">${palabraObjetivo}</span>`
         );
         document.getElementById('exercise-phrase').innerHTML = fraseModificada;
+
+        if (narrativaIntro) {
+            document.getElementById('narrativa-texto').textContent = narrativaIntro;
+            const modal = document.getElementById('modal-narrativa');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+            return;
+        }
+
+        document.getElementById('global-header').classList.add('hidden');
+        document.getElementById('global-header').classList.remove('flex');
+
+        changeView('view-map', 'view-exercise');
+    }
+
+    /**
+     * Cierra el modal de narrativa y avanza a la vista de ejercicio,
+     * ocultando el encabezado global.
+     * @returns {void}
+     */
+    function comenzarDesdeNarrativa() {
+        const modal = document.getElementById('modal-narrativa');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
 
         document.getElementById('global-header').classList.add('hidden');
         document.getElementById('global-header').classList.remove('flex');
@@ -268,6 +297,18 @@
                     document.getElementById('input-nivel-id').value = nivelSeleccionado;
                     document.getElementById('input-score').value = scoreAzure;
 
+                    // Monedas ganadas reales (CASO A)
+                    document.getElementById('resultado-monedas').textContent = `+ ${data.monedas_ganadas} Monedas`;
+
+                    // Mensaje motivador del avatar
+                    mostrarMensajeAvatar(data.reaccion_avatar);
+
+                    // Indicadores por palabra
+                    mostrarIndicadoresPalabras(data.palabras);
+
+                    // Título/subtítulo + botones según si avanzó de nivel
+                    actualizarResultadoSegunAvance(data.avanzo_de_nivel);
+
                     changeView('view-loading', 'view-result');
                 } else {
                     alert('No se pudo evaluar la pronunciación. ' + data.message);
@@ -278,6 +319,93 @@
                 alert('Hubo un problema comunicándose con el servidor de Azure.');
                 goToMap();
             }
+        }
+    }
+
+    /**
+     * Muestra el mensaje motivador del avatar en `#resultado-mensaje-avatar`,
+     * anteponiendo un emoji acorde al tipo de reacción recibida.
+     * @param {{tipo: string, mensaje: string}} [reaccionAvatar] - Reacción del avatar devuelta por el backend.
+     * @returns {void}
+     */
+    function mostrarMensajeAvatar(reaccionAvatar) {
+        const elementoMensaje = document.getElementById('resultado-mensaje-avatar');
+        if (!reaccionAvatar || !reaccionAvatar.mensaje) {
+            elementoMensaje.textContent = '';
+            return;
+        }
+
+        const emojisPorTipo = {
+            nivel_completado: '🌟',
+            pronunciacion_correcta: '😄',
+            pronunciacion_incorrecta: '💪',
+        };
+        const emoji = emojisPorTipo[reaccionAvatar.tipo] || '🙂';
+
+        elementoMensaje.textContent = `${emoji} ${reaccionAvatar.mensaje}`;
+    }
+
+    /**
+     * Genera los chips de indicadores por palabra dentro de
+     * `#resultado-palabras`. Si no hay palabras, mantiene el contenedor
+     * oculto.
+     * @param {{palabra: string, score: number}[]} [palabras] - Lista de palabras evaluadas con su score individual.
+     * @returns {void}
+     */
+    function mostrarIndicadoresPalabras(palabras) {
+        const contenedor = document.getElementById('resultado-palabras');
+        contenedor.innerHTML = '';
+
+        if (!palabras || palabras.length === 0) {
+            contenedor.classList.add('hidden');
+            contenedor.classList.remove('flex');
+            return;
+        }
+
+        palabras.forEach((palabra) => {
+            const chip = document.createElement('span');
+            const esCorrecta = palabra.score >= 70;
+            chip.textContent = palabra.palabra;
+            chip.className = 'px-4 py-2 rounded-full font-bold text-[16px] border-2 '
+                + (esCorrecta
+                    ? 'bg-success/10 text-success border-success'
+                    : 'bg-error/10 text-error border-error');
+            contenedor.appendChild(chip);
+        });
+
+        contenedor.classList.remove('hidden');
+        contenedor.classList.add('flex');
+    }
+
+    /**
+     * Ajusta el título, subtítulo y botones de `#view-result` según si el
+     * estudiante avanzó de nivel: muestra "Siguiente Nivel" si avanzó, o
+     * "Reintentar" si debe volver a intentar el mismo nivel.
+     * @param {boolean} avanzoDeNivel - Indica si el estudiante desbloqueó el siguiente nivel.
+     * @returns {void}
+     */
+    function actualizarResultadoSegunAvance(avanzoDeNivel) {
+        const titulo = document.getElementById('resultado-titulo');
+        const subtitulo = document.getElementById('resultado-subtitulo');
+        const btnSiguienteNivel = document.getElementById('btn-siguiente-nivel');
+        const btnReintentar = document.getElementById('btn-reintentar');
+
+        if (avanzoDeNivel) {
+            titulo.textContent = '¡Nivel Superado!';
+            subtitulo.textContent = '¡Lo hiciste increíble! Sigue así.';
+
+            btnSiguienteNivel.classList.remove('hidden');
+            btnSiguienteNivel.classList.add('flex');
+            btnReintentar.classList.add('hidden');
+            btnReintentar.classList.remove('flex');
+        } else {
+            titulo.textContent = '¡Sigue practicando!';
+            subtitulo.textContent = 'Puedes intentarlo de nuevo cuando quieras.';
+
+            btnSiguienteNivel.classList.add('hidden');
+            btnSiguienteNivel.classList.remove('flex');
+            btnReintentar.classList.remove('hidden');
+            btnReintentar.classList.add('flex');
         }
     }
 
@@ -303,8 +431,10 @@
 
     /**
      * Inicializa los listeners de la página de niveles: enlaza el botón
-     * del nivel actual (lee sus `data-*` con la frase y palabra objetivo),
-     * el botón de "Escuchar" y el botón de "Grabar".
+     * del nivel actual (lee sus `data-*` con la frase, palabra objetivo y
+     * narrativa de introducción), el botón de "Escuchar", el botón de
+     * "Grabar", el botón "¡Comenzar!" del modal de narrativa y el botón
+     * "Reintentar" de la vista de resultado.
      * @returns {void}
      */
     function inicializar() {
@@ -313,8 +443,8 @@
         const btnIniciarNivel = document.querySelector('[data-action="start-exercise"]');
         if (btnIniciarNivel) {
             btnIniciarNivel.addEventListener('click', () => {
-                const { numeroNivel, fraseHistoria, palabraObjetivo } = btnIniciarNivel.dataset;
-                startExercise(numeroNivel, fraseHistoria, palabraObjetivo);
+                const { numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro } = btnIniciarNivel.dataset;
+                startExercise(numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro);
             });
         }
 
@@ -326,6 +456,19 @@
         const btnGrabar = document.getElementById('btn-grabar');
         if (btnGrabar) {
             btnGrabar.addEventListener('click', toggleRecording);
+        }
+
+        const btnComenzarNarrativa = document.getElementById('btn-comenzar-narrativa');
+        if (btnComenzarNarrativa) {
+            btnComenzarNarrativa.addEventListener('click', comenzarDesdeNarrativa);
+        }
+
+        const btnReintentar = document.getElementById('btn-reintentar');
+        if (btnReintentar) {
+            btnReintentar.addEventListener('click', () => {
+                document.getElementById('text-grabar').textContent = 'Grabar';
+                changeView('view-result', 'view-exercise');
+            });
         }
     }
 

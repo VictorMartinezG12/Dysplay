@@ -1,5 +1,44 @@
+import json
+import logging
+
 import azure.cognitiveservices.speech as speechsdk
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
+def _extraer_desglose_por_palabra(result):
+    """
+    Extrae el desglose de puntuación por palabra del resultado crudo de Azure.
+
+    Azure Speech no ofrece un desglose por sílaba para español; se usa el
+    desglose por palabra (incluido en el JSON de respuesta cuando
+    `granularity=Phoneme`) como interpretación de "sílaba" para los
+    indicadores de pronunciación del Master Plan.
+
+    Args:
+        result: objeto `SpeechRecognitionResult` devuelto por
+            `speech_recognizer.recognize_once_async().get()`.
+
+    Returns:
+        list[dict]: lista de `{'palabra': str, 'score': float}`, una entrada
+            por cada palabra reconocida. Devuelve `[]` si no se pudo extraer
+            la información (JSON inválido o estructura inesperada).
+    """
+    try:
+        json_crudo = result.properties.get(speechsdk.PropertyId.SpeechServiceResponse_JsonResult)
+        datos = json.loads(json_crudo)
+        palabras_nbest = datos['NBest'][0]['Words']
+        return [
+            {
+                'palabra': palabra.get('Word', ''),
+                'score': palabra.get('PronunciationAssessment', {}).get('AccuracyScore', 0),
+            }
+            for palabra in palabras_nbest
+        ]
+    except Exception:
+        logger.error("No se pudo extraer el desglose por palabra del resultado de Azure", exc_info=True)
+        return []
 
 
 def evaluar_pronunciacion(audio_path, palabra_objetivo):
@@ -38,7 +77,8 @@ def evaluar_pronunciacion(audio_path, palabra_objetivo):
             'score_global': pron_result.pronunciation_score,
             'score_exactitud': pron_result.accuracy_score,
             'score_fluidez': pron_result.fluency_score,
-            'texto_reconocido': result.text
+            'texto_reconocido': result.text,
+            'palabras': _extraer_desglose_por_palabra(result),
         }
     else:
         return {

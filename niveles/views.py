@@ -1,5 +1,4 @@
 import logging
-import os
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -34,6 +33,7 @@ def niveles_view(request):
         'niveles_config': {
             'url_guardar_progreso': reverse('guardar_progreso'),
         },
+        'zonas_mapa': services.obtener_mapa_aventura(request.user),
     }
     return render(request, 'niveles/niveles.html', context)
 
@@ -59,32 +59,17 @@ def _evaluar_audio_y_responder(request):
     if not palabra_objetivo:
         return JsonResponse({'status': 'error', 'message': 'Faltan datos de audio o palabra.'})
 
-    ruta_audio_temporal = None
     try:
-        ruta_audio_temporal = services.procesar_audio_subido(request.FILES.get('audio'))
-        resultado_azure = services.evaluar_pronunciacion_azure(ruta_audio_temporal, palabra_objetivo)
-
-        if resultado_azure['status'] != 'success':
-            return JsonResponse({'status': 'error', 'message': resultado_azure['message']})
-
-        services.guardar_progreso_estudiante(request.user, nivel_id, resultado_azure)
-        recompensas = services.calcular_recompensas(request.user, resultado_azure['score_global'], nivel_id)
-
-        return JsonResponse({
-            'status': 'success',
-            'score': resultado_azure['score_global'],
-            'monedas_ganadas': recompensas['monedas_ganadas'],
-            'monedas_totales': recompensas['monedas_totales'],
-        })
+        resultado = services.procesar_intento_nivel(
+            request.user, request.FILES.get('audio'), palabra_objetivo, nivel_id,
+        )
+        return JsonResponse(resultado)
     except Exception as e:
         logger.error(f"Error en guardar_progreso: {e}", exc_info=True)
         return JsonResponse(
             {'status': 'error', 'message': 'Ocurrió un error al procesar tu intento. Inténtalo de nuevo.'},
             status=500,
         )
-    finally:
-        if ruta_audio_temporal and os.path.exists(ruta_audio_temporal):
-            os.remove(ruta_audio_temporal)
 
 
 def _registrar_avance_nivel(request):

@@ -1,0 +1,152 @@
+{% comment %}
+Mapa de Aventura Visual (Módulo D.1).
+Recibe `zonas_mapa` y `mision_actual` desde niveles_view (ver niveles/views.py).
+Cada zona se muestra como una tarjeta con un ícono SVG temático, su lista de
+niveles (si tiene) o un badge "Próximamente" (si está vacía).
+{% endcomment %}
+
+{% for zona in zonas_mapa %}
+    <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 relative mb-16
+                {% if not zona.desbloqueada %}grayscale opacity-70 border-gray-300
+                {% elif not zona.niveles %}border-gray-200 opacity-80
+                {% else %}border-primaryFijo/20{% endif %}">
+
+        {# --- Badge de estado de la zona --- #}
+        {% if not zona.desbloqueada %}
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-400 text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm flex items-center gap-2">
+                <i data-lucide="lock" class="w-5 h-5"></i> Bloqueada
+            </div>
+        {% elif not zona.niveles %}
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-400 text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm flex items-center gap-2">
+                <i data-lucide="clock" class="w-5 h-5"></i> Próximamente
+            </div>
+        {% else %}
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primaryFijo text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
+                {{ zona.nombre }}
+            </div>
+        {% endif %}
+
+        {# --- Encabezado: ícono SVG temático + nombre/descripción --- #}
+        <div class="flex items-center gap-4 mt-6 mb-6">
+            {% if zona.clave == 'bosque_encantado' %}
+                {# Bosque Encantado: árbol verde (success) #}
+                <button type="button"
+                        aria-label="Zona: {{ zona.nombre }}. {{ zona.descripcion }}"
+                        class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-success/10 border-4 border-success/30 flex items-center justify-center min-w-[48px] min-h-[48px] focus:outline-none focus:ring-4 focus:ring-success/40 transition-transform hover:scale-105">
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 md:w-12 md:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="28" y="40" width="8" height="18" rx="2" fill="#92400E"/>
+                        <circle cx="32" cy="26" r="18" fill="#10B981"/>
+                        <circle cx="20" cy="34" r="12" fill="#10B981"/>
+                        <circle cx="44" cy="34" r="12" fill="#10B981"/>
+                    </svg>
+                </button>
+            {% elif zona.clave == 'montana_letras' %}
+                {# Montaña de Letras: montaña gris/stone #}
+                <button type="button"
+                        aria-label="Zona: {{ zona.nombre }}. {{ zona.descripcion }}"
+                        class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-stone-200 border-4 border-stone-400/40 flex items-center justify-center min-w-[48px] min-h-[48px] focus:outline-none focus:ring-4 focus:ring-stone-400/40 transition-transform hover:scale-105">
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 md:w-12 md:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <polygon points="32,10 50,50 14,50" fill="#78716C"/>
+                        <polygon points="32,10 40,28 24,28" fill="#FFFFFF"/>
+                        <polygon points="46,22 58,50 38,50" fill="#A8A29E"/>
+                    </svg>
+                </button>
+            {% elif zona.clave == 'valle_silabas' %}
+                {# Valle de Sílabas: valle ámbar/reward #}
+                <button type="button"
+                        aria-label="Zona: {{ zona.nombre }}. {{ zona.descripcion }}"
+                        class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-reward/10 border-4 border-reward/30 flex items-center justify-center min-w-[48px] min-h-[48px] focus:outline-none focus:ring-4 focus:ring-reward/40 transition-transform hover:scale-105">
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 md:w-12 md:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M4 44 C16 28, 24 28, 32 38 C40 48, 48 28, 60 18" stroke="#C2410C" stroke-width="5" fill="none" stroke-linecap="round"/>
+                        <circle cx="14" cy="50" r="5" fill="#FBBF24"/>
+                        <circle cx="32" cy="50" r="5" fill="#FBBF24"/>
+                        <circle cx="50" cy="50" r="5" fill="#FBBF24"/>
+                    </svg>
+                </button>
+            {% elif zona.clave == 'castillo_palabras' %}
+                {# Castillo de Palabras: castillo púrpura #}
+                <button type="button"
+                        aria-label="Zona: {{ zona.nombre }}. {{ zona.descripcion }}"
+                        class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-purple-100 border-4 border-purple-300 flex items-center justify-center min-w-[48px] min-h-[48px] focus:outline-none focus:ring-4 focus:ring-purple-300/60 transition-transform hover:scale-105">
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 md:w-12 md:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="10" y="28" width="44" height="26" fill="#A855F7"/>
+                        <rect x="6" y="18" width="10" height="14" fill="#9333EA"/>
+                        <rect x="27" y="14" width="10" height="18" fill="#9333EA"/>
+                        <rect x="48" y="18" width="10" height="14" fill="#9333EA"/>
+                        <rect x="28" y="38" width="8" height="16" fill="#6B21A8"/>
+                    </svg>
+                </button>
+            {% elif zona.clave == 'reino_lectura' %}
+                {# Reino de la Lectura: castillo/corona índigo (storyBg) #}
+                <button type="button"
+                        aria-label="Zona: {{ zona.nombre }}. {{ zona.descripcion }}"
+                        class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-indigo-100 border-4 border-indigo-300 flex items-center justify-center min-w-[48px] min-h-[48px] focus:outline-none focus:ring-4 focus:ring-indigo-300/60 transition-transform hover:scale-105">
+                    <svg viewBox="0 0 64 64" class="w-10 h-10 md:w-12 md:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M8 50 L8 28 L18 36 L32 22 L46 36 L56 28 L56 50 Z" fill="#1E3A8A"/>
+                        <circle cx="8" cy="24" r="4" fill="#6366F1"/>
+                        <circle cx="32" cy="18" r="4" fill="#6366F1"/>
+                        <circle cx="56" cy="24" r="4" fill="#6366F1"/>
+                    </svg>
+                </button>
+            {% else %}
+                <div class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-full bg-gray-100 border-4 border-gray-300 flex items-center justify-center min-w-[48px] min-h-[48px]" aria-hidden="true">
+                    <i data-lucide="map" class="w-8 h-8 text-gray-400"></i>
+                </div>
+            {% endif %}
+
+            <div class="text-left">
+                <h2 class="text-[22px] md:text-[26px] font-bold {% if not zona.desbloqueada %}text-gray-400{% else %}text-textMain{% endif %}">
+                    {{ zona.nombre }}
+                </h2>
+                <p class="text-[16px] {% if not zona.desbloqueada %}text-gray-400{% else %}text-gray-500{% endif %}">
+                    {{ zona.descripcion }}
+                </p>
+            </div>
+        </div>
+
+        {# --- Contenido: niveles, "Próximamente" o "Bloqueada" --- #}
+        {% if not zona.desbloqueada %}
+            <p class="text-center text-gray-400 text-[18px] font-bold py-4">
+                Completa las zonas anteriores para desbloquear esta área.
+            </p>
+        {% elif not zona.niveles %}
+            <p class="text-center text-gray-400 text-[18px] font-bold py-4">
+                ¡Nuevas aventuras llegarán pronto a esta zona!
+            </p>
+        {% else %}
+            <div class="flex flex-wrap justify-center items-center gap-6 md:gap-8 relative mt-6 px-2 md:px-8">
+                <div class="absolute top-1/2 left-8 right-8 h-4 bg-gray-100 -z-10 rounded-full transform -translate-y-1/2"></div>
+
+                {% for nivel in zona.niveles %}
+                    {% if nivel.estado == 'completado' %}
+                        <button class="w-20 h-20 md:w-24 md:h-24 min-w-[48px] min-h-[48px] rounded-full bg-success text-white font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#2f855a] border-4 border-white hover:scale-105 active:translate-y-2 active:shadow-none transition-all relative z-10 cursor-default focus:outline-none focus:ring-4 focus:ring-success/40"
+                                aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Completado.">
+                            <i data-lucide="check" class="w-10 h-10" aria-hidden="true"></i>
+                            <div class="absolute -bottom-2 -right-2 bg-reward border-2 border-white text-white rounded-full p-1.5 shadow-sm">
+                                <i data-lucide="star" class="w-5 h-5 fill-white" aria-hidden="true"></i>
+                            </div>
+                        </button>
+
+                    {% elif nivel.estado == 'actual' %}
+                        <button
+                            data-action="start-exercise"
+                            data-numero-nivel="{{ nivel.numero }}"
+                            data-frase-historia="{{ mision_actual.frase_historia }}"
+                            data-palabra-objetivo="{{ mision_actual.palabra_objetivo }}"
+                            data-narrativa-intro="{{ nivel.narrativa_intro }}"
+                            aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Nivel actual, toca para comenzar."
+                            class="w-24 h-24 md:w-28 md:h-28 min-w-[48px] min-h-[48px] rounded-full bg-primaryFijo text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
+                            {{ nivel.numero }}
+                        </button>
+
+                    {% else %}
+                        <button class="w-20 h-20 md:w-24 md:h-24 min-w-[48px] min-h-[48px] rounded-full bg-gray-200 text-gray-500 font-bold text-2xl flex items-center justify-center shadow-[0_6px_0_#cbd5e0] border-4 border-white cursor-not-allowed relative z-10 grayscale opacity-80 focus:outline-none focus:ring-4 focus:ring-gray-300"
+                                aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Bloqueado." disabled>
+                            <i data-lucide="lock" class="w-8 h-8" aria-hidden="true"></i>
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
