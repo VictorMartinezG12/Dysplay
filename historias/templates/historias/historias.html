@@ -9,12 +9,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
-            background-color: #FFFBEB;
-            color: #1E293B;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
         }
 
         .animate-fade-in {
@@ -33,14 +58,14 @@
 
     <!-- HEADER GLOBAL -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-6xl z-50 relative">
-        <a href="{% if lectura %}{% url 'historias' %}{% else %}{% url 'home' %}{% endif %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
+        <a href="{% if lectura %}{% url 'historias' %}{% else %}{% url 'home' %}{% endif %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
 
         <div class="flex items-center gap-4 bg-white px-8 py-4 rounded-full shadow-soft min-h-[64px]">
-            <i data-lucide="book-open" class="w-8 h-8 text-primaryFijo"></i>
-            <span class="text-[20px] font-bold text-primaryFijo">Cuentos</span>
+            <i data-lucide="book-open" class="w-8 h-8 text-primary"></i>
+            <span class="text-[20px] font-bold text-primary">Cuentos</span>
         </div>
     </header>
 
@@ -53,7 +78,7 @@
         <!-- ============================================== -->
         <section id="view-selection" class="flex flex-col items-center w-full animate-fade-in">
 
-            <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-10 text-center drop-shadow-sm">Elige una Aventura</h1>
+            <h1 class="text-[36px] md:text-[40px] font-bold text-primary mb-10 text-center drop-shadow-sm">Elige una Aventura</h1>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl">
                 {% for historia in historias %}
@@ -78,7 +103,7 @@
                     </div>
                 </div>
                 {% else %}
-                <a href="?historia={{ historia.id }}" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primaryFijo/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primaryFijo/50 relative">
+                <a href="?historia={{ historia.id }}" class="bg-white rounded-2xl overflow-hidden shadow-soft border-4 border-transparent hover:border-primary/30 hover:-translate-y-2 hover:shadow-lg transition-all text-left flex flex-col group focus:outline-none focus:ring-4 focus:ring-primary/50 relative">
                     {% if historia.estado == 'completada' %}
                     <div class="absolute top-3 right-3 z-10 bg-success text-white rounded-full p-2 shadow-sm">
                         <i data-lucide="check" class="w-5 h-5"></i>
@@ -89,8 +114,8 @@
                         {% if historia.portada_url %}
                         <img src="{{ historia.portada_url }}" alt="{{ historia.titulo }}" class="absolute inset-0 w-full h-full object-cover">
                         {% else %}
-                        <div class="absolute inset-0 {% if historia.nivel_dificultad == 'dificil' %}bg-amber-500/20 group-hover:bg-amber-500/10{% elif historia.nivel_dificultad == 'medio' %}bg-purple-500/20 group-hover:bg-purple-500/10{% else %}bg-primaryFijo/20 group-hover:bg-primaryFijo/10{% endif %} transition-colors"></div>
-                        <i data-lucide="book-open" class="w-24 h-24 {% if historia.nivel_dificultad == 'dificil' %}text-amber-500{% elif historia.nivel_dificultad == 'medio' %}text-purple-500{% else %}text-primaryFijo{% endif %} opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
+                        <div class="absolute inset-0 {% if historia.nivel_dificultad == 'dificil' %}bg-amber-500/20 group-hover:bg-amber-500/10{% elif historia.nivel_dificultad == 'medio' %}bg-purple-500/20 group-hover:bg-purple-500/10{% else %}bg-primary/20 group-hover:bg-primary/10{% endif %} transition-colors"></div>
+                        <i data-lucide="book-open" class="w-24 h-24 {% if historia.nivel_dificultad == 'dificil' %}text-amber-500{% elif historia.nivel_dificultad == 'medio' %}text-purple-500{% else %}text-primary{% endif %} opacity-50 relative z-10 transform group-hover:scale-110 transition-transform"></i>
                         {% endif %}
                     </div>
 
@@ -98,7 +123,7 @@
                         <h2 class="text-[24px] font-bold text-textMain leading-tight">{{ historia.titulo }}</h2>
                         <p class="text-[16px] text-gray-500">{{ historia.descripcion_corta }}</p>
                         <div class="flex items-center justify-between mt-2">
-                            <span class="{% if historia.nivel_dificultad == 'dificil' %}bg-amber-100 text-amber-600{% elif historia.nivel_dificultad == 'medio' %}bg-primaryFijo/20 text-primaryFijo{% else %}bg-success/20 text-success{% endif %} px-4 py-1.5 rounded-full font-bold text-[14px]">{{ historia.nivel_dificultad_display }}</span>
+                            <span class="{% if historia.nivel_dificultad == 'dificil' %}bg-amber-100 text-amber-600{% elif historia.nivel_dificultad == 'medio' %}bg-primary/20 text-primary{% else %}bg-success/20 text-success{% endif %} px-4 py-1.5 rounded-full font-bold text-[14px]">{{ historia.nivel_dificultad_display }}</span>
                             <div class="flex gap-1 text-reward">
                                 {% for _ in historia.rango_estrellas %}<i data-lucide="star" class="w-5 h-5 fill-current"></i>{% endfor %}
                             </div>
@@ -119,12 +144,12 @@
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1590141510427-418d53d2d0b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center opacity-30 mix-blend-overlay"></div>
 
                 <div class="relative z-10 bg-white/95 backdrop-blur-md rounded-2xl p-8 md:p-12 w-full max-w-3xl shadow-xl flex flex-col items-center text-center">
-                    <h2 class="text-[28px] font-bold text-primaryFijo mb-8 border-b-4 border-primaryFijo/20 pb-4 inline-block">{{ lectura.historia.titulo }}</h2>
+                    <h2 class="text-[28px] font-bold text-primary mb-8 border-b-4 border-primary/20 pb-4 inline-block">{{ lectura.historia.titulo }}</h2>
 
                     <p id="narracion-texto" class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-12 tracking-wide text-left"></p>
 
                     <div class="flex flex-col sm:flex-row gap-6 w-full justify-center mt-auto">
-                        <button id="btn-escuchar" type="button" class="bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
+                        <button id="btn-escuchar" type="button" class="bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
                             <i data-lucide="play" class="w-8 h-8 fill-current"></i> Reproducir narración
                         </button>
 
@@ -157,8 +182,8 @@
 
                 <!-- Respuesta escrita (tipo='escribir') -->
                 <div id="bloque-escribir" class="hidden flex-col items-center justify-center gap-6 w-full">
-                    <input id="input-escribir" type="text" class="w-full max-w-md bg-gray-50 border-4 border-gray-200 rounded-full px-8 py-5 font-bold text-[22px] text-center focus:outline-none focus:border-primaryFijo" placeholder="Escribe tu respuesta...">
-                    <button id="btn-enviar-escribir" type="button" class="bg-primaryFijo text-white border-4 border-primaryFijo rounded-full px-10 py-5 font-bold text-[22px] hover:bg-primaryFijo/90 transition-colors flex items-center justify-center gap-4">
+                    <input id="input-escribir" type="text" class="w-full max-w-md bg-gray-50 border-4 border-gray-200 rounded-full px-8 py-5 font-bold text-[22px] text-center focus:outline-none focus:border-primary" placeholder="Escribe tu respuesta...">
+                    <button id="btn-enviar-escribir" type="button" class="bg-primary text-white border-4 border-primary rounded-full px-10 py-5 font-bold text-[22px] hover:bg-primary/90 transition-colors flex items-center justify-center gap-4">
                         Enviar <i data-lucide="send" class="w-7 h-7"></i>
                     </button>
                 </div>
@@ -180,9 +205,9 @@
             <div class="relative w-40 h-40 mb-10 flex items-center justify-center">
                 <i data-lucide="message-square" class="w-32 h-32 text-gray-200 absolute"></i>
                 <div class="flex gap-2 relative z-10 mt-2 ml-2">
-                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0s]"></div>
-                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
-                    <div class="w-4 h-4 bg-primaryFijo rounded-full animate-[bounce_1s_infinite_0.4s]"></div>
+                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0s]"></div>
+                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
+                    <div class="w-4 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0.4s]"></div>
                 </div>
             </div>
             <h2 class="text-[36px] font-bold text-textMain tracking-wide animate-pulse">Pensando...</h2>
@@ -217,7 +242,7 @@
                     <a id="btn-volver-menu" href="{% url 'historias' %}" class="hidden w-full bg-white text-textMain px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#e2e8f0] border-4 border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_0_#e2e8f0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         <i data-lucide="home" class="w-6 h-6"></i> Volver al Menú
                     </a>
-                    <button id="btn-siguiente-fragmento" type="button" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button id="btn-siguiente-fragmento" type="button" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         Continuar <i data-lucide="arrow-right" class="w-6 h-6"></i>
                     </button>
                 </div>

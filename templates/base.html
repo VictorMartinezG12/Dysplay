@@ -97,6 +97,12 @@
                     <span>{{ user.racha_dias }} días</span>
                 </div>
 
+                <!-- Configuración -->
+                <a href="{% url 'configuracion:ver' %}" class="bg-purple-50 hover:bg-purple-100 text-purple-600 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 flex items-center gap-2 min-h-[48px] min-w-[48px] justify-center" aria-label="Configuración de accesibilidad">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Configuración</span>
+                </a>
+
                 <!-- Cerrar Sesión -->
                 <a href="/accounts/logout/" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 flex items-center gap-2">
                     <i data-lucide="log-out" class="w-4 h-4"></i>

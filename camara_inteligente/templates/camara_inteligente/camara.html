@@ -9,12 +9,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
-            background-color: #FFFBEB;
-            color: #1E293B;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
         }
 
         .animate-fade-in {
@@ -45,7 +70,7 @@
     <!-- HEADER GLOBAL -->
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
         <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Volver</span>
         </a>
     </header>
@@ -61,7 +86,7 @@
             <div class="w-full flex flex-col items-center">
 
                 <!-- Título -->
-                <h1 class="text-[32px] md:text-[36px] font-bold text-primaryFijo mb-8 text-center flex items-center gap-4 drop-shadow-sm">
+                <h1 class="text-[32px] md:text-[36px] font-bold text-primary mb-8 text-center flex items-center gap-4 drop-shadow-sm">
                     <i data-lucide="camera" class="w-10 h-10"></i>
                     Cámara Inteligente
                 </h1>
@@ -83,7 +108,7 @@
 
                         <!-- Mira / Retícula -->
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div class="w-48 h-48 md:w-64 md:h-64 border-4 border-dashed border-primaryFijo rounded-2xl relative">
+                            <div class="w-48 h-48 md:w-64 md:h-64 border-4 border-dashed border-primary rounded-2xl relative">
                                 <!-- Línea de escaneo simulada -->
                                 <div class="absolute left-0 right-0 h-1 bg-success shadow-[0_0_15px_#48BB78] scanner-line"></div>
                             </div>
@@ -91,7 +116,7 @@
 
                         <!-- Botón Capturar -->
                         <button id="btn-capturar" class="w-24 h-24 bg-white/80 backdrop-blur-sm rounded-full self-center flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform border-4 border-white group/btn">
-                            <div class="w-16 h-16 bg-primaryFijo rounded-full flex items-center justify-center group-hover/btn:bg-blue-500 transition-colors shadow-inner">
+                            <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center group-hover/btn:bg-blue-500 transition-colors shadow-inner">
                                 <i data-lucide="focus" class="w-10 h-10 text-white"></i>
                             </div>
                         </button>
@@ -108,12 +133,12 @@
         <section id="view-analyzing-obj" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-10">
             <div class="relative w-48 h-48 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
-                <div class="absolute inset-0 border-[12px] border-primaryFijo border-t-transparent border-b-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-[12px] border-primary border-t-transparent border-b-transparent rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center bg-white/80 rounded-full m-2">
-                    <i data-lucide="scan-line" class="w-20 h-20 text-primaryFijo animate-pulse"></i>
+                    <i data-lucide="scan-line" class="w-20 h-20 text-primary animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primaryFijo animate-pulse tracking-wide">Analizando objeto...</h2>
+            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando objeto...</h2>
             <p class="text-[20px] text-gray-500 mt-4">Nuestra IA está trabajando mágicamente ✨</p>
         </section>
 
@@ -143,7 +168,7 @@
                 <!-- Controles -->
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
 
-                    <button id="btn-escuchar" class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button id="btn-escuchar" class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
@@ -212,7 +237,7 @@
                         <i data-lucide="home" class="w-6 h-6"></i> Salir al menú
                     </button>
 
-                    <button id="btn-nuevo-objeto" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                    <button id="btn-nuevo-objeto" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                         Nuevo objeto <i data-lucide="camera" class="w-6 h-6"></i>
                     </button>
 

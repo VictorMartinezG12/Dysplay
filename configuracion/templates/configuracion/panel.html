@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Configuración - DysPlay{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/configuracion/panel.js' %}" defer></script>
+{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl w-full bg-white rounded-3xl shadow-soft border-4 border-purple-100 p-8 animate-fade-in">
@@ -31,6 +36,18 @@
                     <input type="radio" name="tema_visual" value="oscuro" class="peer hidden" {% if config.tema_visual == 'oscuro' %}checked{% endif %}>
                     <div class="p-4 border-4 border-gray-100 rounded-2xl peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-center font-bold">
                         🌙 Oscuro
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="tema_visual" value="infantil-azul" class="peer hidden" {% if config.tema_visual == 'infantil-azul' %}checked{% endif %}>
+                    <div class="p-4 border-4 border-gray-100 rounded-2xl peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-center font-bold">
+                        💙 Infantil Azul
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="tema_visual" value="infantil-verde" class="peer hidden" {% if config.tema_visual == 'infantil-verde' %}checked{% endif %}>
+                    <div class="p-4 border-4 border-gray-100 rounded-2xl peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all text-center font-bold">
+                        💚 Infantil Verde
                     </div>
                 </label>
             </div>
@@ -84,6 +101,83 @@
                     </div>
                 </label>
                 {% endfor %}
+            </div>
+        </section>
+
+        <!-- Espaciado entre Letras -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="move-horizontal" class="w-5 h-5 text-teal-500"></i>
+                Espaciado entre Letras
+            </h2>
+            <div class="grid grid-cols-3 gap-3">
+                {% for val, label in config.ESPACIADO_CHOICES %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="espaciado_letras" value="{{ val }}" class="peer hidden" {% if config.espaciado_letras == val %}checked{% endif %}>
+                    <div class="p-3 border-4 border-gray-100 rounded-2xl peer-checked:border-teal-500 peer-checked:bg-teal-50 transition-all text-center font-bold text-sm">
+                        {{ label }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Espaciado entre Palabras -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="space" class="w-5 h-5 text-cyan-500"></i>
+                Espaciado entre Palabras
+            </h2>
+            <div class="grid grid-cols-3 gap-3">
+                {% for val, label in config.ESPACIADO_CHOICES %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="espaciado_palabras" value="{{ val }}" class="peer hidden" {% if config.espaciado_palabras == val %}checked{% endif %}>
+                    <div class="p-3 border-4 border-gray-100 rounded-2xl peer-checked:border-cyan-500 peer-checked:bg-cyan-50 transition-all text-center font-bold text-sm">
+                        {{ label }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Tipo de Voz -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="mic" class="w-5 h-5 text-pink-500"></i>
+                Tipo de Voz
+            </h2>
+            <select name="tipo_voz" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-2xl font-bold focus:border-pink-500 outline-none transition-all">
+                {% for val, label in config.TIPO_VOZ_CHOICES %}
+                <option value="{{ val }}" {% if config.tipo_voz == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </section>
+
+        <!-- Volumen de Narración -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="volume-2" class="w-5 h-5 text-blue-500"></i>
+                Volumen de Narración
+            </h2>
+            <div class="flex items-center gap-4 bg-gray-50 border-2 border-gray-200 rounded-2xl p-4">
+                <label for="input-volumen-narracion" class="sr-only">Volumen de narración</label>
+                <input type="range" id="input-volumen-narracion" name="volumen_narracion" min="0" max="100" value="{{ config.volumen_narracion }}"
+                       class="w-full h-3 accent-blue-500 cursor-pointer" style="min-height: 48px;">
+                <span id="valor-volumen-narracion" class="font-black text-blue-600 text-lg w-16 text-right">{{ config.volumen_narracion }}%</span>
+            </div>
+        </section>
+
+        <!-- Volumen de Música -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="music" class="w-5 h-5 text-violet-500"></i>
+                Volumen de Música
+            </h2>
+            <div class="flex items-center gap-4 bg-gray-50 border-2 border-gray-200 rounded-2xl p-4">
+                <label for="input-volumen-musica" class="sr-only">Volumen de música</label>
+                <input type="range" id="input-volumen-musica" name="volumen_musica" min="0" max="100" value="{{ config.volumen_musica }}"
+                       class="w-full h-3 accent-violet-500 cursor-pointer" style="min-height: 48px;">
+                <span id="valor-volumen-musica" class="font-black text-violet-600 text-lg w-16 text-right">{{ config.volumen_musica }}%</span>
             </div>
         </section>
 

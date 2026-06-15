@@ -9,12 +9,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
-            background-color: #FFFBEB;
-            color: #1E293B;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
         }
 
         .animate-fade-in {
@@ -32,8 +57,8 @@
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Menú</span>
         </a>
 
@@ -46,12 +71,12 @@
     <main class="w-full max-w-3xl px-6 md:px-8 flex-grow flex flex-col items-center justify-start pb-16 relative">
 
         <section id="view-inicio" class="flex flex-col items-center w-full animate-fade-in">
-            <h1 class="text-[32px] md:text-[40px] font-bold text-primaryFijo mb-6 text-center drop-shadow-sm">
+            <h1 class="text-[32px] md:text-[40px] font-bold text-primary mb-6 text-center drop-shadow-sm">
                 Desafío del Día
             </h1>
 
-            <div class="bg-white rounded-2xl p-8 md:p-10 shadow-soft w-full border-4 border-primaryFijo/20 mb-8 flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-4 shadow-sm">
+            <div class="bg-white rounded-2xl p-8 md:p-10 shadow-soft w-full border-4 border-primary/20 mb-8 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4 shadow-sm">
                     <i data-lucide="scroll-text" class="w-8 h-8"></i>
                 </div>
                 <p class="text-[20px] leading-[1.7] text-textMain">{{ narrativa }}</p>
@@ -64,9 +89,9 @@
                 </div>
                 <h2 class="text-[28px] font-bold text-success mb-2">¡Desafío completado!</h2>
                 <p class="text-[18px] text-gray-500 mb-6">Vuelve mañana por un nuevo desafío.</p>
-                <div class="bg-primaryFijo/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-primaryFijo/20">
-                    <i data-lucide="timer" class="w-7 h-7 text-primaryFijo"></i>
-                    <span id="countdown-texto" class="text-[24px] font-bold text-primaryFijo">--:--:--</span>
+                <div class="bg-primary/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-primary/20">
+                    <i data-lucide="timer" class="w-7 h-7 text-primary"></i>
+                    <span id="countdown-texto" class="text-[24px] font-bold text-primary">--:--:--</span>
                 </div>
             </div>
             {% else %}
@@ -81,9 +106,9 @@
                 data-palabra-objetivo="{{ ejercicio.palabra_objetivo }}"
                 data-frase-historia="{{ ejercicio.frase_historia }}"
                 {% if ejercicio.completado %}disabled{% endif %}
-                class="w-full bg-white rounded-2xl p-6 mb-4 shadow-soft border-4 {% if ejercicio.completado %}border-success/30{% else %}border-primaryFijo/20{% endif %} flex items-center gap-4 text-left min-h-[64px] transition-all {% if not ejercicio.completado %}hover:-translate-y-1 hover:shadow-hard{% endif %}"
+                class="w-full bg-white rounded-2xl p-6 mb-4 shadow-soft border-4 {% if ejercicio.completado %}border-success/30{% else %}border-primary/20{% endif %} flex items-center gap-4 text-left min-h-[64px] transition-all {% if not ejercicio.completado %}hover:-translate-y-1 hover:shadow-hard{% endif %}"
             >
-                <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 {% if ejercicio.completado %}bg-success/10 text-success{% else %}bg-primaryFijo/10 text-primaryFijo{% endif %}">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 {% if ejercicio.completado %}bg-success/10 text-success{% else %}bg-primary/10 text-primary{% endif %}">
                     <i data-lucide="{% if ejercicio.completado %}check{% else %}mic{% endif %}" class="w-6 h-6"></i>
                 </div>
                 <div class="flex-grow">
@@ -131,9 +156,9 @@
         </section>
 
         <section id="view-ejercicio" class="hidden flex-col items-center justify-center w-full animate-fade-in mt-10">
-            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primaryFijo/20">
+            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
 
-                <div class="w-20 h-20 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-8 shadow-sm">
+                <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8 shadow-sm">
                     <i data-lucide="book-open" class="w-10 h-10"></i>
                 </div>
 
@@ -144,7 +169,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
-                    <button data-action="leer-frase" class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4 min-h-[48px]">
+                    <button data-action="leer-frase" class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4 min-h-[48px]">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
@@ -159,19 +184,19 @@
         <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
             <div class="relative w-40 h-40 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
-                <div class="absolute inset-0 border-[12px] border-primaryFijo border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-[12px] border-primary border-t-transparent rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center bg-white/80 rounded-full m-2">
-                    <i data-lucide="activity" class="w-16 h-16 text-primaryFijo animate-pulse"></i>
+                    <i data-lucide="activity" class="w-16 h-16 text-primary animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primaryFijo animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
+            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
         </section>
 
         <section id="view-resultado" class="hidden flex-col items-center w-full animate-fade-in mt-4">
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8">
                 <h2 id="resultado-titulo" class="text-[36px] md:text-[44px] font-bold text-success mb-2 drop-shadow-sm">¡Bien hecho!</h2>
 
-                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primaryFijo mb-8"></p>
+                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primary mb-8"></p>
 
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
                     <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#10B981 0%, #edf2f7 0);"></div>
@@ -183,7 +208,7 @@
 
                 <div id="resultado-palabras" class="hidden flex flex-wrap items-center justify-center gap-3 mb-8"></div>
 
-                <button id="btn-volver-desafio" type="button" class="w-full sm:w-auto bg-primaryFijo text-white px-10 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 min-h-[48px]">
+                <button id="btn-volver-desafio" type="button" class="w-full sm:w-auto bg-primary text-white px-10 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 min-h-[48px]">
                     Volver al desafío <i data-lucide="arrow-right" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -197,9 +222,9 @@
                     <i data-lucide="coins" class="w-7 h-7 text-reward"></i>
                     <span id="resumen-monedas" class="text-[22px] font-bold text-reward">+0 Monedas</span>
                 </div>
-                <div id="resumen-coleccionable" class="hidden bg-primaryFijo/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-primaryFijo/20 mb-4">
-                    <i data-lucide="gift" class="w-7 h-7 text-primaryFijo"></i>
-                    <span id="resumen-coleccionable-texto" class="text-[20px] font-bold text-primaryFijo"></span>
+                <div id="resumen-coleccionable" class="hidden bg-primary/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-primary/20 mb-4">
+                    <i data-lucide="gift" class="w-7 h-7 text-primary"></i>
+                    <span id="resumen-coleccionable-texto" class="text-[20px] font-bold text-primary"></span>
                 </div>
                 <div id="resumen-insignia" class="hidden bg-success/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-success/20 mb-6">
                     <i data-lucide="award" class="w-7 h-7 text-success"></i>

@@ -9,12 +9,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
-            background-color: #FFFBEB;
-            color: #1E293B;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
         }
 
         .animate-fade-in {
@@ -33,8 +58,8 @@
 
     <!-- HEADER GLOBAL -->
     <header class="w-full flex items-center justify-between p-6 md:p-8 max-w-[1200px] z-50">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Menú Principal</span>
         </a>
 
@@ -54,13 +79,13 @@
 
             <!-- TARJETA DE PERFIL (Ocupa 3 columnas) -->
             <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
-                <div class="w-32 h-32 bg-primaryFijo/10 rounded-full flex flex-shrink-0 items-center justify-center text-primaryFijo shadow-sm border-4 border-primaryFijo/20">
+                <div class="w-32 h-32 bg-primary/10 rounded-full flex flex-shrink-0 items-center justify-center text-primary shadow-sm border-4 border-primary/20">
                     <i data-lucide="smile" class="w-16 h-16 fill-current opacity-80"></i>
                 </div>
                 <div class="flex-grow w-full text-center sm:text-left">
                     <h1 class="text-[36px] font-bold text-textMain mb-1 leading-tight">{{ user.username }}</h1>
                     <p class="text-[20px] text-gray-500 font-semibold mb-6 flex items-center justify-center sm:justify-start gap-2">
-                        <i data-lucide="rocket" class="w-5 h-5 text-primaryFijo"></i>
+                        <i data-lucide="rocket" class="w-5 h-5 text-primary"></i>
                         Nivel {{ nivel_actual_numero }}{% if nivel_actual_titulo %} - {{ nivel_actual_titulo }}{% endif %}
                     </p>
 
@@ -95,10 +120,10 @@
         <!-- ============================================== -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
 
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primaryFijo/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
-                <i data-lucide="map" class="w-10 h-10 text-primaryFijo mb-4 opacity-70"></i>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="map" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Niveles superados</span>
-                <span class="text-[36px] font-bold text-primaryFijo">{{ lecciones_completadas }}</span>
+                <span class="text-[36px] font-bold text-primary">{{ lecciones_completadas }}</span>
             </div>
 
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-success/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
@@ -113,10 +138,10 @@
                 <span class="text-[36px] font-bold text-reward">{{ puntuacion_total }}</span>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primaryFijo/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
-                <i data-lucide="book-open" class="w-10 h-10 text-primaryFijo mb-4 opacity-70"></i>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border-4 border-transparent hover:border-primary/20 hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+                <i data-lucide="book-open" class="w-10 h-10 text-primary mb-4 opacity-70"></i>
                 <span class="text-[18px] font-bold text-gray-500 mb-2">Historias completadas</span>
-                <span class="text-[36px] font-bold text-primaryFijo">{{ historias_completadas }}</span>
+                <span class="text-[36px] font-bold text-primary">{{ historias_completadas }}</span>
             </div>
 
         </section>
@@ -136,11 +161,11 @@
                 <!-- Gráfico de barras: una por cada uno de los últimos 7 días -->
                 <div class="flex items-end justify-between h-48 mt-auto gap-2 sm:gap-4 px-2">
                     {% for dia in datos_semana %}
-                    <div class="rounded-t-[12px] w-full relative transition-colors {% if dia.es_hoy %}bg-primaryFijo shadow-sm{% else %}bg-primaryFijo/20 hover:bg-primaryFijo/40{% endif %}"
+                    <div class="rounded-t-[12px] w-full relative transition-colors {% if dia.es_hoy %}bg-primary shadow-sm{% else %}bg-primary/20 hover:bg-primary/40{% endif %}"
                          style="height: {{ dia.altura_porcentaje }}%; min-height: 4px;">
                         {% if dia.es_hoy %}
-                        <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primaryFijo px-3 py-1 rounded-full text-xs shadow-sm">{{ dia.cantidad }}</span>
-                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primaryFijo text-sm">Hoy</span>
+                        <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primary px-3 py-1 rounded-full text-xs shadow-sm">{{ dia.cantidad }}</span>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primary text-sm">Hoy</span>
                         {% else %}
                         <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-gray-400 text-sm">{{ dia.dia }}</span>
                         {% endif %}
@@ -185,7 +210,7 @@
         <!-- ============================================== -->
         <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft w-full">
             <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
-                <i data-lucide="calendar-check" class="text-primaryFijo w-8 h-8"></i>
+                <i data-lucide="calendar-check" class="text-primary w-8 h-8"></i>
                 Calendario de progreso
             </h3>
 
@@ -207,7 +232,7 @@
                         {% if dia.es_futuro %}bg-gray-50 text-gray-300
                         {% elif dia.tiene_actividad %}bg-success/20 text-success
                         {% else %}bg-error/10 text-error/70{% endif %}
-                        {% if dia.es_hoy %} border-2 border-primaryFijo{% endif %}">
+                        {% if dia.es_hoy %} border-2 border-primary{% endif %}">
                         {{ dia.dia_numero }}
                     </div>
                     {% endfor %}
@@ -256,7 +281,7 @@
         <!-- ============================================== -->
         <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft w-full">
             <h3 class="text-[24px] font-bold text-textMain mb-8 flex items-center gap-3">
-                <i data-lucide="gem" class="text-primaryFijo w-8 h-8"></i>
+                <i data-lucide="gem" class="text-primary w-8 h-8"></i>
                 Tu colección
             </h3>
 
@@ -267,11 +292,11 @@
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6">
                     {% for item in grupo.items %}
                     <div class="flex flex-col items-center text-center{% if not item.obtenido %} opacity-50 grayscale filter{% endif %}">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 {% if item.obtenido %}border-primaryFijo{% else %}border-gray-300{% endif %} shadow-sm mb-3">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 {% if item.obtenido %}border-primary{% else %}border-gray-300{% endif %} shadow-sm mb-3">
                             {% if item.imagen %}
                             <img src="{{ item.imagen.url }}" alt="{{ item.nombre }}" class="w-12 h-12 object-contain">
                             {% else %}
-                            <i data-lucide="gift" class="w-10 h-10 {% if item.obtenido %}text-primaryFijo{% else %}text-gray-400{% endif %}"></i>
+                            <i data-lucide="gift" class="w-10 h-10 {% if item.obtenido %}text-primary{% else %}text-gray-400{% endif %}"></i>
                             {% endif %}
                         </div>
                         <span class="font-bold text-[14px] {% if item.obtenido %}text-textMain{% else %}text-gray-500{% endif %}">

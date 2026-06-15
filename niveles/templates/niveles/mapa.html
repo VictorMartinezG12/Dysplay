@@ -9,7 +9,7 @@ niveles (si tiene) o un badge "Próximamente" (si está vacía).
     <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-soft border-4 relative mb-16
                 {% if not zona.desbloqueada %}grayscale opacity-70 border-gray-300
                 {% elif not zona.niveles %}border-gray-200 opacity-80
-                {% else %}border-primaryFijo/20{% endif %}">
+                {% else %}border-primary/20{% endif %}">
 
         {# --- Badge de estado de la zona --- #}
         {% if not zona.desbloqueada %}
@@ -21,7 +21,7 @@ niveles (si tiene) o un badge "Próximamente" (si está vacía).
                 <i data-lucide="clock" class="w-5 h-5"></i> Próximamente
             </div>
         {% else %}
-            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primaryFijo text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-2 rounded-full font-bold text-xl shadow-sm">
                 {{ zona.nombre }}
             </div>
         {% endif %}
@@ -135,7 +135,7 @@ niveles (si tiene) o un badge "Próximamente" (si está vacía).
                             data-palabra-objetivo="{{ mision_actual.palabra_objetivo }}"
                             data-narrativa-intro="{{ nivel.narrativa_intro }}"
                             aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Nivel actual, toca para comenzar."
-                            class="w-24 h-24 md:w-28 md:h-28 min-w-[48px] min-h-[48px] rounded-full bg-primaryFijo text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primaryFijo/50">
+                            class="w-24 h-24 md:w-28 md:h-28 min-w-[48px] min-h-[48px] rounded-full bg-primary text-white font-bold text-4xl flex items-center justify-center shadow-[0_8px_0_#2b6cb0] border-4 border-white hover:-translate-y-2 hover:shadow-[0_12px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all relative z-10 animate-bounce focus:outline-none focus:ring-4 focus:ring-primary/50">
                             {{ nivel.numero }}
                         </button>
 

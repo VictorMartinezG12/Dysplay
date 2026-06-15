@@ -9,12 +9,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --global-font-family: {% if config_global.tipo_fuente == 'OpenDyslexic' %}'OpenDyslexic', sans-serif{% elif config_global.tipo_fuente == 'Lexend' %}'Lexend', sans-serif{% elif config_global.tipo_fuente == 'Arial' %}'Arial', sans-serif{% elif config_global.tipo_fuente == 'Verdana' %}'Verdana', sans-serif{% else %}'Nunito', sans-serif{% endif %};
+            --global-font-size: {% if config_global.tamano_fuente == 'pequeno' %}0.875rem{% elif config_global.tamano_fuente == 'grande' %}1.25rem{% elif config_global.tamano_fuente == 'extra-grande' %}1.5rem{% else %}1rem{% endif %};
+            --global-letter-spacing: {% if config_global.espaciado_letras == 'medio' %}0.1em{% elif config_global.espaciado_letras == 'amplio' %}0.2em{% else %}normal{% endif %};
+            --global-word-spacing: {% if config_global.espaciado_palabras == 'medio' %}0.2em{% elif config_global.espaciado_palabras == 'amplio' %}0.4em{% else %}normal{% endif %};
+            {% if config_global.tema_visual == 'oscuro' %}
+                --color-fondo: #1E293B;
+                --color-texto: #F8FAFC;
+                --color-primario: #3B82F6;
+            {% elif config_global.tema_visual == 'infantil-verde' %}
+                --color-fondo: #F0FDF4;
+                --color-texto: #166534;
+                --color-primario: #22C55E;
+            {% elif config_global.tema_visual == 'infantil-azul' %}
+                --color-fondo: #EFF6FF;
+                --color-texto: #1E40AF;
+                --color-primario: #3B82F6;
+            {% else %}
+                --color-fondo: #FFFBEB;
+                --color-texto: #1E293B;
+                --color-primario: #3B82F6;
+            {% endif %}
+        }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            letter-spacing: 0.06em;
+            font-family: var(--global-font-family);
+            letter-spacing: var(--global-letter-spacing);
+            word-spacing: var(--global-word-spacing);
             line-height: 1.6;
-            background-color: #FFFBEB;
-            color: #1E293B;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
         }
 
         .animate-fade-in {
@@ -42,8 +67,8 @@
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
     <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
-        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primaryFijo">
-            <i data-lucide="arrow-left" class="w-8 h-8 text-primaryFijo"></i>
+        <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+            <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Menú</span>
         </a>
 
@@ -56,15 +81,15 @@
     <main class="w-full max-w-5xl px-6 md:px-8 flex-grow flex flex-col items-center justify-start pb-16 relative">
 
         <section id="view-map" class="flex flex-col items-center w-full animate-fade-in">
-            <h1 class="text-[36px] md:text-[40px] font-bold text-primaryFijo mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
+            <h1 class="text-[36px] md:text-[40px] font-bold text-primary mb-12 text-center drop-shadow-sm">Tu Ruta de Aprendizaje</h1>
 
             {% include 'niveles/mapa.html' %}
         </section>
 
         <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
-            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primaryFijo/20">
+            <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
 
-                <div class="w-20 h-20 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-8 shadow-sm">
+                <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8 shadow-sm">
                     <i data-lucide="book-open" class="w-10 h-10"></i>
                 </div>
 
@@ -76,7 +101,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
-                    <button data-action="leer-frase" class="w-full sm:w-auto bg-primaryFijo/10 text-primaryFijo border-4 border-primaryFijo rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primaryFijo hover:text-white transition-colors flex items-center justify-center gap-4">
+                    <button data-action="leer-frase" class="w-full sm:w-auto bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[24px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
                         <i data-lucide="volume-2" class="w-8 h-8"></i> Escuchar
                     </button>
 
@@ -91,12 +116,12 @@
         <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
             <div class="relative w-40 h-40 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
-                <div class="absolute inset-0 border-[12px] border-primaryFijo border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-[12px] border-primary border-t-transparent rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center bg-white/80 rounded-full m-2">
-                    <i data-lucide="activity" class="w-16 h-16 text-primaryFijo animate-pulse"></i>
+                    <i data-lucide="activity" class="w-16 h-16 text-primary animate-pulse"></i>
                 </div>
             </div>
-            <h2 class="text-[36px] font-bold text-primaryFijo animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
+            <h2 class="text-[36px] font-bold text-primary animate-pulse tracking-wide">Analizando tu voz con IA...</h2>
         </section>
 
         <section id="view-result" class="hidden flex-col items-center w-full max-w-3xl animate-fade-in mt-4">
@@ -111,7 +136,7 @@
                 <h2 id="resultado-titulo" class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Nivel Superado!</h2>
                 <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-6">¡Lo hiciste increíble! Sigue así.</p>
 
-                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primaryFijo mb-8"></p>
+                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primary mb-8"></p>
 
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
                     <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#10B981 85%, #edf2f7 0);"></div>
@@ -138,11 +163,11 @@
                             Volver al mapa
                         </a>
 
-                        <button type="submit" id="btn-siguiente-nivel" class="w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                        <button type="submit" id="btn-siguiente-nivel" class="w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                             Siguiente Nivel <i data-lucide="arrow-right" class="w-6 h-6"></i>
                         </button>
 
-                        <button type="button" id="btn-reintentar" class="hidden w-full bg-primaryFijo text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+                        <button type="button" id="btn-reintentar" class="hidden w-full bg-primary text-white px-8 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
                             Reintentar <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
                         </button>
                     </div>
@@ -152,13 +177,13 @@
         </section>
 
         <div id="modal-narrativa" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-6" role="dialog" aria-modal="true" aria-labelledby="narrativa-titulo">
-            <div class="bg-white rounded-2xl p-10 md:p-12 shadow-soft w-full max-w-lg flex flex-col items-center text-center border-4 border-primaryFijo/20 animate-fade-in">
-                <div class="w-16 h-16 bg-primaryFijo/10 rounded-full flex items-center justify-center text-primaryFijo mb-6 shadow-sm">
+            <div class="bg-white rounded-2xl p-10 md:p-12 shadow-soft w-full max-w-lg flex flex-col items-center text-center border-4 border-primary/20 animate-fade-in">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6 shadow-sm">
                     <i data-lucide="sparkles" class="w-8 h-8"></i>
                 </div>
-                <h2 id="narrativa-titulo" class="text-[28px] font-bold text-primaryFijo mb-4">Una nueva aventura...</h2>
+                <h2 id="narrativa-titulo" class="text-[28px] font-bold text-primary mb-4">Una nueva aventura...</h2>
                 <p id="narrativa-texto" class="text-[20px] text-textMain leading-[1.6] mb-8"></p>
-                <button id="btn-comenzar-narrativa" class="w-full sm:w-auto bg-primaryFijo text-white px-10 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 min-h-[48px]">
+                <button id="btn-comenzar-narrativa" class="w-full sm:w-auto bg-primary text-white px-10 py-5 rounded-full font-bold text-[20px] shadow-[0_6px_0_#2b6cb0] border-4 border-transparent hover:-translate-y-1 hover:shadow-[0_8px_0_#2b6cb0] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 min-h-[48px]">
                     ¡Comenzar! <i data-lucide="arrow-right" class="w-6 h-6"></i>
                 </button>
             </div>
