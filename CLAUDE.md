@@ -21,7 +21,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 | E - Desafío diario | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | F - Historias | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | G - Cámara inteligente | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
-| H - Estadísticas | Pendiente | Bajo | |
+| H - Estadísticas | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | I - Configuración accesibilidad | Pendiente | Medio | |
 | J - Reportes email | Pendiente | Bajo | |
 | K - Celebraciones | Pendiente | Bajo | |

@@ -15,6 +15,7 @@ import unicodedata
 from django.utils import timezone
 
 from avatar.reactions import obtener_reaccion
+from estadisticas.models import RegistroActividad
 from niveles.services import (
     UMBRAL_SUPERACION_NIVEL,
     evaluar_pronunciacion_azure,
@@ -234,7 +235,7 @@ def _evaluar_escribir(fragmento, texto_respuesta):
     return False, _siguiente_fragmento_por_orden(fragmento), None
 
 
-def _evaluar_pronunciar(fragmento, archivo_audio):
+def _evaluar_pronunciar(usuario, fragmento, archivo_audio):
     """Evalúa una respuesta de tipo 'pronunciar' contra Azure Speech. Devuelve `(correcta, siguiente_fragmento, mensaje_error)`."""
     opcion = fragmento.opciones.filter(es_correcta=True).first()
     if not opcion:
@@ -252,6 +253,8 @@ def _evaluar_pronunciar(fragmento, archivo_audio):
 
     if resultado_azure['status'] != 'success':
         return None, None, resultado_azure['message']
+
+    RegistroActividad.objects.registrar(usuario, RegistroActividad.TIPO_HISTORIA, resultado_azure['score_global'])
 
     correcta = resultado_azure['score_global'] >= UMBRAL_SUPERACION_NIVEL
     siguiente = opcion.fragmento_siguiente or _siguiente_fragmento_por_orden(fragmento)
@@ -325,7 +328,7 @@ def procesar_respuesta_fragmento(usuario, historia, fragmento_id, opcion_id=None
         elif fragmento.tipo_respuesta == 'escribir':
             correcta, siguiente, mensaje_error = _evaluar_escribir(fragmento, texto_respuesta)
         elif fragmento.tipo_respuesta == 'pronunciar':
-            correcta, siguiente, mensaje_error = _evaluar_pronunciar(fragmento, archivo_audio)
+            correcta, siguiente, mensaje_error = _evaluar_pronunciar(usuario, fragmento, archivo_audio)
         else:
             siguiente, mensaje_error = _siguiente_fragmento_por_orden(fragmento), None
 

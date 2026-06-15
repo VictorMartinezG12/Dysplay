@@ -19,6 +19,7 @@ from django.conf import settings
 
 from .models import Nivel, ProgresoEstudiante
 from avatar.reactions import obtener_reaccion
+from estadisticas.models import RegistroActividad
 from recompensas.services import otorgar_monedas
 from servicios.utils import evaluar_pronunciacion
 
@@ -399,6 +400,11 @@ def procesar_intento_nivel(usuario, archivo_audio, palabra_objetivo, nivel_id):
         progreso, avanzo_de_nivel = guardar_progreso_estudiante(usuario, nivel_id, resultado_azure)
         recompensas = calcular_recompensas(usuario, resultado_azure['score_global'], nivel_id)
         reaccion_avatar = construir_reaccion_avatar(resultado_azure['score_global'], avanzo_de_nivel)
+
+        zona_nivel = Nivel.objects.filter(numero=nivel_id).values_list('zona', flat=True).first() or ''
+        RegistroActividad.objects.registrar(
+            usuario, RegistroActividad.TIPO_NIVEL, resultado_azure['score_global'], zona=zona_nivel,
+        )
 
         return {
             'status': 'success',

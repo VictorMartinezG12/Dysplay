@@ -20,6 +20,7 @@ import magic
 from django.conf import settings
 
 from avatar.reactions import obtener_reaccion
+from estadisticas.models import RegistroActividad
 from niveles.models import ProgresoEstudiante
 from niveles.services import (
     UMBRAL_SUPERACION_NIVEL,
@@ -348,6 +349,8 @@ def procesar_evaluacion_pronunciacion(usuario, archivo_audio, frase_referencia):
 
     score_global = resultado_azure['score_global']
     correcta = score_global >= UMBRAL_SUPERACION_NIVEL
+
+    RegistroActividad.objects.registrar(usuario, RegistroActividad.TIPO_CAMARA, score_global)
 
     monedas_ganadas = 0
     monedas_totales = None

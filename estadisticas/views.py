@@ -1,6 +1,10 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-@login_required # Obliga a que el niño haya iniciado sesión para ver esto
+from . import services
+
+
+@login_required  # Obliga a que el niño haya iniciado sesión para ver esto
 def estadisticas_view(request):
-    return render(request, 'estadisticas/estadisticas.html')
+    contexto = services.construir_contexto_estadisticas(request.user)
+    return render(request, 'estadisticas/estadisticas.html', contexto)

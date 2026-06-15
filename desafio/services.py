@@ -14,6 +14,7 @@ import random
 from django.utils import timezone
 
 from avatar.reactions import obtener_reaccion
+from estadisticas.models import RegistroActividad
 from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante
 from niveles.services import (
     UMBRAL_SUPERACION_NIVEL,
@@ -305,6 +306,10 @@ def procesar_intento_desafio(usuario, archivo_audio, mision_id):
 
         score_global = resultado_azure['score_global']
         ejercicio_superado = score_global >= UMBRAL_SUPERACION_NIVEL
+
+        RegistroActividad.objects.registrar(
+            usuario, RegistroActividad.TIPO_DESAFIO, score_global, zona=mision.nivel.zona,
+        )
 
         if ejercicio_superado:
             progreso.ejercicios_completados.add(mision)
