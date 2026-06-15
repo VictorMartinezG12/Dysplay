@@ -16,12 +16,21 @@ El avatar **no es una imagen decorativa**. Es el compañero de viaje del niño, 
 
 ## Estado actual y decisión de diseño temporal
 
-Por ahora, el módulo de personalización del avatar (creación de personajes, trajes, accesorios) **está pendiente** porque requiere assets visuales que aún no están creados (sprites, ilustraciones, etc.).
+**Actualización (2026-06-14):** El Módulo C (Avatar avanzado) ya está completado. La
+personalización del avatar (ropa, calzado, cabello, accesorios, mascotas y la Casa del
+Avatar con muebles/decoración) está implementada de punta a punta: modelos `Item`,
+`InventarioAvatar` y `CasaAvatar`, tienda y sistema de equipar/desequipar (`avatar/casa.html`
++ `static/js/avatar/casa.js`), reacciones (`avatar/reactions.py`) y el context processor
+`avatar_global` con las claves descritas en este documento.
 
-**Decisión temporal:** Usar una imagen estática placeholder del avatar (un PNG o SVG simple) que sea llamada desde `base.html`. Esto permite que **toda la lógica de comportamiento e interacción esté 100% programada y lista** antes de tener los assets finales.
+Lo único que sigue pendiente son los **assets visuales finales** (sprites/ilustraciones del
+cuerpo, ropa, accesorios y expresiones). El código ya referencia las rutas `/static/avatar/...`
+con fallbacks a placeholders (ver `Item.imagen_url_segura` en `avatar/models.py` y
+`avatar/templates/avatar/personalizar.html`), siguiendo la misma decisión de diseño que ya
+estaba prevista:
 
 **Cuando los assets estén listos, el equipo solo necesita:**
-- Reemplazar el archivo de imagen en `/static/img/avatar/avatar_base.png`
+- Colocar los archivos de imagen en las rutas `/static/avatar/...` ya referenciadas por el código
 - Conectar las imágenes de cada emoción según la convención de nombres definida abajo
 - No tocar ningún código de lógica, vistas ni templates
 
@@ -332,26 +341,26 @@ function mostrarGuiaModulo(modulo) {
 ## Checklist de implementación para el equipo
 
 ### Fase 1 — Temporal (hacer AHORA, sin los assets finales)
-- [ ] Crear carpeta `/static/img/avatar/` con un único `avatar_base.png` placeholder (puede ser un círculo de color con el logo)
-- [ ] Implementar `avatar/reactions.py` con el diccionario de frases completo
-- [ ] Extender `avatar/context_processors.py` para incluir `avatar_estado`, `avatar_frase`, `insignias_pendientes`
-- [ ] Agregar el bloque del avatar en `base.html` (imagen + burbuja de diálogo)
-- [ ] Crear `/static/js/avatar.js` con `actualizarAvatar()` y `mostrarGuiaModulo()`
-- [ ] Incluir `avatar.js` en `base.html` para que esté disponible en todos los módulos
-- [ ] En cada módulo JS (niveles.js, camara.js, etc.), llamar a `actualizarAvatar()` en los eventos clave
+- [x] Crear carpeta `/static/img/avatar/` con un único `avatar_base.png` placeholder (puede ser un círculo de color con el logo)
+- [x] Implementar `avatar/reactions.py` con el diccionario de frases completo
+- [x] Extender `avatar/context_processors.py` para incluir `insignias_pendientes`, `mascota_usuario`, `monedas_usuario`, `racha_dias`, `evento_activo`, `avatar_frase_contextual` (Módulos B y C)
+- [x] Agregar el bloque del avatar en `base.html` (imagen + burbuja de diálogo)
+- [x] Crear `static/js/avatar_events.js` con la clase `AvatarSystem` (reacciones + frase contextual)
+- [x] Incluir `avatar_events.js` en `base.html` para que esté disponible en todos los módulos
+- [x] En cada módulo JS (niveles.js, camara.js, etc.), disparar `AVATAR_EVENT` en los eventos clave
 
 ### Fase 2 — Cuando estén los assets visuales finales (conectar sin tocar lógica)
 - [ ] Reemplazar `avatar_base.png` con el sprite del personaje en estado neutro
 - [ ] Agregar `avatar_feliz.png`, `avatar_euforico.png`, etc. con los sprites reales
 - [ ] Actualizar el bloque condicional de imagen en `base.html` si se agregan estados nuevos
 - [ ] Si el personaje es animado (CSS/SVG), reemplazar el `<img>` por el componente SVG animado
-- [ ] Conectar el módulo de personalización (ropa, accesorios) al sistema existente
+- [x] Conectar el módulo de personalización (ropa, accesorios) al sistema existente (Módulo C, `avatar/personalizar.html`)
 
-### Fase 3 — Personalización completa (futuro)
-- [ ] Módulo de tienda de ítems funcional
-- [ ] Sistema de equipar/desequipar por categoría
-- [ ] Casa del avatar
-- [ ] Mascotas virtuales adoptables
+### Fase 3 — Personalización completa (Módulo C, completado)
+- [x] Módulo de tienda de ítems funcional
+- [x] Sistema de equipar/desequipar por categoría
+- [x] Casa del avatar
+- [x] Mascotas virtuales adoptables
 
 ---
 
