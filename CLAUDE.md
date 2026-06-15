@@ -24,7 +24,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 | H - Estadísticas | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | I - Configuración accesibilidad | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | J - Reportes email | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
-| K - Celebraciones | Pendiente | Bajo | |
+| K - Celebraciones | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 
 (El agente `documentador-dysplay` actualiza esta tabla al cerrar cada módulo)
 

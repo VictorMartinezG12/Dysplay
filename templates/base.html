@@ -68,6 +68,33 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Animación de confeti para celebraciones (insignias nuevas) */
+        @keyframes confetiCaida {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0.9;
+            }
+        }
+
+        .confeti-pieza {
+            position: absolute;
+            top: -10vh;
+            font-size: 1.75rem;
+            line-height: 1;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        .animate-confeti {
+            animation-name: confetiCaida;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -129,6 +156,26 @@
         <!-- Frase contextual de saludo del avatar -->
         <script type="application/json" id="avatar-frase-contextual-data">"{{ avatar_frase_contextual|escapejs }}"</script>
         <script src="/static/js/avatar_events.js"></script>
+
+        <!-- Modal de celebración: insignias nuevas obtenidas por el estudiante -->
+        <div id="modal-celebracion-insignia" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="celebracion-titulo">
+            <!-- Capa de confeti -->
+            <div id="confeti-contenedor" class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true"></div>
+
+            <div class="bg-white rounded-3xl shadow-soft p-8 md:p-10 max-w-sm w-full text-center relative z-10 border-4 border-reward/30 animate-fade-in">
+                <p class="text-[20px] font-extrabold text-reward mb-2">¡Insignia conseguida!</p>
+                <div class="flex items-center justify-center mb-4">
+                    <img id="celebracion-imagen" src="" alt="" class="hidden w-24 h-24 object-contain animate-bounce">
+                    <span id="celebracion-icono" class="text-6xl animate-bounce">🏅</span>
+                </div>
+                <h2 id="celebracion-titulo" class="text-[24px] font-black text-primary mb-2">Nombre de la insignia</h2>
+                <p id="celebracion-descripcion" class="text-[18px] text-gray-600 mb-6">Descripción de la insignia.</p>
+                <button id="celebracion-cerrar" type="button" class="w-full min-h-[48px] bg-primary hover:bg-primary/90 text-white font-bold text-[18px] py-3 px-6 rounded-2xl transition-all duration-200 shadow-soft">
+                    ¡Genial!
+                </button>
+            </div>
+        </div>
+        <script src="{% static 'js/celebraciones/celebraciones.js' %}" defer></script>
     {% endif %}
 
     <script>

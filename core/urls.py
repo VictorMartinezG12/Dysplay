@@ -38,4 +38,5 @@ urlpatterns = [
     path('configuracion/', include('configuracion.urls')),
     path('desafio/', include('desafio.urls')),
     path('reportes/', include('reportes.urls')),
+    path('recompensas/', include('recompensas.urls')),
 ]

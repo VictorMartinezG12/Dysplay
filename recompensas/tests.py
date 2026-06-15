@@ -417,3 +417,59 @@ class AvatarGlobalContextProcessorTests(TestCase):
         contexto = avatar_global(request)
 
         self.assertEqual(contexto, {})
+
+
+# ---------------------------------------------------------------------------
+# Tests de la vista `insignias_pendientes_view` (Módulo K - Celebraciones)
+# ---------------------------------------------------------------------------
+class InsigniasPendientesVistaTests(TestCase):
+    """Tests de `recompensas.views.insignias_pendientes_view`."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(
+            username="celebracion_user", password="claveSegura123",
+        )
+        self.tipo = TipoInsignia.objects.create(
+            nombre="Primeros Pasos",
+            descripcion="Completaste tu primer nivel.",
+            criterio="primer_nivel",
+            valor_umbral=1,
+        )
+        self.url = '/recompensas/insignias-pendientes/'
+
+    def test_usuario_con_insignias_pendientes_las_devuelve_y_las_marca_como_mostradas(self):
+        insignia = Insignia.objects.create(usuario=self.usuario, tipo_insignia=self.tipo, mostrada=False)
+
+        self.client.login(username="celebracion_user", password="claveSegura123")
+        respuesta = self.client.post(self.url)
+
+        self.assertEqual(respuesta.status_code, 200)
+        datos = respuesta.json()
+        self.assertEqual(len(datos['insignias']), 1)
+
+        insignia_devuelta = datos['insignias'][0]
+        self.assertEqual(insignia_devuelta['nombre'], self.tipo.nombre)
+        self.assertEqual(insignia_devuelta['descripcion'], self.tipo.descripcion)
+        self.assertEqual(insignia_devuelta['imagen'], '')
+
+        insignia.refresh_from_db()
+        self.assertTrue(insignia.mostrada)
+
+    def test_usuario_sin_insignias_pendientes_devuelve_lista_vacia(self):
+        self.client.login(username="celebracion_user", password="claveSegura123")
+        respuesta = self.client.post(self.url)
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json(), {'insignias': []})
+
+    def test_usuario_no_autenticado_redirige_a_login(self):
+        respuesta = self.client.post(self.url)
+
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn('/accounts/login/', respuesta.url)
+
+    def test_metodo_get_no_permitido(self):
+        self.client.login(username="celebracion_user", password="claveSegura123")
+        respuesta = self.client.get(self.url)
+
+        self.assertEqual(respuesta.status_code, 405)
