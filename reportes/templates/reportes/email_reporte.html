@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de progreso de {{ nombre_usuario }}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#FFFBEB; font-family: Arial, Helvetica, sans-serif; color:#1E293B;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 0;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" style="max-width: 560px; background-color:#FFFFFF; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="padding: 32px;">
+                            <h1 style="font-size: 24px; color:#3B82F6; margin: 0 0 16px 0;">¡Hola! 👋</h1>
+                            <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+                                Aquí tienes el reporte de progreso de
+                                <strong>{{ nombre_usuario }}</strong> en
+                                <strong style="color:#3B82F6;">DysPlay</strong>:
+                            </p>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 16px 0; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#EFF6FF; border-radius: 8px;">
+                                        🚀 <strong>Nivel actual:</strong>
+                                        {{ nivel_actual_numero }}{% if nivel_actual_titulo %} - {{ nivel_actual_titulo }}{% endif %}
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#FFF7ED; border-radius: 8px;">
+                                        🔥 <strong>Racha de días:</strong> {{ racha_dias }}
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#F0FDF4; border-radius: 8px;">
+                                        ⭐ <strong>Puntuación total:</strong> {{ puntuacion_total }}
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#EFF6FF; border-radius: 8px;">
+                                        🗺️ <strong>Progreso del Mapa de Aventura:</strong> {{ progreso_general_porcentaje }}%
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#F0FDF4; border-radius: 8px;">
+                                        🏁 <strong>Niveles superados:</strong> {{ lecciones_completadas }}
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#EFF6FF; border-radius: 8px;">
+                                        📖 <strong>Historias completadas:</strong> {{ historias_completadas }}
+                                    </td>
+                                </tr>
+                                <tr><td style="height: 8px;"></td></tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; background-color:#F0FDF4; border-radius: 8px;">
+                                        🎤 <strong>Palabras pronunciadas:</strong> {{ palabras_pronunciadas }}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            {% if areas_mejora %}
+                            <h2 style="font-size: 18px; color:#1E293B; margin: 24px 0 8px 0;">🎯 Zonas para seguir practicando</h2>
+                            <ul style="font-size: 15px; line-height: 1.6; margin: 0 0 16px 0; padding-left: 20px;">
+                                {% for area in areas_mejora %}
+                                <li>{{ area.nombre }} — {{ area.score_promedio }}% de aciertos</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+
+                            {% if insignias %}
+                            <h2 style="font-size: 18px; color:#1E293B; margin: 24px 0 8px 0;">🏅 Insignias recientes</h2>
+                            <ul style="font-size: 15px; line-height: 1.6; margin: 0 0 16px 0; padding-left: 20px;">
+                                {% for insignia in insignias %}
+                                <li><strong>{{ insignia.nombre }}</strong> — {{ insignia.descripcion }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+
+                            <p style="font-size: 15px; line-height: 1.6; color:#64748B; margin-top: 24px;">
+                                ¡Gracias por acompañar a {{ nombre_usuario }} en su aventura de aprendizaje! 🎉
+                            </p>
+                            <p style="font-size: 14px; color:#94A3B8; margin-top: 24px;">
+                                El equipo de DysPlay
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -116,6 +116,46 @@
         </div>
 
         <!-- ============================================== -->
+        <!-- BANNERS DE RESULTADO DE ENVÍO DE REPORTE         -->
+        <!-- ============================================== -->
+        {% if resultado_envio_reporte == 'success' %}
+        <div class="bg-success text-white font-bold rounded-2xl shadow-soft px-6 py-4 w-full text-center text-[18px]">
+            ✅ ¡Reporte enviado a tu tutor!
+        </div>
+        {% elif resultado_envio_reporte == 'sin_correo' %}
+        <div class="bg-reward text-white font-bold rounded-2xl shadow-soft px-6 py-4 w-full text-center text-[18px]">
+            ⚠️ No tienes un correo de tutor configurado. Ve a Ajustes para agregarlo.
+        </div>
+        {% elif resultado_envio_reporte == 'error' %}
+        <div class="bg-error text-white font-bold rounded-2xl shadow-soft px-6 py-4 w-full text-center text-[18px]">
+            ❌ No se pudo enviar el reporte. Inténtalo de nuevo más tarde.
+        </div>
+        {% endif %}
+
+        <!-- ============================================== -->
+        <!-- ENVÍO DE REPORTE DE PROGRESO AL TUTOR (MÓDULO J) -->
+        <!-- ============================================== -->
+        <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft w-full flex flex-col sm:flex-row items-center justify-between gap-6">
+            {% if user.correo_tutor %}
+            <p class="text-[18px] text-gray-500 font-semibold text-center sm:text-left">
+                Comparte tu progreso con tu tutor cuando quieras.
+            </p>
+            <form method="POST" action="{% url 'reportes:enviar' %}">
+                {% csrf_token %}
+                <button type="submit" class="bg-success text-white font-bold text-[18px] px-8 py-4 rounded-full shadow-soft hover:opacity-90 active:opacity-80 transition-all focus:outline-none focus:ring-4 focus:ring-primary">
+                    📧 Enviar reporte a mi tutor
+                </button>
+            </form>
+            {% else %}
+            <p class="text-[18px] text-gray-500 font-semibold text-center sm:text-left">
+                Configura el correo de tu tutor en
+                <a href="{% url 'configuracion:ver' %}" class="text-primary font-bold underline">Ajustes</a>
+                para poder enviarle tu reporte de progreso.
+            </p>
+            {% endif %}
+        </section>
+
+        <!-- ============================================== -->
         <!-- FILA 2: RESUMEN DE PROGRESO (H.1)                -->
         <!-- ============================================== -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">

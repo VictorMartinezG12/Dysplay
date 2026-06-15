@@ -1,0 +1,23 @@
+¡Hola!
+
+Aquí tienes el reporte de progreso de {{ nombre_usuario }} en DysPlay:
+
+- Nivel actual: {{ nivel_actual_numero }}{% if nivel_actual_titulo %} - {{ nivel_actual_titulo }}{% endif %}
+- Racha de días: {{ racha_dias }}
+- Puntuación total: {{ puntuacion_total }}
+- Progreso general del Mapa de Aventura: {{ progreso_general_porcentaje }}%
+- Niveles superados: {{ lecciones_completadas }}
+- Historias completadas: {{ historias_completadas }}
+- Palabras pronunciadas: {{ palabras_pronunciadas }}
+
+{% if areas_mejora %}Áreas en las que {{ nombre_usuario }} puede seguir practicando:
+{% for area in areas_mejora %}- {{ area.nombre }} ({{ area.score_promedio }}% de aciertos)
+{% endfor %}
+{% endif %}
+{% if insignias %}Insignias recientes:
+{% for insignia in insignias %}- {{ insignia.nombre }}: {{ insignia.descripcion }}
+{% endfor %}
+{% endif %}
+¡Gracias por acompañar a {{ nombre_usuario }} en su aventura de aprendizaje!
+
+El equipo de DysPlay
