@@ -25,6 +25,9 @@
     let recordingLength = 0;
     let isRecording = false;
 
+    // AbortController para cancelar el fetch de Azure si el usuario sale a mitad
+    let abortController = null;
+
     /**
      * Cambia la vista visible dentro del flujo de niveles (mapa, ejercicio,
      * carga o resultado) ocultando una sección y mostrando otra.
@@ -279,11 +282,14 @@
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+            abortController = new AbortController();
+
             try {
                 const response = await fetch(URL_GUARDAR_PROGRESO, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': csrfToken },
                     body: formData,
+                    signal: abortController.signal,
                 });
 
                 const data = await response.json();
@@ -291,8 +297,12 @@
                 if (data.status === 'success') {
                     const scoreAzure = Math.round(data.score);
 
-                    document.getElementById('score-text').textContent = `${scoreAzure}%`;
-                    document.getElementById('score-chart').style.background = `conic-gradient(#10B981 ${scoreAzure}%, #edf2f7 0)`;
+                    // Score detallado (solo si el elemento existe en el DOM)
+                    const scoreChart = document.getElementById('score-chart');
+                    if (scoreChart) {
+                        scoreChart.style.background = `conic-gradient(#10B981 ${scoreAzure}%, #edf2f7 0)`;
+                        document.getElementById('score-text').textContent = `${scoreAzure}%`;
+                    }
 
                     document.getElementById('input-nivel-id').value = nivelSeleccionado;
                     document.getElementById('input-score').value = scoreAzure;
@@ -300,21 +310,28 @@
                     // Monedas ganadas reales (CASO A)
                     document.getElementById('resultado-monedas').textContent = `+ ${data.monedas_ganadas} Monedas`;
 
+                    // Estrellas obtenidas (B.2)
+                    mostrarEstrellas(data.estrellas || 1);
+
                     // Mensaje motivador del avatar
                     mostrarMensajeAvatar(data.reaccion_avatar);
 
-                    // Indicadores por palabra
-                    mostrarIndicadoresPalabras(data.palabras);
+                    // Indicadores por palabra (solo si el elemento existe en el DOM)
+                    if (document.getElementById('resultado-palabras')) {
+                        mostrarIndicadoresPalabras(data.palabras);
+                    }
 
                     // Título/subtítulo + botones según si avanzó de nivel
                     actualizarResultadoSegunAvance(data.avanzo_de_nivel);
 
+                    abortController = null;
                     changeView('view-loading', 'view-result');
                 } else {
                     alert('No se pudo evaluar la pronunciación. ' + data.message);
                     goToMap();
                 }
             } catch (error) {
+                if (error.name === 'AbortError') return;
                 console.error(error);
                 alert('Hubo un problema comunicándose con el servidor de Azure.');
                 goToMap();
@@ -427,6 +444,90 @@
         changeView('view-result', 'view-map');
         changeView('view-exercise', 'view-map');
         changeView('view-loading', 'view-map');
+
+        // Al ocultar view-map durante el ejercicio, la página se "achica" y
+        // el navegador pierde la posición de scroll; al volver, sin esto,
+        // se queda arriba en vez de en el nivel donde estaba el estudiante.
+        centrarEnNivelActual();
+    }
+
+    /**
+     * Sale al mapa desde cualquier pantalla del flujo sin guardar progreso parcial:
+     * detiene la grabación (libera el micrófono), cancela el fetch pendiente y
+     * vuelve a `view-map`. No otorga ni descuenta monedas.
+     * @returns {void}
+     */
+    function salirAlMapa() {
+        if (isRecording) {
+            isRecording = false;
+            if (recorderNode) recorderNode.disconnect();
+            if (audioStream) audioStream.getTracks().forEach((t) => t.stop());
+            if (audioContext) audioContext.close();
+        }
+
+        if (abortController) {
+            abortController.abort();
+            abortController = null;
+        }
+
+        goToMap();
+    }
+
+    /**
+     * Muestra las estrellas obtenidas (1, 2 o 3) en `#resultado-estrellas`,
+     * rellenando con ⭐ y dejando las restantes como ☆.
+     * @param {number} numEstrellas - Número de estrellas (1, 2 o 3).
+     * @returns {void}
+     */
+    function mostrarEstrellas(numEstrellas) {
+        ['estrella-1', 'estrella-2', 'estrella-3'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = i < numEstrellas ? '⭐' : '☆';
+        });
+    }
+
+    // Ancho de diseño interno del mapa de niveles (debe coincidir con el
+    // usado en niveles/services.py para calcular las coordenadas x/y).
+    const ANCHO_DISENO_MAPA = 390;
+
+    /**
+     * Reescala el canvas del mapa de niveles (de tamaño fijo, 390px de
+     * ancho de diseño) para que ocupe el ancho real disponible de
+     * `.mapa-escala-wrapper`, sin distorsión. Se hace por JS — y no con
+     * CSS container queries — porque esa propiedad no la soportan todos
+     * los navegadores; con JS el mapa se ve grande en cualquiera.
+     * También fija el alto del wrapper al alto ya escalado, para que
+     * reserve el espacio correcto en el flujo normal de la página.
+     * @returns {void}
+     */
+    function ajustarEscalaMapa() {
+        const wrapper = document.querySelector('.mapa-escala-wrapper');
+        const canvas = document.querySelector('.mapa-canvas-unico');
+        if (!wrapper || !canvas) return;
+
+        const anchoDisponible = wrapper.clientWidth;
+        if (!anchoDisponible) return;
+
+        const escala = anchoDisponible / ANCHO_DISENO_MAPA;
+        const altoNatural = parseFloat(canvas.style.height) || canvas.offsetHeight;
+
+        canvas.style.transform = `scale(${escala})`;
+        wrapper.style.height = `${altoNatural * escala}px`;
+    }
+
+    /**
+     * Centra el scroll de la página en el nodo del nivel actual (`.lvl-actual`)
+     * para que, con mapas largos de muchas zonas, el estudiante vea de
+     * inmediato dónde está parado en vez de tener que buscarlo. Se llama al
+     * cargar la página y también ocurre naturalmente al volver del flujo de
+     * ejercicio (ese flujo siempre recarga la página completa de niveles).
+     * @returns {void}
+     */
+    function centrarEnNivelActual() {
+        const nodoActual = document.querySelector('.lvl-actual');
+        if (!nodoActual) return;
+        nodoActual.scrollIntoView({ block: 'center', inline: 'center' });
     }
 
     /**
@@ -440,13 +541,20 @@
     function inicializar() {
         lucide.createIcons();
 
-        const btnIniciarNivel = document.querySelector('[data-action="start-exercise"]');
-        if (btnIniciarNivel) {
-            btnIniciarNivel.addEventListener('click', () => {
-                const { numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro } = btnIniciarNivel.dataset;
+        ajustarEscalaMapa();
+        centrarEnNivelActual();
+        let resizeTimeoutId = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeoutId);
+            resizeTimeoutId = setTimeout(ajustarEscalaMapa, 100);
+        });
+
+        document.querySelectorAll('[data-action="start-exercise"]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const { numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro } = btn.dataset;
                 startExercise(numeroNivel, fraseHistoria, palabraObjetivo, narrativaIntro);
             });
-        }
+        });
 
         const btnEscuchar = document.querySelector('[data-action="leer-frase"]');
         if (btnEscuchar) {
@@ -457,6 +565,10 @@
         if (btnGrabar) {
             btnGrabar.addEventListener('click', toggleRecording);
         }
+
+        document.querySelectorAll('[data-action="salir-al-mapa"]').forEach((btn) => {
+            btn.addEventListener('click', salirAlMapa);
+        });
 
         const btnComenzarNarrativa = document.getElementById('btn-comenzar-narrativa');
         if (btnComenzarNarrativa) {

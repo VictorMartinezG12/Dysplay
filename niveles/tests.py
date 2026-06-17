@@ -5,7 +5,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import MisionVocabulario, Nivel, ProgresoEstudiante
+from django.core.exceptions import ValidationError
+
+from .models import MisionVocabulario, Nivel, ProgresoEstudiante, ProgresoNivel, Zona
 from . import services
 
 UsuarioCustom = get_user_model()
@@ -106,23 +108,46 @@ class ServiciosNivelesTests(TestCase):
             services.procesar_audio_subido(archivo_falso)
 
     def test_calcular_recompensas_otorga_monedas_si_supera_umbral(self):
-        resultado = services.calcular_recompensas(self.usuario, score=85, nivel_id=self.nivel.numero)
+        # score=85 → 3 estrellas → RECOMPENSA_PRIMERA_VEZ[3] = 100
+        resultado = services.calcular_recompensas(self.usuario, score=85)
 
         self.usuario.refresh_from_db()
-        self.assertEqual(resultado['monedas_ganadas'], self.nivel.puntos_recompensa)
-        self.assertEqual(resultado['monedas_totales'], self.nivel.puntos_recompensa)
-        self.assertEqual(self.usuario.monedas, self.nivel.puntos_recompensa)
+        self.assertEqual(resultado['monedas_ganadas'], services.RECOMPENSA_PRIMERA_VEZ[3])
+        self.assertEqual(resultado['monedas_totales'], services.RECOMPENSA_PRIMERA_VEZ[3])
+        self.assertEqual(self.usuario.monedas, services.RECOMPENSA_PRIMERA_VEZ[3])
         # El Módulo A no debe modificar racha_dias.
         self.assertEqual(self.usuario.racha_dias, 0)
 
     def test_calcular_recompensas_no_otorga_monedas_si_no_supera_umbral(self):
-        resultado = services.calcular_recompensas(self.usuario, score=40, nivel_id=self.nivel.numero)
+        resultado = services.calcular_recompensas(self.usuario, score=40)
 
         self.usuario.refresh_from_db()
         self.assertEqual(resultado['monedas_ganadas'], 0)
         self.assertEqual(resultado['monedas_totales'], 0)
         self.assertEqual(self.usuario.monedas, 0)
         self.assertEqual(self.usuario.racha_dias, 0)
+
+    def test_calcular_recompensas_repeticion_otorga_monto_fijo(self):
+        """Repetir un nivel ya completado debe dar RECOMPENSA_REPETICION, no la de primera vez."""
+        resultado = services.calcular_recompensas(self.usuario, score=85, ya_completado=True)
+
+        self.usuario.refresh_from_db()
+        self.assertEqual(resultado['monedas_ganadas'], services.RECOMPENSA_REPETICION)
+        self.assertLess(resultado['monedas_ganadas'], services.RECOMPENSA_PRIMERA_VEZ[1])
+
+    def test_calcular_recompensas_repeticion_score_bajo_otorga_monto_fijo(self):
+        """Incluso con score bajo en repetición se dan las monedas fijas si score > 0."""
+        resultado = services.calcular_recompensas(self.usuario, score=40, ya_completado=True)
+
+        self.usuario.refresh_from_db()
+        self.assertEqual(resultado['monedas_ganadas'], services.RECOMPENSA_REPETICION)
+
+    def test_calcular_recompensas_repeticion_score_cero_no_otorga_monedas(self):
+        """Score = 0 en repetición (sin voz detectada) no debe otorgar monedas."""
+        resultado = services.calcular_recompensas(self.usuario, score=0, ya_completado=True)
+
+        self.usuario.refresh_from_db()
+        self.assertEqual(resultado['monedas_ganadas'], 0)
 
 
 # ---------------------------------------------------------------------------
@@ -303,6 +328,37 @@ class ObtenerMapaAventuraTests(TestCase):
         for zona in zonas[1:]:
             self.assertEqual(zona['niveles'], [])
 
+    def test_completado_sin_registro_de_estrellas_usa_3_por_defecto(self):
+        """Nivel completado sin ProgresoNivel (datos de antes de esta función) -> 3 estrellas."""
+        progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
+        progreso.nivel_actual = self.nivel2
+        progreso.save()
+
+        zonas = services.obtener_mapa_aventura(self.usuario)
+        nivel1 = next(n for n in zonas[0]['niveles'] if n['numero'] == 1)
+        self.assertEqual(nivel1['estado'], 'completado')
+        self.assertEqual(nivel1['mejores_estrellas'], 3)
+
+    def test_completado_con_registro_usa_las_estrellas_guardadas(self):
+        progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
+        progreso.nivel_actual = self.nivel2
+        progreso.save()
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=1)
+
+        zonas = services.obtener_mapa_aventura(self.usuario)
+        nivel1 = next(n for n in zonas[0]['niveles'] if n['numero'] == 1)
+        self.assertEqual(nivel1['mejores_estrellas'], 1)
+
+    def test_nivel_actual_y_bloqueado_no_tienen_estrellas(self):
+        progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
+        progreso.nivel_actual = self.nivel2
+        progreso.save()
+
+        zonas = services.obtener_mapa_aventura(self.usuario)
+        estados = {n['numero']: n for n in zonas[0]['niveles']}
+        self.assertEqual(estados[2]['mejores_estrellas'], 0)
+        self.assertEqual(estados[3]['mejores_estrellas'], 0)
+
 
 # ---------------------------------------------------------------------------
 # Módulo D: `construir_reaccion_avatar`
@@ -338,18 +394,50 @@ class GuardarProgresoEstudianteServicioTests(TestCase):
         self.nivel2 = Nivel.objects.create(numero=2, titulo="Siguiente", puntos_recompensa=30)
 
     def test_score_suficiente_con_siguiente_nivel_avanza(self):
-        progreso, avanzo_de_nivel = services.guardar_progreso_estudiante(
+        progreso, avanzo_de_nivel, ya_completado = services.guardar_progreso_estudiante(
             self.usuario, self.nivel1.numero, {'score_global': 85},
         )
         self.assertTrue(avanzo_de_nivel)
+        self.assertFalse(ya_completado)
         self.assertEqual(progreso.nivel_actual, self.nivel2)
 
     def test_score_insuficiente_no_avanza(self):
-        progreso, avanzo_de_nivel = services.guardar_progreso_estudiante(
+        progreso, avanzo_de_nivel, ya_completado = services.guardar_progreso_estudiante(
             self.usuario, self.nivel1.numero, {'score_global': 40},
         )
         self.assertFalse(avanzo_de_nivel)
+        self.assertFalse(ya_completado)
         self.assertIsNone(progreso.nivel_actual)
+
+    def test_repeticion_detecta_ya_completado(self):
+        """Si el nivel está por debajo del nivel_actual, ya_completado debe ser True."""
+        progreso, _ = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
+        progreso.nivel_actual = self.nivel2
+        progreso.save()
+
+        _progreso, _avanzo, ya_completado = services.guardar_progreso_estudiante(
+            self.usuario, self.nivel1.numero, {'score_global': 85},
+        )
+        self.assertTrue(ya_completado)
+
+    def test_score_suficiente_guarda_mejores_estrellas(self):
+        """Un intento aprobado (score=85 -> 3 estrellas) debe quedar en ProgresoNivel."""
+        progreso, _, _ = services.guardar_progreso_estudiante(
+            self.usuario, self.nivel1.numero, {'score_global': 85},
+        )
+        progreso_nivel = ProgresoNivel.objects.get(progreso=progreso, nivel=self.nivel1)
+        self.assertEqual(progreso_nivel.mejores_estrellas, 3)
+
+    def test_repeticion_con_peor_score_no_baja_las_estrellas(self):
+        """Repetir con menos estrellas que el mejor anterior no debe bajar el registro."""
+        progreso, _, _ = services.guardar_progreso_estudiante(
+            self.usuario, self.nivel1.numero, {'score_global': 85},  # 3 estrellas
+        )
+        services.guardar_progreso_estudiante(
+            self.usuario, self.nivel1.numero, {'score_global': 70},  # 2 estrellas
+        )
+        progreso_nivel = ProgresoNivel.objects.get(progreso=progreso, nivel=self.nivel1)
+        self.assertEqual(progreso_nivel.mejores_estrellas, 3)
 
 
 # ---------------------------------------------------------------------------
@@ -393,10 +481,12 @@ class ProcesarIntentoNivelTests(TestCase):
         self.assertEqual(resultado['score_exactitud'], 90)
         self.assertEqual(resultado['palabras'], [{'palabra': 'sol', 'score': 90}])
         self.assertTrue(resultado['avanzo_de_nivel'])
-        self.assertEqual(resultado['monedas_ganadas'], self.nivel1.puntos_recompensa)
-        self.assertEqual(resultado['monedas_totales'], self.nivel1.puntos_recompensa)
+        # score=85 → 3 estrellas → RECOMPENSA_PRIMERA_VEZ[3] = 100
+        self.assertEqual(resultado['monedas_ganadas'], services.RECOMPENSA_PRIMERA_VEZ[3])
+        self.assertEqual(resultado['monedas_totales'], services.RECOMPENSA_PRIMERA_VEZ[3])
         self.assertIn('tipo', resultado['reaccion_avatar'])
         self.assertEqual(resultado['reaccion_avatar']['tipo'], 'nivel_completado')
+        self.assertEqual(resultado['estrellas'], 3)
 
 
 # ---------------------------------------------------------------------------
@@ -424,6 +514,10 @@ class MapaAventuraViewTests(TestCase):
         self.assertIn('zonas_mapa', response.context)
         self.assertEqual(len(response.context['zonas_mapa']), 5)
 
+    def test_contexto_incluye_mostrar_puntuacion_detallada(self):
+        response = self.client.get(reverse('niveles'))
+        self.assertIn('mostrar_puntuacion_detallada', response.context)
+
     def test_render_no_contiene_mundos_hardcodeados_y_si_elementos_nuevos(self):
         response = self.client.get(reverse('niveles'))
         contenido = response.content.decode()
@@ -431,6 +525,120 @@ class MapaAventuraViewTests(TestCase):
         self.assertNotIn('Mundo 1', contenido)
         self.assertNotIn('Mundo 2', contenido)
         self.assertIn('modal-narrativa', contenido)
-        self.assertIn('resultado-palabras', contenido)
+        self.assertIn('resultado-estrellas', contenido)  # siempre visible (B.2)
         self.assertIn('Bosque Encantado', contenido)
         self.assertIn('data-narrativa-intro', contenido)
+
+
+# ---------------------------------------------------------------------------
+# B.3 — Orden automático de niveles al crear (orden_en_zona auto-incremental)
+# ---------------------------------------------------------------------------
+class OrdenAutomaticoNivelTests(TestCase):
+    """Verifica que orden_en_zona se asigne automáticamente al crear un Nivel sin especificarlo."""
+
+    def test_primer_nivel_en_zona_recibe_orden_1(self):
+        nivel = Nivel.objects.create(numero=50, titulo="Primero", zona=Nivel.ZONA_MONTANA)
+        self.assertEqual(nivel.orden_en_zona, 1)
+
+    def test_segundo_nivel_en_zona_recibe_orden_2(self):
+        Nivel.objects.create(numero=51, titulo="A", zona=Nivel.ZONA_MONTANA)
+        nivel_b = Nivel.objects.create(numero=52, titulo="B", zona=Nivel.ZONA_MONTANA)
+        self.assertEqual(nivel_b.orden_en_zona, 2)
+
+    def test_auto_orden_es_independiente_por_zona(self):
+        """Dos zonas distintas tienen sus propias secuencias de orden."""
+        Nivel.objects.create(numero=60, titulo="Bosque1", zona=Nivel.ZONA_BOSQUE)
+        Nivel.objects.create(numero=61, titulo="Bosque2", zona=Nivel.ZONA_BOSQUE)
+        nivel_montana = Nivel.objects.create(numero=70, titulo="Montana1", zona=Nivel.ZONA_MONTANA)
+        self.assertEqual(nivel_montana.orden_en_zona, 1)
+
+    def test_orden_explicito_no_es_sobreescrito(self):
+        """Si se especifica orden_en_zona explícitamente, el save() no lo cambia."""
+        nivel = Nivel.objects.create(numero=80, titulo="Manual", zona=Nivel.ZONA_VALLE, orden_en_zona=99)
+        self.assertEqual(nivel.orden_en_zona, 99)
+
+
+# ---------------------------------------------------------------------------
+# B.1+B.2 — score_a_estrellas y lógica de recompensas
+# ---------------------------------------------------------------------------
+class ScoreAEstrellasTests(TestCase):
+    """Verifica la conversión de score a estrellas."""
+
+    def test_score_excelente_da_3_estrellas(self):
+        self.assertEqual(services.score_a_estrellas(90), 3)
+        self.assertEqual(services.score_a_estrellas(85), 3)
+
+    def test_score_bueno_da_2_estrellas(self):
+        self.assertEqual(services.score_a_estrellas(70), 2)
+        self.assertEqual(services.score_a_estrellas(80), 2)
+
+    def test_score_bajo_da_1_estrella(self):
+        self.assertEqual(services.score_a_estrellas(50), 1)
+        self.assertEqual(services.score_a_estrellas(0), 1)
+
+
+# ---------------------------------------------------------------------------
+# Bloqueo de zonas (PROMPT_BLOQUEO_ZONAS.md)
+# ---------------------------------------------------------------------------
+class ZonaCerradaTests(TestCase):
+    """
+    Verifica que `Zona.cerrada` bloquee la creación de niveles nuevos a
+    nivel de modelo (la protección real), sin afectar la edición de niveles
+    ya existentes ni a las zonas que no tienen fila en `Zona` todavía.
+    """
+
+    def setUp(self):
+        # Las 5 zonas ya vienen sembradas por la migración de datos
+        # (0009_seed_zonas) — para estos tests solo ajustamos su estado.
+        Zona.objects.filter(clave=Nivel.ZONA_CASTILLO).update(cerrada=True)
+
+    def test_crear_nivel_en_zona_cerrada_lanza_validation_error(self):
+        with self.assertRaises(ValidationError):
+            Nivel.objects.create(numero=901, titulo='Intento bloqueado', zona=Nivel.ZONA_CASTILLO)
+
+    def test_crear_nivel_en_zona_cerrada_no_lo_guarda(self):
+        try:
+            Nivel.objects.create(numero=902, titulo='Intento bloqueado', zona=Nivel.ZONA_CASTILLO)
+        except ValidationError:
+            pass
+        self.assertFalse(Nivel.objects.filter(numero=902).exists())
+
+    def test_editar_nivel_existente_en_zona_cerrada_no_lanza_error(self):
+        """Cerrar la zona después de crear el nivel no debe impedir editarlo."""
+        nivel = Nivel.objects.create(numero=903, titulo='Nivel previo', zona=Nivel.ZONA_VALLE)
+
+        Zona.objects.filter(clave=Nivel.ZONA_VALLE).update(cerrada=True)
+
+        nivel.titulo = 'Nivel previo editado'
+        nivel.save()  # no debe lanzar ValidationError
+        nivel.refresh_from_db()
+        self.assertEqual(nivel.titulo, 'Nivel previo editado')
+
+    def test_crear_nivel_en_zona_sin_fila_zona_no_se_bloquea(self):
+        """Si la zona no tiene fila en Zona todavía, cerrada es opcional, no bloquea."""
+        Zona.objects.filter(clave=Nivel.ZONA_REINO).delete()
+        nivel = Nivel.objects.create(numero=904, titulo='Sin restricción', zona=Nivel.ZONA_REINO)
+        self.assertEqual(nivel.zona, Nivel.ZONA_REINO)
+
+    def test_crear_nivel_en_zona_abierta_funciona(self):
+        Zona.objects.filter(clave=Nivel.ZONA_CASTILLO).update(cerrada=False)
+        nivel = Nivel.objects.create(numero=905, titulo='Ahora sí', zona=Nivel.ZONA_CASTILLO)
+        self.assertEqual(nivel.zona, Nivel.ZONA_CASTILLO)
+
+    def test_orden_en_zona_automatico_sigue_funcionando_en_zona_abierta(self):
+        Nivel.objects.create(numero=906, titulo='Primero', zona=Nivel.ZONA_VALLE)
+        segundo = Nivel.objects.create(numero=907, titulo='Segundo', zona=Nivel.ZONA_VALLE)
+        self.assertEqual(segundo.orden_en_zona, 2)
+
+
+class ZonaModeloTests(TestCase):
+    def test_str_devuelve_nombre(self):
+        zona = Zona.objects.get(clave=Nivel.ZONA_BOSQUE)
+        self.assertEqual(str(zona), 'Bosque Encantado')
+
+    def test_clave_es_unica(self):
+        with self.assertRaises(Exception):
+            Zona.objects.create(clave=Nivel.ZONA_BOSQUE, nombre='Duplicada', orden=1)
+
+    def test_las_cinco_zonas_quedan_sembradas_por_la_migracion(self):
+        self.assertEqual(Zona.objects.count(), 5)

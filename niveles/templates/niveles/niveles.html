@@ -62,11 +62,448 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           MAPA DE AVENTURA — Sistema de tokens CSS (Módulo D / B.6)
+           Canvas único continuo estilo Candy Crush.
+
+           Para Navidad: añadir clase `mapa-tema-navidad` a #mapa-container.
+           Solo cambian estas variables CSS — el SVG y el HTML no se tocan.
+        ═══════════════════════════════════════════════════════════════ */
+
+        /* ── Tokens del canvas único ─────────────────────────────── */
+        #mapa-container {
+            --cuerda-color:      #e87ab8;
+            --cuerda-franja:     rgba(255, 255, 255, 0.42);
+            --mapa-fondo-top:    #a0d8f0;
+            --mapa-fondo-mid:    #d9e87a;
+            --mapa-fondo-bottom: #ffc8e0;
+            --nodo-done-a:       #5dde88;
+            --nodo-done-b:       #22a855;
+            --nodo-done-base:    #157a3a;
+            --nodo-act-a:        #7ec8fb;
+            --nodo-act-b:        #2075d8;
+            --nodo-act-base:     #145199;
+        }
+
+        /* ── Tema Navidad: solo cambia variables, SVG/HTML intactos ─ */
+        #mapa-container.mapa-tema-navidad {
+            --cuerda-color:      #dc2626;
+            --cuerda-franja:     rgba(255, 255, 255, 0.52);
+            --mapa-fondo-top:    #0d2a0d;
+            --mapa-fondo-mid:    #142a3a;
+            --mapa-fondo-bottom: #1e1a3a;
+            --nodo-done-a:       #fbbf24;
+            --nodo-done-b:       #d97706;
+            --nodo-done-base:    #b45309;
+        }
+
+        /* ── Escalador responsivo: 390px es el ancho del sistema de
+           coordenadas interno (el que usa services.py para x/y). niveles.js
+           (ajustarEscalaMapa) mide el ancho real del wrapper y aplica
+           transform:scale() + el alto correspondiente por JS. Se hace por
+           JS y no con CSS container queries porque esa propiedad no la
+           soportan todos los navegadores (algunos se quedan con el tamaño
+           sin escalar, 390px, si se deja solo en CSS). */
+        .mapa-escala-wrapper {
+            position: relative;
+            /* 100% del ancho REAL disponible (el de #mapa-container, ya
+               acotado por el <main max-w-5xl> de la página) — NO vw, que
+               mide la ventana completa y puede ser más ancha que el
+               contenedor real, desbordando el mapa hacia un lado. */
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .mapa-canvas-unico {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 390px;
+            overflow: hidden;
+            border-radius: 28px;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+            transform-origin: top left;
+            background:
+                radial-gradient(ellipse 240px 180px at 88% 6%,  rgba(255,255,255,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 280px 200px at 6%  42%, rgba(255,255,255,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 260px 200px at 92% 80%, rgba(255,200,120,0.18) 0%, transparent 70%),
+                linear-gradient(to bottom,
+                    var(--mapa-fondo-top),
+                    var(--mapa-fondo-mid),
+                    var(--mapa-fondo-bottom)
+                );
+        }
+        .mapa-canvas-unico > svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ── Capa 1: nubes (más profunda, detrás del camino) ─────── */
+        .mapa-capa-nubes { z-index: 1; }
+        .mapa-nube { fill: rgba(255, 255, 255, 0.75); }
+        .mapa-nube-v0 { opacity: 0.85; animation: nubeDeriva 22s ease-in-out infinite; }
+        .mapa-nube-v1 { opacity: 0.65; animation: nubeDeriva 30s ease-in-out infinite reverse; }
+        .mapa-nube-v2 { opacity: 0.95; animation: nubeDeriva 26s ease-in-out infinite; animation-delay: -8s; }
+        @keyframes nubeDeriva {
+            0%, 100% { transform: translateX(-16px); }
+            50%       { transform: translateX(16px); }
+        }
+
+        /* ── Capa 2: camino/cuerda ────────────────────────────────── */
+        .mapa-capa-cuerda { z-index: 2; }
+
+        /* ── Decoraciones de escenario por zona ───────────────────── */
+        /* `--escala` y la opacidad inline vienen de services.py (fase
+           determinista por decoración) para que ninguna se vea "clonada". */
+        .mapa-deco {
+            position: absolute;
+            z-index: 3;
+            pointer-events: none;
+            font-size: 30px;
+            line-height: 1;
+            transform: translate(-50%, -50%) scale(var(--escala, 1));
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18));
+        }
+        /* Ilustraciones reales (SVG propio de la zona, ej. Bosque Encantado).
+           El <span> es el que se anima/escala/recibe sombra de apoyo; el
+           <img> interno solo llena ese espacio (ver nota en mapa.html sobre
+           por qué ::after no funciona directamente sobre <img>). */
+        .mapa-deco-img {
+            display: block;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.22));
+        }
+        .mapa-deco-img > img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+        /* Sombra de apoyo en el suelo (no aplica a lo que vuela) — un óvalo
+           difuso fijo bajo la decoración, para que no se vea "pegada" al
+           fondo. Tamaño proporcional al ancho de la imagen/emoji. */
+        .mapa-deco-suelo::after,
+        .mapa-deco-personaje::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -6px;
+            width: 70%;
+            height: 12px;
+            background: rgba(20, 30, 20, 0.28);
+            border-radius: 50%;
+            filter: blur(3px);
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+
+        /* Decoraciones "de vuelo" (mariposas, hadas, aves, destellos) */
+        .mapa-deco-vuelo { z-index: 9; }
+
+        /* ── Microanimaciones de decoración (todas vía transform/opacity) ── */
+        .mapa-deco-anim-sway {
+            animation-name: decoSway;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            transform-origin: 50% 92%;
+        }
+        @keyframes decoSway {
+            0%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)) rotate(-2.5deg); }
+            50%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) rotate(2.5deg); }
+        }
+
+        .mapa-deco-anim-bob {
+            animation-name: decoBob;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+        @keyframes decoBob {
+            0%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(0); }
+            50%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(-4px); }
+        }
+
+        .mapa-deco-anim-pulso {
+            animation-name: decoPulso;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+        @keyframes decoPulso {
+            0%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18)) brightness(1); }
+            50%       { transform: translate(-50%, -50%) scale(var(--escala, 1)); filter: drop-shadow(0 2px 5px rgba(255,255,180,0.45)) brightness(1.15); }
+        }
+
+        .mapa-deco-anim-idle {
+            animation-name: decoIdle;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            transform-origin: 50% 95%;
+        }
+        @keyframes decoIdle {
+            0%, 84%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)) rotate(0deg) scaleY(1); }
+            90%            { transform: translate(-50%, -50%) scale(var(--escala, 1)) rotate(-3deg) scaleY(0.92); }
+            96%            { transform: translate(-50%, -50%) scale(var(--escala, 1)) rotate(3deg) scaleY(1); }
+        }
+
+        .mapa-deco-anim-vuelo,
+        .mapa-deco-anim-vuelo-hada {
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+        .mapa-deco-anim-vuelo { animation-name: decoVuelo; }
+        .mapa-deco-anim-vuelo-hada { animation-name: decoVueloHada; }
+        @keyframes decoVuelo {
+            0%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(0)    rotate(0deg); }
+            25%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(-9px) rotate(7deg); }
+            50%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(2px)  rotate(-5deg); }
+            75%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translateY(-7px) rotate(4deg); }
+        }
+        @keyframes decoVueloHada {
+            0%, 100% { transform: translate(-50%, -50%) scale(var(--escala, 1)) translate(0, 0)      rotate(0deg); }
+            30%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translate(4px, -10px) rotate(-8deg); }
+            60%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translate(-4px, -4px) rotate(6deg); }
+            85%       { transform: translate(-50%, -50%) scale(var(--escala, 1)) translate(2px, -8px)  rotate(-4deg); }
+        }
+
+        /* ── SVG: clases de la cuerda (leen variables CSS) ───────── */
+        .cuerda-base {
+            fill: none;
+            stroke: var(--cuerda-color);
+            stroke-width: 26;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.26));
+        }
+        .cuerda-franja {
+            fill: none;
+            stroke: var(--cuerda-franja);
+            stroke-width: 26;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 17 17;
+        }
+
+        /* ── Nodos de nivel ──────────────────────────────────────── */
+        .lvl-nodo {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            border: 5px solid white;
+            font-family: inherit;
+            font-weight: 900;
+            color: white;
+            z-index: 20;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            user-select: none;
+        }
+        .lvl-nodo:focus-visible { outline: 4px solid white; outline-offset: 3px; }
+
+        .lvl-completado {
+            width: 74px; height: 74px; font-size: 22px;
+            background: linear-gradient(155deg, var(--nodo-done-a), var(--nodo-done-b));
+            box-shadow: 0 7px 0 var(--nodo-done-base), 0 10px 22px rgba(0,0,0,0.26);
+            animation: lvlFlotarSutil 4.5s ease-in-out infinite;
+        }
+        .lvl-completado:hover {
+            animation-play-state: paused;
+            transform: translate(-50%, -50%) translateY(-4px);
+            box-shadow: 0 11px 0 var(--nodo-done-base), 0 14px 28px rgba(0,0,0,0.30);
+        }
+        .lvl-actual {
+            width: 88px; height: 88px; font-size: 30px;
+            background: linear-gradient(155deg, var(--nodo-act-a), var(--nodo-act-b));
+            box-shadow: 0 8px 0 var(--nodo-act-base), 0 12px 28px rgba(0,0,0,0.30);
+            animation: lvlBounce 1.25s ease-in-out infinite;
+        }
+        .lvl-bloqueado {
+            width: 66px; height: 66px; font-size: 26px;
+            background: linear-gradient(155deg, #b0bec5, #78909c);
+            box-shadow: 0 5px 0 #455a64, 0 8px 18px rgba(0,0,0,0.20);
+            cursor: not-allowed;
+            opacity: 0.88;
+            animation: lvlFlotarSutil 4.5s ease-in-out infinite;
+        }
+        @keyframes lvlBounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+            50%       { transform: translate(-50%, -50%) translateY(-9px); }
+        }
+        /* Flotación muy sutil para nodos quietos (completado/bloqueado) —
+           el desfase viene de nivel.float_delay (services.py) para que no
+           todos suban y bajen al mismo tiempo. */
+        @keyframes lvlFlotarSutil {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50%       { transform: translate(-50%, -50%) translateY(-3px); }
+        }
+
+        /* Halo de brillo detrás de los nodos completado/actual (anillo
+           transparente en el centro para no tapar el número del nodo) */
+        .lvl-completado::before,
+        .lvl-actual::before {
+            content: '';
+            position: absolute;
+            inset: -16px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .lvl-completado::before {
+            background: radial-gradient(circle, transparent 50%, var(--nodo-done-a) 62%, transparent 100%);
+            animation: glowPulso 2.6s ease-in-out infinite;
+        }
+        .lvl-actual::before {
+            background: radial-gradient(circle, transparent 48%, var(--nodo-act-a) 60%, transparent 100%);
+            animation: glowPulso 1.5s ease-in-out infinite;
+        }
+        @keyframes glowPulso {
+            0%, 100% { opacity: 0.45; transform: scale(0.88); }
+            50%       { opacity: 0.85; transform: scale(1.12); }
+        }
+
+        /* Leo (mascota) — aparece junto al nodo del nivel actual */
+        .mapa-leo {
+            position: absolute;
+            z-index: 24;
+            font-size: 34px;
+            line-height: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+            animation: leoIdle 1.6s ease-in-out infinite;
+        }
+        @keyframes leoIdle {
+            0%, 100% { transform: translate(-50%, -50%) rotate(-4deg) translateY(0); }
+            50%       { transform: translate(-50%, -50%) rotate(4deg)  translateY(-5px); }
+        }
+
+        /* Burbuja "¡Toca para jugar!" */
+        .jugar-bubble {
+            position: absolute;
+            z-index: 25;
+            transform: translateX(-50%);
+            background: white;
+            color: var(--nodo-act-b);
+            font-weight: 800;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 24px;
+            white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.20);
+            animation: bubblePulse 1.25s ease-in-out infinite;
+        }
+        .jugar-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: white;
+            border-bottom: none;
+        }
+        @keyframes bubblePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+
+        /* Las 3 estrellas (resultado del nivel) sobre el nodo completado:
+           doradas = ganadas, gris = no ganadas. mejores_estrellas viene de
+           ProgresoNivel (services.py), 1 a 3 según el mejor intento. */
+        .lvl-estrellas {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1px;
+            z-index: 21;
+            pointer-events: none;
+            background: white;
+            border-radius: 999px;
+            padding: 2px 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+        }
+        .lvl-estrella {
+            font-size: 11px;
+            line-height: 1;
+            color: #cbd5e1;
+        }
+        .lvl-estrella.llena {
+            color: #f5c518;
+        }
+
+        /* Estrellas decorativas (con destello, no todas en fase) */
+        .cuerda-star {
+            position: absolute;
+            z-index: 8;
+            font-size: 15px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.30));
+            animation: starTwinkle 2.6s ease-in-out infinite;
+        }
+        .cuerda-star-v0 { animation-duration: 2.2s; animation-delay: 0s; }
+        .cuerda-star-v1 { animation-duration: 2.8s; animation-delay: .4s; }
+        .cuerda-star-v2 { animation-duration: 3.2s; animation-delay: .8s; }
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.85); }
+            50%       { opacity: 1;    transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        /* Ribbons de zona (posición absoluta dentro del canvas único) */
+        .zona-ribbon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.40);
+            white-space: nowrap;
+            padding: 5px 52px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--r-bg)  16%,
+                var(--r-bg)  84%,
+                transparent 100%
+            );
+        }
+        .zona-ribbon::before, .zona-ribbon::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; width: 12px;
+            background: var(--r-sombra);
+        }
+        .zona-ribbon::before { left: -4px;  clip-path: polygon(100% 0, 100% 100%, 0 50%); }
+        .zona-ribbon::after  { right: -4px; clip-path: polygon(0 0, 0 100%, 100% 50%); }
+
+        /* Colores de ribbon por zona */
+        .ribbon-bosque_encantado   { --r-bg: #059669; --r-sombra: #047857; }
+        .ribbon-montana_letras     { --r-bg: #64748b; --r-sombra: #475569; }
+        .ribbon-valle_silabas      { --r-bg: #d97706; --r-sombra: #b45309; }
+        .ribbon-castillo_palabras  { --r-bg: #7c3aed; --r-sombra: #6d28d9; }
+        .ribbon-reino_lectura      { --r-bg: #2563eb; --r-sombra: #1d4ed8; }
+        /* Navidad: todos los ribbons en rojo */
+        #mapa-container.mapa-tema-navidad .zona-ribbon {
+            --r-bg: #991b1b; --r-sombra: #7f1d1d;
+        }
+
+        /* Accesibilidad: el mapa sigue siendo usable sin ninguna animación
+           decorativa (árboles, flores, nubes, mariposas, brillo, flotación
+           de nodos, etc.) para quien prefiera movimiento reducido. */
+        @media (prefers-reduced-motion: reduce) {
+            #mapa-container *,
+            #mapa-container *::before,
+            #mapa-container *::after {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
-    <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 relative">
+    <header id="global-header" class="w-full flex items-center justify-between p-6 md:p-8 max-w-5xl z-50 sticky top-0">
         <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">
             <i data-lucide="arrow-left" class="w-8 h-8 text-primary"></i>
             <span class="text-[20px] font-bold">Menú</span>
@@ -86,7 +523,10 @@
             {% include 'niveles/mapa.html' %}
         </section>
 
-        <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10">
+        <section id="view-exercise" class="hidden flex-col items-center justify-center w-full max-w-3xl animate-fade-in mt-10 relative">
+            <button data-action="salir-al-mapa" aria-label="Salir al mapa" class="absolute top-0 right-0 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-soft border-2 border-gray-200 hover:bg-gray-100 transition-colors z-10">
+                <i data-lucide="x" class="w-6 h-6 text-gray-500"></i>
+            </button>
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-primary/20">
 
                 <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8 shadow-sm">
@@ -113,7 +553,10 @@
             </div>
         </section>
 
-        <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20">
+        <section id="view-loading" class="hidden flex-col items-center justify-center w-full max-w-2xl animate-fade-in text-center mt-20 relative">
+            <button data-action="salir-al-mapa" aria-label="Cancelar y volver al mapa" class="absolute top-0 right-0 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-soft border-2 border-gray-200 hover:bg-gray-100 transition-colors z-10">
+                <i data-lucide="x" class="w-6 h-6 text-gray-500"></i>
+            </button>
             <div class="relative w-40 h-40 mb-10">
                 <div class="absolute inset-0 border-[12px] border-white rounded-full shadow-soft opacity-50"></div>
                 <div class="absolute inset-0 border-[12px] border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -136,8 +579,15 @@
                 <h2 id="resultado-titulo" class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Nivel Superado!</h2>
                 <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-6">¡Lo hiciste increíble! Sigue así.</p>
 
-                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primary mb-8"></p>
+                <p id="resultado-mensaje-avatar" class="text-[20px] font-bold text-primary mb-6"></p>
 
+                <div id="resultado-estrellas" class="flex gap-3 mb-8" aria-label="Estrellas obtenidas">
+                    <span id="estrella-1" class="text-[52px] transition-transform">☆</span>
+                    <span id="estrella-2" class="text-[52px] transition-transform">☆</span>
+                    <span id="estrella-3" class="text-[52px] transition-transform">☆</span>
+                </div>
+
+                {% if mostrar_puntuacion_detallada %}
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
                     <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#10B981 85%, #edf2f7 0);"></div>
                     <div class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
@@ -147,6 +597,7 @@
                 </div>
 
                 <div id="resultado-palabras" class="hidden flex flex-wrap items-center justify-center gap-3 mb-8"></div>
+                {% endif %}
 
                 <div class="bg-reward/10 rounded-full px-8 py-4 flex items-center gap-3 border-2 border-reward/20 mb-10">
                     <i data-lucide="coins" class="w-8 h-8 text-reward"></i>
@@ -192,6 +643,8 @@
     </main>
 
     {{ niveles_config|json_script:"niveles-config" }}
+    {# Lottie Web — animaciones vectoriales para el mapa y celebraciones (B.6). async: no bloquea la carga de niveles.js #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" async crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{% static 'js/niveles.js' %}"></script>
 </body>
 </html>

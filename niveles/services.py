@@ -17,7 +17,7 @@ import magic
 
 from django.conf import settings
 
-from .models import Nivel, ProgresoEstudiante
+from .models import Nivel, MisionVocabulario, ProgresoEstudiante, ProgresoNivel
 from avatar.reactions import obtener_reaccion
 from estadisticas.models import RegistroActividad
 from recompensas.services import otorgar_monedas
@@ -37,6 +37,27 @@ TIPOS_MIME_WAV_VALIDOS = {'audio/x-wav', 'audio/wav', 'audio/vnd.wave'}
 # Umbral de puntuación (sobre 100) a partir del cual se considera que el
 # estudiante superó la misión de pronunciación. Definido en el Master Plan.
 UMBRAL_SUPERACION_NIVEL = 70
+
+# Recompensas de primera vez según estrellas obtenidas (estrellas → monedas).
+# Definir aquí para poder ajustar sin tocar lógica dispersa.
+RECOMPENSA_PRIMERA_VEZ = {1: 25, 2: 50, 3: 100}
+
+# Monedas fijas por repetir un nivel ya completado, independiente de las estrellas.
+RECOMPENSA_REPETICION = 3
+
+
+def score_a_estrellas(score, es_principiante=False):
+    """
+    Convierte el score de Azure Speech (0-100) a 1, 2 o 3 estrellas.
+
+    Punto de conversión único para que la lógica de estrellas no quede dispersa.
+    `es_principiante` está reservado para una curva más generosa en el futuro.
+    """
+    if score >= 85:
+        return 3
+    elif score >= UMBRAL_SUPERACION_NIVEL:
+        return 2
+    return 1
 
 
 def procesar_audio_subido(request_file):
@@ -120,7 +141,9 @@ def guardar_progreso_estudiante(usuario, nivel_id, resultado_evaluacion):
     Busca el nivel indicado y el progreso actual del estudiante (creándolo si
     no existe). Si el puntaje global obtenido alcanza el umbral de superación
     definido en el Master Plan (UMBRAL_SUPERACION_NIVEL), se acumulan los
-    puntos del nivel y se avanza al siguiente nivel disponible (si existe).
+    puntos del nivel, se avanza al siguiente nivel disponible (si existe) y
+    se actualiza `ProgresoNivel.mejores_estrellas` (para el mapa) si el
+    resultado de este intento superó el mejor anterior.
 
     Args:
         usuario: instancia de `UsuarioCustom` (estudiante autenticado).
@@ -150,6 +173,12 @@ def guardar_progreso_estudiante(usuario, nivel_id, resultado_evaluacion):
 
     progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=usuario)
 
+    # Determinar ANTES de avanzar si este nivel ya estaba superado anteriormente.
+    ya_completado = (
+        progreso.nivel_actual is not None
+        and nivel.numero < progreso.nivel_actual.numero
+    )
+
     score_global = resultado_evaluacion.get('score_global', 0)
     avanzo_de_nivel = False
 
@@ -165,55 +194,45 @@ def guardar_progreso_estudiante(usuario, nivel_id, resultado_evaluacion):
 
         progreso.save()
 
-    return progreso, avanzo_de_nivel
+        # Guardamos el mejor resultado en estrellas de este nivel (para el
+        # mapa), sin afectar las monedas: si ya tenía un resultado mejor en
+        # un intento anterior, no se baja al repetir con peor puntaje.
+        estrellas_obtenidas = score_a_estrellas(score_global)
+        progreso_nivel, _creado_pn = ProgresoNivel.objects.get_or_create(progreso=progreso, nivel=nivel)
+        if estrellas_obtenidas > progreso_nivel.mejores_estrellas:
+            progreso_nivel.mejores_estrellas = estrellas_obtenidas
+            progreso_nivel.save()
+
+    return progreso, avanzo_de_nivel, ya_completado
 
 
-def calcular_recompensas(usuario, score, nivel_id=None):
+def calcular_recompensas(usuario, score, ya_completado=False):
     """
-    Calcula y otorga las recompensas (monedas) ganadas por el estudiante en su intento.
+    Calcula y otorga las recompensas (monedas) según si el nivel es primera vez o repetición.
 
-    Si el puntaje alcanza el umbral de superación (UMBRAL_SUPERACION_NIVEL),
-    se otorgan al usuario las monedas correspondientes a `puntos_recompensa`
-    del nivel evaluado (campo `monedas` de `UsuarioCustom`) y se persiste el
-    cambio.
-
-    Nota: La actualización de `racha_dias` se deja para el Módulo B (Sistema
-    de Recompensas Unificado), que definirá el campo de fecha de última
-    actividad necesario para calcularla correctamente. Este módulo NO debe
-    modificar `racha_dias`.
+    - Primera vez (ya_completado=False) y score >= UMBRAL: monedas según RECOMPENSA_PRIMERA_VEZ
+      por las estrellas obtenidas (1/2/3).
+    - Repetición (ya_completado=True) y score > 0: RECOMPENSA_REPETICION fija, sin importar
+      las estrellas del intento actual.
+    - Intento fallido sin completar por primera vez: 0 monedas.
 
     Args:
         usuario: instancia de `UsuarioCustom` (estudiante autenticado).
         score (float): puntaje global obtenido en la evaluación de pronunciación.
-        nivel_id: identificador (numero) del `Nivel` recién evaluado. Se usa
-            para determinar `puntos_recompensa`. Si no se proporciona o no
-            se encuentra, se usa el valor por defecto del modelo `Nivel`.
+        ya_completado (bool): True si el nivel ya había sido superado anteriormente.
 
     Returns:
-        dict: con las claves `monedas_ganadas` (int, monedas otorgadas en
-            este intento, puede ser 0) y `monedas_totales` (int, saldo
-            actualizado de monedas del usuario).
+        dict: `monedas_ganadas` (int) y `monedas_totales` (int).
     """
     monedas_ganadas = 0
     monedas_totales = usuario.monedas
 
-    if score >= UMBRAL_SUPERACION_NIVEL:
-        puntos_recompensa = Nivel._meta.get_field('puntos_recompensa').get_default()
-
-        if nivel_id is not None:
-            try:
-                nivel = Nivel.objects.get(numero=nivel_id)
-                puntos_recompensa = nivel.puntos_recompensa
-            except Nivel.DoesNotExist:
-                logger.error(
-                    "Nivel inexistente al calcular recompensas (numero=%s)",
-                    nivel_id,
-                    exc_info=True,
-                )
-
-        monedas_ganadas = puntos_recompensa
-        # El otorgamiento de monedas se delega en el Módulo B (recompensas),
-        # que lo realiza de forma atómica y registra el movimiento en el log.
+    if ya_completado and score > 0:
+        monedas_ganadas = RECOMPENSA_REPETICION
+        monedas_totales = otorgar_monedas(usuario, monedas_ganadas, concepto='nivel_repeticion')
+    elif not ya_completado and score >= UMBRAL_SUPERACION_NIVEL:
+        estrellas = score_a_estrellas(score)
+        monedas_ganadas = RECOMPENSA_PRIMERA_VEZ.get(estrellas, 25)
         monedas_totales = otorgar_monedas(usuario, monedas_ganadas, concepto='nivel_completado')
 
     return {
@@ -286,6 +305,260 @@ ZONAS_MAPA_AVENTURA = [
 ]
 
 
+# Posiciones X para cada índice de nivel dentro de una zona (serpentina izq↔der).
+_X_POSICIONES = [295, 78, 205, 318, 72]
+
+# Emojis de escenario por zona, usados solo como decoración de fondo del mapa.
+_DECORACIONES_POR_ZONA = {
+    'bosque_encantado': ['🌲', '🦋', '🌸', '🍄'],
+    'montana_letras': ['⛰️', '❄️', '🪨', '🦅'],
+    'valle_silabas': ['🌾', '🌻', '🐝', '🌼'],
+    'castillo_palabras': ['🏰', '🚩', '🦢', '✨'],
+    'reino_lectura': ['📖', '🕊️', '✨', '🌟'],
+}
+
+# Subconjunto de los emojis anteriores que "vuelan": reciben animación de
+# flotación/deriva en vez de quedar estáticos como el resto del escenario.
+_EMOJIS_VOLADORES = {'🦋', '🦅', '🐝', '🦢', '✨', '🌟', '🕊️', '❄️'}
+
+# Ilustraciones reales (SVG en static/images/<zona_clave>/) para las zonas que
+# ya cuentan con arte propio. Si una zona aparece aquí, sus decoraciones usan
+# estas imágenes en vez de los emojis de _DECORACIONES_POR_ZONA.
+# 'ancho'/'alto' son el tamaño de despliegue en px (no el nativo del archivo).
+# 'tipo' decide la posición/capa (suelo y personaje quedan apoyados en el
+# camino con sombra; vuelo flota cerca del borde, sin sombra de apoyo).
+# 'anim' selecciona la microanimación CSS (ver niveles.html): sway (balanceo
+# de árbol), bob (vaivén floral), pulso (brillo leve), idle (parpadeo de
+# personaje posado), vuelo/vuelo-hada (flotación + aleteo), quieto (sin animar).
+# El orden de la lista intercala suelo/personaje/vuelo a propósito, para que
+# al rotar por ella las criaturas que vuelan aparezcan repartidas entre la
+# vegetación en vez de quedar todas juntas.
+_ILUSTRACIONES_POR_ZONA = {
+    'bosque_encantado': [
+        {'archivo': 'arbol.svg', 'ancho': 92, 'alto': 95, 'tipo': 'suelo', 'anim': 'sway'},
+        {'archivo': 'mariposa.svg', 'ancho': 34, 'alto': 34, 'tipo': 'vuelo', 'anim': 'vuelo'},
+        {'archivo': 'flores.svg', 'ancho': 130, 'alto': 82, 'tipo': 'suelo', 'anim': 'bob'},
+        {'archivo': 'hada.svg', 'ancho': 46, 'alto': 34, 'tipo': 'vuelo', 'anim': 'vuelo-hada'},
+        {'archivo': 'piedras.svg', 'ancho': 100, 'alto': 80, 'tipo': 'suelo', 'anim': 'quieto'},
+        {'archivo': 'buho.svg', 'ancho': 56, 'alto': 64, 'tipo': 'personaje', 'anim': 'idle'},
+        {'archivo': 'casa.svg', 'ancho': 112, 'alto': 108, 'tipo': 'suelo', 'anim': 'quieto'},
+        {'archivo': 'hongo.svg', 'ancho': 70, 'alto': 58, 'tipo': 'suelo', 'anim': 'pulso'},
+    ],
+}
+
+# Duración base (segundos) de cada microanimación. 0 = sin animar (estático).
+_DURACION_ANIM = {
+    'sway': 7.0,
+    'bob': 4.0,
+    'pulso': 3.2,
+    'idle': 5.0,
+    'vuelo': 4.5,
+    'vuelo-hada': 4.0,
+    'quieto': 0,
+}
+
+# Razón áurea: usada para generar una secuencia determinística de baja
+# discrepancia (siempre el mismo resultado para el mismo índice, pero sin
+# patrón visible) que separa el desfase de animación, la escala y la
+# opacidad de cada decoración — así ninguna se ve sincronizada o "clonada".
+_FASE_AUREA = 0.6180339887
+
+
+def _fase_determinista(indice, semilla=_FASE_AUREA):
+    """Devuelve un valor en [0, 1) determinista pero sin patrón aparente."""
+    return (indice * semilla) % 1
+
+
+def _calcular_posiciones_zona(num_niveles):
+    """
+    Calcula la geometría del camino SVG para una zona según su cantidad de niveles.
+
+    Returns:
+        dict con canvas_height (int, px), polyline_points (str para SVG),
+        posiciones (list de dicts {x, y}), y estrellas (list de dicts {x, y}
+        con las posiciones intermedias para las decoraciones del camino).
+    """
+    espacio_por_nivel = 120   # px entre filas de niveles
+    padding_top = 100         # espacio para el ribbon de zona
+    padding_bottom = 60
+
+    canvas_height = num_niveles * espacio_por_nivel + padding_top + padding_bottom
+
+    posiciones = []
+    for i in range(num_niveles):
+        x = _X_POSICIONES[i % len(_X_POSICIONES)]
+        y = canvas_height - padding_bottom - i * espacio_por_nivel
+        posiciones.append({'x': x, 'y': y})
+
+    polyline_points = ' '.join(f"{p['x']},{p['y']}" for p in posiciones)
+
+    estrellas = []
+    for i in range(len(posiciones) - 1):
+        estrellas.append({
+            'x': (posiciones[i]['x'] + posiciones[i + 1]['x']) // 2,
+            'y': (posiciones[i]['y'] + posiciones[i + 1]['y']) // 2,
+        })
+
+    return {
+        'canvas_height': canvas_height,
+        'polyline_points': polyline_points,
+        'posiciones': posiciones,
+        'estrellas': estrellas,
+    }
+
+
+def obtener_mapa_unico(zonas):
+    """
+    Toma la lista devuelta por obtener_mapa_aventura() y calcula la geometría
+    de UN ÚNICO canvas continuo con todos los niveles de todas las zonas.
+
+    Returns:
+        dict con canvas_height (int, px — el CSS lo usa también como
+        relación de aspecto para escalar el mapa de forma responsiva sin
+        distorsión), polyline_points (str para el SVG), estrellas (list de
+        {x,y} en midpoints), ribbons (list de {zona_clave, zona_nombre,
+        desbloqueada, y}), decoraciones (list de {x, y, tipo: 'suelo'|
+        'vuelo'|'personaje', anim, escala, opacidad, duracion, delay} de
+        escenario por zona, con 'emoji' o, para zonas con arte propio,
+        'imagen' + 'ancho' + 'alto'), nubes (list de {x, y, variante} para
+        la capa de fondo animada), y niveles (list plana de todos los
+        niveles con {x, y, float_delay, zona_clave, zona_nombre,
+        zona_desbloqueada} + los campos originales del nivel).
+    """
+    ESPACIO_POR_NIVEL = 125
+    PADDING_TOP = 80
+    PADDING_BOTTOM = 100
+    X_POSICIONES = [295, 75, 205, 318, 72]
+
+    niveles_planos = []
+    primer_indice_por_zona = []
+    for zona in zonas:
+        primer_indice_por_zona.append(len(niveles_planos))
+        for nv in zona['niveles']:
+            entrada = dict(nv)
+            entrada['zona_clave'] = zona['clave']
+            entrada['zona_nombre'] = zona['nombre']
+            entrada['zona_desbloqueada'] = zona['desbloqueada']
+            niveles_planos.append(entrada)
+
+    total = len(niveles_planos)
+    canvas_height = max(total * ESPACIO_POR_NIVEL + PADDING_TOP + PADDING_BOTTOM, 400)
+
+    for i, nv in enumerate(niveles_planos):
+        nv['x'] = X_POSICIONES[i % len(X_POSICIONES)]
+        nv['y'] = canvas_height - PADDING_BOTTOM - i * ESPACIO_POR_NIVEL
+        # Desfase para la flotación sutil de los nodos completado/bloqueado
+        # (ver .lvl-completado/.lvl-bloqueado en niveles.html): evita que
+        # todos los nodos suban y bajen exactamente al mismo tiempo.
+        nv['float_delay'] = round(_fase_determinista(i) * 4.5, 2)
+
+    polyline_points = ' '.join(f"{nv['x']},{nv['y']}" for nv in niveles_planos)
+
+    estrellas = []
+    for i in range(len(niveles_planos) - 1):
+        estrellas.append({
+            'x': (niveles_planos[i]['x'] + niveles_planos[i + 1]['x']) // 2,
+            'y': (niveles_planos[i]['y'] + niveles_planos[i + 1]['y']) // 2,
+        })
+
+    # Ribbon de cada zona: justo debajo del primer (más antiguo) nivel de la zona.
+    ribbons = []
+    for zona_idx, zona in enumerate(zonas):
+        idx = primer_indice_por_zona[zona_idx]
+        oldest_y = canvas_height - PADDING_BOTTOM - idx * ESPACIO_POR_NIVEL
+        ribbons.append({
+            'zona_clave': zona['clave'],
+            'zona_nombre': zona['nombre'],
+            'desbloqueada': zona['desbloqueada'],
+            'y': oldest_y + 52,
+        })
+
+    # Decoraciones de escenario: una cada dos niveles, en el borde opuesto al
+    # nodo (puramente visual, no afecta la lógica del camino). Si la zona
+    # tiene ilustraciones reales (_ILUSTRACIONES_POR_ZONA) se usan esas;
+    # si no, se cae a los emojis de _DECORACIONES_POR_ZONA (donde los
+    # marcados como _EMOJIS_VOLADORES reciben animación de vuelo/deriva y
+    # el resto queda fijo como elemento de fondo).
+    # Contador independiente del índice de nivel: como solo se decora uno de
+    # cada dos niveles (i impar), usar `i % len(lista)` directamente dejaría
+    # siempre el mismo resto y la mitad de las imágenes/emojis de cada zona
+    # jamás se mostraría. Este contador sí rota por todas. La misma fase
+    # determinista que elige la imagen también fija su escala, opacidad y
+    # desfase de animación, para que ninguna decoración se vea "clonada" ni
+    # sincronizada con las demás.
+    decoraciones = []
+    contador = 0
+    for i, nv in enumerate(niveles_planos):
+        if i % 2 == 0:
+            continue
+
+        fase = _fase_determinista(contador)
+        escala = round(0.92 + fase * 0.18, 3)
+        opacidad = round(0.86 + _fase_determinista(contador, 0.3819660113) * 0.14, 3)
+
+        ilustraciones = _ILUSTRACIONES_POR_ZONA.get(nv['zona_clave'])
+        if ilustraciones:
+            item = ilustraciones[contador % len(ilustraciones)]
+            es_vuelo = item['tipo'] == 'vuelo'
+            duracion = _DURACION_ANIM.get(item['anim'], 0)
+            decoraciones.append({
+                'x': (28 if nv['x'] > 195 else 362) if es_vuelo else (58 if nv['x'] > 195 else 332),
+                'y': (nv['y'] - 35) if es_vuelo else (nv['y'] - 30),
+                'imagen': f"{nv['zona_clave']}/{item['archivo']}",
+                'ancho': item['ancho'],
+                'alto': item['alto'],
+                'tipo': item['tipo'],
+                'anim': item['anim'],
+                'escala': escala,
+                'opacidad': opacidad,
+                'duracion': duracion,
+                'delay': round(fase * duracion, 2),
+            })
+            contador += 1
+            continue
+
+        emojis = _DECORACIONES_POR_ZONA.get(nv['zona_clave'], ['✨'])
+        emoji = emojis[contador % len(emojis)]
+        es_vuelo = emoji in _EMOJIS_VOLADORES
+        anim = 'vuelo' if es_vuelo else 'quieto'
+        duracion = _DURACION_ANIM.get(anim, 0)
+        decoraciones.append({
+            'x': 28 if nv['x'] > 195 else 362,
+            'y': nv['y'] - 35,
+            'emoji': emoji,
+            'tipo': 'vuelo' if es_vuelo else 'suelo',
+            'anim': anim,
+            'escala': escala,
+            'opacidad': opacidad,
+            'duracion': duracion,
+            'delay': round(fase * duracion, 2),
+        })
+        contador += 1
+
+    # Nubes decorativas: distribuidas uniformemente en altura, alternando de
+    # lado, cada una con su propia variante de tamaño/velocidad (CSS) para
+    # que no se muevan todas en sincronía. Capa más profunda del mapa.
+    nubes = []
+    num_nubes = max(canvas_height // 280, 2)
+    paso_y = canvas_height / num_nubes
+    for i in range(num_nubes):
+        nubes.append({
+            'x': 70 if i % 2 == 0 else 250,
+            'y': int(paso_y * i + paso_y / 2),
+            'variante': i % 3,
+        })
+
+    return {
+        'canvas_height': canvas_height,
+        'polyline_points': polyline_points,
+        'estrellas': estrellas,
+        'ribbons': ribbons,
+        'decoraciones': decoraciones,
+        'nubes': nubes,
+        'niveles': niveles_planos,
+    }
+
+
 def obtener_mapa_aventura(usuario):
     """
     Construye la estructura de datos del Mapa de Aventura (D.1) para un usuario.
@@ -316,7 +589,12 @@ def obtener_mapa_aventura(usuario):
         list[dict]: una entrada por cada zona, con las claves `clave`,
             `nombre`, `descripcion`, `desbloqueada` (bool) y `niveles`
             (lista ordenada por `orden_en_zona`, cada elemento con `numero`,
-            `titulo`, `orden_en_zona`, `narrativa_intro` y `estado`).
+            `titulo`, `orden_en_zona`, `narrativa_intro`, `estado`, `frase_historia`,
+            `palabra_objetivo` — estos últimos permiten repetir niveles completados
+            — y `mejores_estrellas`, 1 a 3 para niveles completados, según el
+            mejor resultado histórico en `ProgresoNivel`; 3 si el nivel está
+            completado pero no hay registro guardado, por ejemplo datos de
+            antes de que existiera este seguimiento).
     """
     progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=usuario)
     nivel_actual_numero = progreso.nivel_actual.numero if progreso.nivel_actual else None
@@ -324,6 +602,17 @@ def obtener_mapa_aventura(usuario):
     niveles_por_zona = {}
     for nivel in Nivel.objects.all().order_by('zona', 'orden_en_zona', 'numero'):
         niveles_por_zona.setdefault(nivel.zona, []).append(nivel)
+
+    # Primera misión por nivel (en una sola query) para habilitar repetición.
+    primera_mision_por_nivel = {}
+    for mision in MisionVocabulario.objects.order_by('nivel_id', 'id'):
+        if mision.nivel_id not in primera_mision_por_nivel:
+            primera_mision_por_nivel[mision.nivel_id] = mision
+
+    # Mejor resultado en estrellas por nivel (una sola query) para el badge del mapa.
+    mejores_estrellas_por_nivel = dict(
+        ProgresoNivel.objects.filter(progreso=progreso).values_list('nivel_id', 'mejores_estrellas')
+    )
 
     zonas = []
     for indice, zona_info in enumerate(ZONAS_MAPA_AVENTURA):
@@ -338,23 +627,41 @@ def obtener_mapa_aventura(usuario):
             else:
                 estado = 'bloqueado'
 
+            mision = primera_mision_por_nivel.get(nivel.id)
             niveles_zona.append({
                 'numero': nivel.numero,
                 'titulo': nivel.titulo,
                 'orden_en_zona': nivel.orden_en_zona,
                 'narrativa_intro': nivel.narrativa_intro,
                 'estado': estado,
+                'frase_historia': mision.frase_historia if mision else '',
+                'palabra_objetivo': mision.palabra_objetivo if mision else '',
+                'mejores_estrellas': mejores_estrellas_por_nivel.get(nivel.id, 3) if estado == 'completado' else 0,
             })
 
         desbloqueada = any(n['estado'] in ('actual', 'completado') for n in niveles_zona)
         if indice == 0 and nivel_actual_numero is None:
             desbloqueada = True
 
+        # Geometría del camino SVG (coordenadas de nodos y puntos del polyline).
+        geo = _calcular_posiciones_zona(len(niveles_zona)) if niveles_zona else {
+            'canvas_height': 220,
+            'polyline_points': '',
+            'posiciones': [],
+            'estrellas': [],
+        }
+        for i, nodo in enumerate(niveles_zona):
+            nodo['x'] = geo['posiciones'][i]['x']
+            nodo['y'] = geo['posiciones'][i]['y']
+
         zonas.append({
             'clave': zona_info['clave'],
             'nombre': zona_info['nombre'],
             'descripcion': zona_info['descripcion'],
             'desbloqueada': desbloqueada,
+            'canvas_height': geo['canvas_height'],
+            'polyline_points': geo['polyline_points'],
+            'estrellas': geo['estrellas'],
             'niveles': niveles_zona,
         })
 
@@ -397,8 +704,8 @@ def procesar_intento_nivel(usuario, archivo_audio, palabra_objetivo, nivel_id):
         if resultado_azure['status'] != 'success':
             return {'status': 'error', 'message': resultado_azure['message']}
 
-        progreso, avanzo_de_nivel = guardar_progreso_estudiante(usuario, nivel_id, resultado_azure)
-        recompensas = calcular_recompensas(usuario, resultado_azure['score_global'], nivel_id)
+        progreso, avanzo_de_nivel, ya_completado = guardar_progreso_estudiante(usuario, nivel_id, resultado_azure)
+        recompensas = calcular_recompensas(usuario, resultado_azure['score_global'], ya_completado)
         reaccion_avatar = construir_reaccion_avatar(resultado_azure['score_global'], avanzo_de_nivel)
 
         zona_nivel = Nivel.objects.filter(numero=nivel_id).values_list('zona', flat=True).first() or ''
@@ -415,6 +722,7 @@ def procesar_intento_nivel(usuario, archivo_audio, palabra_objetivo, nivel_id):
             'monedas_ganadas': recompensas['monedas_ganadas'],
             'monedas_totales': recompensas['monedas_totales'],
             'reaccion_avatar': reaccion_avatar,
+            'estrellas': score_a_estrellas(resultado_azure['score_global']),
         }
     except Exception:
         logger.error("Error inesperado al procesar el intento de nivel", exc_info=True)

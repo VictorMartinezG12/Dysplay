@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings as django_settings
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -9,6 +10,8 @@ from .models import Nivel, ProgresoEstudiante, MisionVocabulario
 from . import services
 
 logger = logging.getLogger(__name__)
+
+MOSTRAR_PUNTUACION_DETALLADA = getattr(django_settings, 'MOSTRAR_PUNTUACION_DETALLADA', False)
 
 
 @login_required
@@ -30,10 +33,12 @@ def niveles_view(request):
         'niveles': niveles,
         'progreso': progreso,
         'mision_actual': mision_actual,
+        'mostrar_puntuacion_detallada': MOSTRAR_PUNTUACION_DETALLADA,
         'niveles_config': {
             'url_guardar_progreso': reverse('guardar_progreso'),
         },
-        'zonas_mapa': services.obtener_mapa_aventura(request.user),
+        'zonas_mapa': (_zonas := services.obtener_mapa_aventura(request.user)),
+        'mapa_unico': services.obtener_mapa_unico(_zonas),
     }
     return render(request, 'niveles/niveles.html', context)
 
