@@ -1,5 +1,8 @@
+import datetime
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Historia(models.Model):
@@ -111,3 +114,81 @@ class ProgresoHistoria(models.Model):
 
     def __str__(self):
         return f'{self.usuario} - {self.historia.titulo}'
+
+
+class HistoriaGenerada(models.Model):
+    """
+    Historia efímera generada por IA (Azure OpenAI) a partir de palabras clave
+    elegidas por el propio niño. No otorga monedas ni insignias y no cuenta
+    para el progreso de las historias curadas (`Historia`); es contenido de
+    un solo uso que expira a las 24 horas de creado.
+    """
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='historias_generadas',
+    )
+    palabras_clave = models.CharField(max_length=60)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_expiracion = models.DateTimeField()
+    fragmento_actual = models.PositiveIntegerField(
+        default=0,
+        help_text='Orden del fragmento en curso (control de progreso simplificado, sin FK).',
+    )
+    completada = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Historia generada'
+        verbose_name_plural = 'Historias generadas'
+        ordering = ['-fecha_creacion']
+
+    def save(self, *args, **kwargs):
+        """Al crear, fija `fecha_expiracion` a 24 horas después del momento de creación."""
+        if not self.pk and not self.fecha_expiracion:
+            self.fecha_expiracion = timezone.now() + datetime.timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.usuario} - {self.palabras_clave}'
+
+
+class FragmentoGenerado(models.Model):
+    """Fragmento (página) de una `HistoriaGenerada`. Sin audio: usa TTS del navegador."""
+
+    historia_generada = models.ForeignKey(
+        HistoriaGenerada, on_delete=models.CASCADE, related_name='fragmentos',
+    )
+    orden = models.PositiveIntegerField()
+    texto_narracion = models.TextField()
+    pregunta_interactiva = models.TextField(blank=True)
+    tipo_respuesta = models.CharField(
+        max_length=10, choices=FragmentoHistoria.TIPO_RESPUESTA_CHOICES, blank=True, default='',
+    )
+
+    class Meta:
+        verbose_name = 'Fragmento generado'
+        verbose_name_plural = 'Fragmentos generados'
+        ordering = ['historia_generada', 'orden']
+        unique_together = ('historia_generada', 'orden')
+
+    def __str__(self):
+        return f'{self.historia_generada} - Fragmento {self.orden}'
+
+
+class OpcionGenerada(models.Model):
+    """
+    Opción de respuesta para la pregunta interactiva de un `FragmentoGenerado`.
+
+    Sin ramificación (no tiene `fragmento_siguiente`): las historias
+    generadas son lineales por simplicidad, al ser efímeras y de un solo uso.
+    """
+
+    fragmento = models.ForeignKey(FragmentoGenerado, on_delete=models.CASCADE, related_name='opciones')
+    texto = models.CharField(max_length=255)
+    es_correcta = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Opción generada'
+        verbose_name_plural = 'Opciones generadas'
+
+    def __str__(self):
+        return f'{self.fragmento} - {self.texto}'

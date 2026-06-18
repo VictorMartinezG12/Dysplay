@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <p>
+        Ingresa un tema y el nivel de dificultad deseado. Se generará una historia
+        completa (título, fragmentos y preguntas) mediante IA, lista para revisar
+        y editar como cualquier otra historia.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            {{ form.as_p }}
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Generar historia" class="default">
+        </div>
+    </form>
+</div>
+{% endblock %}

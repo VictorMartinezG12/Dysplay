@@ -12,6 +12,220 @@
     const config = configElement ? JSON.parse(configElement.textContent) : {};
     const lectura = config.lectura;
     const URL_EVALUAR = config.url_evaluar || '';
+    // Si la lectura actual corresponde a una historia generada por IA, nunca
+    // hay monedas/insignias que mostrar (condición de arquitectura del backend).
+    const esHistoriaGenerada = new URLSearchParams(window.location.search).has('historia_generada');
+
+    /**
+     * Obtiene el token CSRF desde el formulario o la cookie, para usarlo en
+     * peticiones `fetch` con métodos que mutan estado (POST).
+     * @returns {string} Token CSRF a enviar en la cabecera `X-CSRFToken`.
+     */
+    function obtenerTokenCsrf() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value
+            || document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1]
+            || '';
+    }
+
+    /**
+     * Inicializa la sección "Crear mi propia historia": toggle de vistas,
+     * listado de historias generadas vivas y envío del formulario de
+     * generación por IA. Es independiente del flujo de lectura/evaluación.
+     * @returns {void}
+     */
+    function inicializarCrearHistoria() {
+        const btnIrCrear = document.getElementById('btn-ir-crear-historia');
+        const btnVolverSeleccion = document.getElementById('btn-volver-seleccion');
+        const viewSelection = document.getElementById('view-selection');
+        const viewCrear = document.getElementById('view-crear-historia');
+
+        if (!btnIrCrear || !viewCrear) return;
+
+        btnIrCrear.addEventListener('click', () => {
+            viewSelection.classList.add('hidden');
+            viewSelection.classList.remove('flex');
+            viewCrear.classList.remove('hidden');
+            viewCrear.classList.add('flex');
+            cargarHistoriasGeneradas();
+            lucide.createIcons();
+        });
+
+        btnVolverSeleccion.addEventListener('click', () => {
+            viewCrear.classList.add('hidden');
+            viewCrear.classList.remove('flex');
+            viewSelection.classList.remove('hidden');
+            viewSelection.classList.add('flex');
+            lucide.createIcons();
+        });
+
+        document.getElementById('btn-generar-historia').addEventListener('click', enviarFormularioGenerar);
+    }
+
+    /**
+     * Calcula un texto legible de tiempo restante hasta una fecha de
+     * expiración ISO 8601 (ej. "expira en 18h" o "expira en 35min").
+     * @param {string} fechaExpiracionIso - Fecha ISO de expiración.
+     * @returns {string} Texto legible del tiempo restante, o "expirada" si ya pasó.
+     */
+    function calcularTiempoRestante(fechaExpiracionIso) {
+        const ahora = new Date();
+        const expiracion = new Date(fechaExpiracionIso);
+        const diferenciaMs = expiracion.getTime() - ahora.getTime();
+
+        if (diferenciaMs <= 0) return 'expirada';
+
+        const horas = Math.floor(diferenciaMs / (1000 * 60 * 60));
+        if (horas >= 1) return `expira en ${horas}h`;
+
+        const minutos = Math.max(1, Math.floor(diferenciaMs / (1000 * 60)));
+        return `expira en ${minutos}min`;
+    }
+
+    /**
+     * Construye el elemento HTML de una historia generada en el listado,
+     * con su botón "Leer" y su indicador de expiración.
+     * @param {Object} historia - `{id, palabras_clave, fecha_expiracion, completada}`.
+     * @returns {HTMLElement} Elemento `<div>` listo para insertar en el DOM.
+     */
+    function crearTarjetaHistoriaGenerada(historia) {
+        const div = document.createElement('div');
+        div.className = 'bg-white rounded-2xl shadow-soft p-6 flex flex-col sm:flex-row items-center '
+            + 'justify-between gap-4 w-full';
+
+        const info = document.createElement('div');
+        info.className = 'flex flex-col gap-1 text-left';
+
+        const titulo = document.createElement('span');
+        titulo.className = 'text-[20px] font-bold text-textMain';
+        titulo.textContent = historia.palabras_clave;
+        info.appendChild(titulo);
+
+        const detalle = document.createElement('span');
+        detalle.className = 'text-[16px] text-gray-500';
+        const estadoTexto = historia.completada ? 'Completada · ' : '';
+        detalle.textContent = `${estadoTexto}${calcularTiempoRestante(historia.fecha_expiracion)}`;
+        info.appendChild(detalle);
+
+        const btnLeer = document.createElement('a');
+        btnLeer.href = `?historia_generada=${historia.id}`;
+        btnLeer.className = 'bg-primary text-white border-4 border-primary rounded-full px-6 py-3 '
+            + 'font-bold text-[18px] min-h-[48px] hover:bg-primary/90 transition-colors flex items-center '
+            + 'justify-center gap-2';
+        btnLeer.innerHTML = '<i data-lucide="book-open" class="w-5 h-5"></i> Leer';
+
+        div.appendChild(info);
+        div.appendChild(btnLeer);
+        return div;
+    }
+
+    /**
+     * Carga, vía `fetch`, las historias generadas vivas del usuario y las
+     * pinta en `#lista-historias-generadas`.
+     * @returns {Promise<void>}
+     */
+    async function cargarHistoriasGeneradas() {
+        const lista = document.getElementById('lista-historias-generadas');
+        const mensajeSinHistorias = document.getElementById('mensaje-sin-historias-generadas');
+
+        try {
+            const response = await fetch('/historias/generadas/');
+            const data = await response.json();
+
+            lista.innerHTML = '';
+
+            if (data.status !== 'success' || !data.historias || data.historias.length === 0) {
+                lista.appendChild(mensajeSinHistorias);
+                mensajeSinHistorias.classList.remove('hidden');
+                return;
+            }
+
+            data.historias.forEach((historia) => {
+                lista.appendChild(crearTarjetaHistoriaGenerada(historia));
+            });
+            lucide.createIcons();
+        } catch (error) {
+            console.error(error);
+            lista.innerHTML = '';
+            lista.appendChild(mensajeSinHistorias);
+            mensajeSinHistorias.textContent = 'No se pudo cargar tus historias. Intenta de nuevo.';
+            mensajeSinHistorias.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Valida en el cliente las palabras clave escritas por el niño (UX
+     * rápida; la validación real ocurre en el servidor).
+     * @param {string} palabrasClave - Texto crudo del input.
+     * @returns {string} Mensaje de error, o cadena vacía si es válido.
+     */
+    function validarPalabrasClaveCliente(palabrasClave) {
+        const texto = (palabrasClave || '').trim();
+        if (!texto) return 'Escribe algunas palabras para crear tu historia.';
+        if (texto.length > 60) return 'Las palabras clave son demasiado largas.';
+        return '';
+    }
+
+    /**
+     * Envía las palabras clave del formulario al endpoint de generación por
+     * IA, deshabilitando el botón mientras espera respuesta, y redirige a la
+     * lectura de la historia recién creada si todo salió bien.
+     * @returns {Promise<void>}
+     */
+    async function enviarFormularioGenerar() {
+        const input = document.getElementById('input-palabras-clave');
+        const btnGenerar = document.getElementById('btn-generar-historia');
+        const textoBtn = document.getElementById('texto-btn-generar');
+        const mensajeError = document.getElementById('mensaje-error-generar');
+        const viewGenerando = document.getElementById('view-generando');
+
+        const palabrasClave = input.value;
+        const errorCliente = validarPalabrasClaveCliente(palabrasClave);
+
+        mensajeError.classList.add('hidden');
+        mensajeError.textContent = '';
+
+        if (errorCliente) {
+            mensajeError.textContent = errorCliente;
+            mensajeError.classList.remove('hidden');
+            return;
+        }
+
+        btnGenerar.disabled = true;
+        textoBtn.textContent = 'Generando...';
+        viewGenerando.classList.remove('hidden');
+        viewGenerando.classList.add('flex');
+
+        const formData = new FormData();
+        formData.append('palabras_clave', palabrasClave);
+
+        try {
+            const response = await fetch('/historias/generar-mia/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': obtenerTokenCsrf() },
+                body: formData,
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                window.location.search = `?historia_generada=${data.historia_generada_id}`;
+                return;
+            }
+
+            mensajeError.textContent = data.message || 'No se pudo crear tu historia. Intenta de nuevo.';
+            mensajeError.classList.remove('hidden');
+        } catch (error) {
+            console.error(error);
+            mensajeError.textContent = 'Hubo un problema comunicándose con el servidor.';
+            mensajeError.classList.remove('hidden');
+        } finally {
+            btnGenerar.disabled = false;
+            textoBtn.textContent = 'Generar mi historia';
+            viewGenerando.classList.add('hidden');
+            viewGenerando.classList.remove('flex');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', inicializarCrearHistoria);
 
     if (!lectura) {
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
@@ -362,8 +576,20 @@
         const btnSiguiente = document.getElementById('btn-siguiente-fragmento');
 
         if (data.completada_ahora) {
-            document.getElementById('resumen-monedas').innerHTML =
-                `<i data-lucide="coins" class="w-8 h-8"></i> +${data.monedas_ganadas}`;
+            // Las historias generadas por IA nunca otorgan monedas/insignias
+            // (condición de arquitectura del backend): el campo simplemente
+            // no viene en la respuesta, así que se oculta esa caja en vez de
+            // mostrar "+undefined".
+            const monedasBox = document.getElementById('resumen-monedas-box');
+            if (typeof data.monedas_ganadas === 'number') {
+                document.getElementById('resumen-monedas').innerHTML =
+                    `<i data-lucide="coins" class="w-8 h-8"></i> +${data.monedas_ganadas}`;
+                monedasBox.classList.remove('hidden');
+                monedasBox.classList.add('flex');
+            } else {
+                monedasBox.classList.add('hidden');
+                monedasBox.classList.remove('flex');
+            }
 
             const insigniaBox = document.getElementById('resumen-insignia');
             if (data.insignia_nueva) {

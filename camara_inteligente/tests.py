@@ -1,6 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -81,6 +82,13 @@ class GenerarFraseObjetoTests(TestCase):
     """Tests de `services.generar_frase_objeto`."""
 
     def setUp(self):
+        # Se desactiva el LLM en estos tests (parchando `generar_frase_llm` para
+        # que siempre devuelva `None`) para ejercitar el flujo de respaldo con
+        # `FraseTemplate`/`FRASE_GENERICA`, que es lo que verifican estos tests.
+        parche_llm = patch.object(services, 'generar_frase_llm', return_value=None)
+        parche_llm.start()
+        self.addCleanup(parche_llm.stop)
+
         self.frase_facil = FraseTemplate.objects.create(
             objeto_keyword='lápiz',
             frase_plantilla='Frase fácil del lápiz.',
@@ -115,6 +123,72 @@ class GenerarFraseObjetoTests(TestCase):
         self.assertEqual(resultado['objeto'], 'unknown_object_xyz')
         self.assertIn('unknown_object_xyz', resultado['frase_generada'])
         self.assertEqual(resultado['recompensa_monedas'], services.RECOMPENSA_MONEDAS_FALLBACK)
+
+
+# ---------------------------------------------------------------------------
+# Tests de `generar_frase_llm` (Azure OpenAI) y su cacheo
+# ---------------------------------------------------------------------------
+class GenerarFraseLlmTests(TestCase):
+    """Tests de `services.generar_frase_llm`, mockeando `AzureOpenAI` (sin red real)."""
+
+    def setUp(self):
+        cache.clear()
+
+    def _mock_respuesta_llm(self, texto):
+        """Construye un mock de la respuesta de `chat.completions.create`."""
+        mensaje = MagicMock()
+        mensaje.content = texto
+        opcion = MagicMock()
+        opcion.message = mensaje
+        respuesta = MagicMock()
+        respuesta.choices = [opcion]
+        return respuesta
+
+    @patch.object(services, 'AzureOpenAI')
+    def test_exito_genera_y_cachea_la_frase(self, mock_clase_cliente):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = self._mock_respuesta_llm(
+            'El lápiz amarillo escribe en el cuaderno.'
+        )
+        mock_clase_cliente.return_value = mock_cliente
+
+        resultado = services.generar_frase_llm('lápiz', 1)
+
+        self.assertEqual(resultado, 'El lápiz amarillo escribe en el cuaderno.')
+        self.assertEqual(mock_cliente.chat.completions.create.call_count, 1)
+        self.assertEqual(cache.get('frase_llm_camara_lápiz_1'), resultado)
+
+    @patch.object(services, 'AzureOpenAI')
+    def test_fallo_de_api_devuelve_none_y_cae_a_frasetemplate(self, mock_clase_cliente):
+        mock_clase_cliente.side_effect = TimeoutError('la API no respondió a tiempo')
+
+        resultado_llm = services.generar_frase_llm('lápiz', 1)
+        self.assertIsNone(resultado_llm)
+
+        FraseTemplate.objects.create(
+            objeto_keyword='lápiz',
+            frase_plantilla='El lápiz es largo y amarillo.',
+            nivel_dificultad=1,
+            recompensa_monedas=5,
+        )
+        etiquetas = [{'description': 'pencil', 'score': 0.9}]
+        resultado = services.generar_frase_objeto(etiquetas, nivel_usuario=1)
+        self.assertEqual(resultado['frase_generada'], 'El lápiz es largo y amarillo.')
+        self.assertEqual(resultado['recompensa_monedas'], 5)
+
+    @patch.object(services, 'AzureOpenAI')
+    def test_segunda_llamada_usa_cache_y_no_invoca_de_nuevo_al_llm(self, mock_clase_cliente):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = self._mock_respuesta_llm(
+            'El gato duerme en la silla.'
+        )
+        mock_clase_cliente.return_value = mock_cliente
+
+        primera = services.generar_frase_llm('gato', 2)
+        segunda = services.generar_frase_llm('gato', 2)
+
+        self.assertEqual(primera, segunda)
+        self.assertEqual(mock_cliente.chat.completions.create.call_count, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -182,8 +256,9 @@ class CapturarObjetoViewTests(TestCase):
         response = self.client.get(reverse('camara_capturar'))
         self.assertEqual(response.status_code, 405)
 
+    @patch.object(services, 'generar_frase_llm', return_value=None)
     @patch.object(services, 'analizar_imagen_google_vision')
-    def test_captura_exitosa_devuelve_frase_generada(self, mock_vision):
+    def test_captura_exitosa_devuelve_frase_generada(self, mock_vision, mock_llm):
         mock_vision.return_value = {
             'status': 'success',
             'etiquetas': [{'description': 'pencil', 'score': 0.95}],

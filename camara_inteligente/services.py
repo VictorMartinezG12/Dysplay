@@ -18,6 +18,8 @@ import os
 
 import magic
 from django.conf import settings
+from django.core.cache import cache
+from openai import AzureOpenAI
 
 from avatar.reactions import obtener_reaccion
 from estadisticas.models import RegistroActividad
@@ -47,6 +49,26 @@ RECOMPENSA_MONEDAS_FALLBACK = 5
 # Plantilla genérica usada cuando ninguna etiqueta de Vision tiene traducción
 # o `FraseTemplate` registrada, para que el flujo nunca se interrumpa.
 FRASE_GENERICA = '¡Qué interesante! Veo algo llamado {objeto}. ¿Puedes describirlo en voz alta?'
+
+# Monedas otorgadas cuando la frase fue generada dinámicamente por el LLM
+# (Azure OpenAI) en lugar de provenir de una `FraseTemplate` registrada en BD.
+# Se usa el mismo valor que la frase genérica de respaldo (RECOMPENSA_MONEDAS_FALLBACK)
+# porque ambas son frases "no curadas manualmente"; si en el futuro se quiere
+# incentivar más el uso del LLM basta con subir esta constante.
+RECOMPENSA_MONEDAS_LLM = RECOMPENSA_MONEDAS_FALLBACK
+
+# Versión de la API de Azure OpenAI. No existe una env var específica para esto
+# en el proyecto, así que se fija un valor estable y reciente como constante.
+AZURE_OPENAI_API_VERSION = '2024-10-21'
+
+# Tiempo de espera máximo (segundos) para la llamada a Azure OpenAI, para que
+# nunca bloquee el flujo de captura de la cámara si el servicio está lento.
+AZURE_OPENAI_TIMEOUT_SEGUNDOS = 4
+
+# Tiempo (segundos) que se cachea una frase generada por el LLM para un mismo
+# objeto y nivel de dificultad. 24 horas: las frases pueden variar día a día
+# sin necesidad de llamar al LLM en cada captura del mismo objeto.
+CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS = 60 * 60 * 24
 
 # Diccionario de traducción de las etiquetas en inglés que devuelve Google
 # Cloud Vision a las palabras en español usadas en `FraseTemplate.objeto_keyword`.
@@ -194,6 +216,74 @@ def _nivel_dificultad_usuario(usuario):
     return 1
 
 
+def generar_frase_llm(objeto_es, nivel_usuario):
+    """
+    Genera una frase corta de práctica para `objeto_es` usando Azure OpenAI.
+
+    El resultado se cachea (vía `django.core.cache.cache`) por la combinación
+    `(objeto_es, nivel_usuario)` durante `CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS`,
+    para no llamar al LLM repetidamente con el mismo objeto y nivel.
+
+    El prompt separa una instrucción de sistema fija (reglas de la frase:
+    idioma, longitud, dificultad, contenido apropiado para niños) de un
+    mensaje de usuario que solo contiene el dato `objeto_es`. Aunque
+    `objeto_es` proviene de un diccionario interno fijo (`TRADUCCION_OBJETOS`)
+    y no de input arbitrario, se mantiene la separación system/user como
+    buena práctica.
+
+    Args:
+        objeto_es (str): nombre en español del objeto detectado (ej. "lápiz").
+        nivel_usuario (int): nivel de dificultad del estudiante (1-5).
+
+    Returns:
+        str | None: la frase generada, o `None` si la clave está en cache
+            como fallo previo, o si la llamada al LLM falla por cualquier
+            motivo (timeout, error de red, credenciales, respuesta vacía o
+            malformada). Nunca lanza una excepción hacia el caller.
+    """
+    clave_cache = f'frase_llm_camara_{objeto_es}_{nivel_usuario}'
+    frase_en_cache = cache.get(clave_cache)
+    if frase_en_cache is not None:
+        return frase_en_cache
+
+    try:
+        cliente = AzureOpenAI(
+            api_key=settings.AZURE_OPENAI_API_KEY,
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            api_version=AZURE_OPENAI_API_VERSION,
+        )
+        respuesta = cliente.chat.completions.create(
+            model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+            messages=[
+                {
+                    'role': 'system',
+                    'content': (
+                        'Generas UNA sola frase corta en español (máximo 12 palabras), '
+                        'pensada para que un niño con dislexia practique pronunciación. '
+                        f'La dificultad debe corresponder a un nivel {nivel_usuario} de 5 '
+                        '(1 = muy simple, 5 = más elaborado). El contenido debe ser siempre '
+                        'apropiado para niños, positivo y sin ambigüedad. Responde únicamente '
+                        'con la frase, sin comillas ni explicaciones adicionales.'
+                    ),
+                },
+                {'role': 'user', 'content': objeto_es},
+            ],
+            timeout=AZURE_OPENAI_TIMEOUT_SEGUNDOS,
+        )
+        frase_generada = respuesta.choices[0].message.content.strip()
+        if not frase_generada:
+            raise ValueError('La respuesta del LLM llegó vacía.')
+    except Exception:
+        logger.error(
+            'Error al generar frase con Azure OpenAI para objeto=%s nivel=%s',
+            objeto_es, nivel_usuario, exc_info=True,
+        )
+        return None
+
+    cache.set(clave_cache, frase_generada, CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS)
+    return frase_generada
+
+
 def generar_frase_objeto(etiquetas_vision, nivel_usuario):
     """
     Genera la frase de práctica para el objeto detectado por Google Vision (G.2).
@@ -228,6 +318,15 @@ def generar_frase_objeto(etiquetas_vision, nivel_usuario):
         objeto = TRADUCCION_OBJETOS.get(etiqueta['description'].lower())
         if not objeto:
             continue
+
+        frase_llm = generar_frase_llm(objeto, nivel_usuario)
+        if frase_llm:
+            return {
+                'objeto': objeto,
+                'confianza': etiqueta['score'],
+                'frase_generada': frase_llm,
+                'recompensa_monedas': RECOMPENSA_MONEDAS_LLM,
+            }
 
         frase = (
             FraseTemplate.objects.filter(objeto_keyword=objeto, nivel_dificultad__lte=nivel_usuario).order_by('?').first()

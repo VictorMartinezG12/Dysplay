@@ -1,13 +1,17 @@
-from unittest.mock import patch
+import datetime
+import json
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from . import services
-from .models import FragmentoHistoria, Historia, ProgresoHistoria
+from .models import FragmentoHistoria, Historia, HistoriaGenerada, ProgresoHistoria
 
 UsuarioCustom = get_user_model()
 
@@ -270,3 +274,363 @@ class EvaluarFragmentoViewTests(TestCase):
         self.assertEqual(data['status'], 'success')
         self.assertTrue(data['correcta'])
         self.assertEqual(data['siguiente_fragmento']['id'], 2)
+
+
+# ---------------------------------------------------------------------------
+# Tests de `crear_historia_desde_ia` (generación completa vía Azure OpenAI)
+# ---------------------------------------------------------------------------
+def _construir_respuesta_azure_mock(contenido_json):
+    """Construye un mock de la respuesta de `cliente.chat.completions.create` con el JSON dado."""
+    mensaje_mock = MagicMock()
+    mensaje_mock.content = json.dumps(contenido_json)
+    opcion_mock = MagicMock()
+    opcion_mock.message = mensaje_mock
+    respuesta_mock = MagicMock()
+    respuesta_mock.choices = [opcion_mock]
+    return respuesta_mock
+
+
+class CrearHistoriaDesdeIATests(TestCase):
+    """Tests de `services.crear_historia_desde_ia`, sin llamadas reales a Azure OpenAI."""
+
+    fixtures = ['historias_inicial']
+
+    def setUp(self):
+        self.estructura_valida = {
+            'titulo': 'El bosque encantado',
+            'fragmentos': [
+                {
+                    'texto_narracion': 'Había una vez un bosque mágico.',
+                    'tipo_respuesta': 'elegir',
+                    'pregunta_interactiva': '¿Qué hace el protagonista?',
+                    'opciones': [
+                        {'texto': 'Explora el bosque', 'es_correcta': True},
+                        {'texto': 'Se va a casa', 'es_correcta': False},
+                    ],
+                },
+                {
+                    'texto_narracion': 'El bosque tenía muchos árboles altos.',
+                    'tipo_respuesta': '',
+                    'pregunta_interactiva': '',
+                    'opciones': [],
+                },
+            ],
+        }
+
+    @patch('historias.services.AzureOpenAI')
+    def test_generacion_exitosa_crea_historia_fragmentos_y_opciones(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock(self.estructura_valida)
+        mock_azure_cls.return_value = mock_cliente
+
+        orden_maximo_previo = Historia.objects.order_by('-orden').first().orden
+
+        resultado = services.crear_historia_desde_ia(tema='un bosque encantado', nivel_dificultad=2)
+
+        self.assertEqual(resultado['status'], 'success')
+        historia = Historia.objects.get(pk=resultado['historia_id'])
+        self.assertEqual(historia.titulo, 'El bosque encantado')
+        self.assertEqual(historia.orden, orden_maximo_previo + 1)
+        self.assertEqual(historia.nivel_dificultad, 'facil')
+
+        fragmentos = list(historia.fragmentos.order_by('orden'))
+        self.assertEqual(len(fragmentos), 2)
+        self.assertEqual(fragmentos[0].tipo_respuesta, 'elegir')
+        self.assertEqual(fragmentos[0].opciones.count(), 2)
+        self.assertTrue(fragmentos[0].opciones.filter(es_correcta=True).exists())
+        self.assertEqual(fragmentos[1].tipo_respuesta, '')
+
+    @patch('historias.services.AzureOpenAI')
+    def test_fallo_de_api_no_crea_ninguna_historia(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.side_effect = TimeoutError('tiempo agotado')
+        mock_azure_cls.return_value = mock_cliente
+
+        cantidad_previa = Historia.objects.count()
+
+        resultado = services.crear_historia_desde_ia(tema='un dragón', nivel_dificultad=3)
+
+        self.assertEqual(resultado['status'], 'error')
+        self.assertEqual(Historia.objects.count(), cantidad_previa)
+
+    @patch('historias.services.AzureOpenAI')
+    def test_json_malformado_no_crashea_y_retorna_error(self, mock_azure_cls):
+        mensaje_mock = MagicMock()
+        mensaje_mock.content = 'esto no es json valido {{{'
+        opcion_mock = MagicMock()
+        opcion_mock.message = mensaje_mock
+        respuesta_mock = MagicMock()
+        respuesta_mock.choices = [opcion_mock]
+
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = respuesta_mock
+        mock_azure_cls.return_value = mock_cliente
+
+        cantidad_previa = Historia.objects.count()
+
+        resultado = services.crear_historia_desde_ia(tema='un gato', nivel_dificultad=1)
+
+        self.assertEqual(resultado['status'], 'error')
+        self.assertEqual(Historia.objects.count(), cantidad_previa)
+
+    @patch('historias.services.AzureOpenAI')
+    def test_estructura_inesperada_sin_fragmentos_retorna_error(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock({'titulo': 'Sin fragmentos'})
+        mock_azure_cls.return_value = mock_cliente
+
+        cantidad_previa = Historia.objects.count()
+
+        resultado = services.crear_historia_desde_ia(tema='algo raro', nivel_dificultad=4)
+
+        self.assertEqual(resultado['status'], 'error')
+        self.assertEqual(Historia.objects.count(), cantidad_previa)
+
+
+# ---------------------------------------------------------------------------
+# Tests de `crear_historia_generada_desde_ia` (Módulo F: historias del niño)
+# ---------------------------------------------------------------------------
+class CrearHistoriaGeneradaDesdeIATests(TestCase):
+    """Tests de `services.crear_historia_generada_desde_ia`, sin llamadas reales a Azure OpenAI."""
+
+    fixtures = ['historias_inicial']
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(username='nino_ia', password='claveSegura123')
+        self.estructura_valida = {
+            'titulo': 'El gato y el perro',
+            'fragmentos': [
+                {
+                    'texto_narracion': 'Un gato y un perro eran amigos.',
+                    'tipo_respuesta': 'elegir',
+                    'pregunta_interactiva': '¿Quiénes eran amigos?',
+                    'opciones': [
+                        {'texto': 'El gato y el perro', 'es_correcta': True},
+                        {'texto': 'El pez y el pájaro', 'es_correcta': False},
+                    ],
+                },
+                {
+                    'texto_narracion': 'Jugaron juntos todo el día.',
+                    'tipo_respuesta': '',
+                    'pregunta_interactiva': '',
+                    'opciones': [],
+                },
+            ],
+        }
+
+    @patch('historias.services.AzureOpenAI')
+    def test_generacion_exitosa_crea_historia_generada_con_fragmentos_y_opciones(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock(self.estructura_valida)
+        mock_azure_cls.return_value = mock_cliente
+
+        resultado = services.crear_historia_generada_desde_ia(self.usuario, 'gato, perro')
+
+        self.assertEqual(resultado['status'], 'success')
+        historia_generada = HistoriaGenerada.objects.get(pk=resultado['historia_generada_id'])
+        self.assertEqual(historia_generada.usuario, self.usuario)
+        self.assertEqual(historia_generada.palabras_clave, 'gato, perro')
+
+        fragmentos = list(historia_generada.fragmentos.order_by('orden'))
+        self.assertEqual(len(fragmentos), 2)
+        self.assertEqual(fragmentos[0].tipo_respuesta, 'elegir')
+        self.assertEqual(fragmentos[0].opciones.count(), 2)
+
+    def test_rechaza_palabras_clave_con_caracteres_no_permitidos(self):
+        resultado = services.crear_historia_generada_desde_ia(self.usuario, 'gato`; DROP TABLE {}')
+
+        self.assertEqual(resultado['status'], 'error')
+        self.assertEqual(HistoriaGenerada.objects.filter(usuario=self.usuario).count(), 0)
+
+    def test_rechaza_palabras_clave_demasiado_largas(self):
+        resultado = services.crear_historia_generada_desde_ia(self.usuario, 'gato ' * 30)
+
+        self.assertEqual(resultado['status'], 'error')
+        self.assertEqual(HistoriaGenerada.objects.filter(usuario=self.usuario).count(), 0)
+
+    @patch('historias.services.AzureOpenAI')
+    def test_rechaza_la_sexta_historia_generada_en_24_horas(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock(self.estructura_valida)
+        mock_azure_cls.return_value = mock_cliente
+
+        for _ in range(services.LIMITE_HISTORIAS_GENERADAS_POR_USUARIO_24H):
+            resultado = services.crear_historia_generada_desde_ia(self.usuario, 'gato, perro')
+            self.assertEqual(resultado['status'], 'success')
+
+        resultado_extra = services.crear_historia_generada_desde_ia(self.usuario, 'gato, perro')
+
+        self.assertEqual(resultado_extra['status'], 'error')
+        self.assertEqual(
+            HistoriaGenerada.objects.filter(usuario=self.usuario).count(),
+            services.LIMITE_HISTORIAS_GENERADAS_POR_USUARIO_24H,
+        )
+
+    @patch('historias.services.AzureOpenAI')
+    def test_rechaza_por_tope_global_diario(self, mock_azure_cls):
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock(self.estructura_valida)
+        mock_azure_cls.return_value = mock_cliente
+
+        otro_usuario = UsuarioCustom.objects.create_user(username='otro_nino', password='claveSegura123')
+        for indice in range(services.TOPE_GLOBAL_HISTORIAS_GENERADAS_24H):
+            HistoriaGenerada.objects.create(usuario=otro_usuario, palabras_clave=f'tema {indice}')
+
+        resultado = services.crear_historia_generada_desde_ia(self.usuario, 'gato, perro')
+
+        self.assertEqual(resultado['status'], 'error')
+        mock_cliente.chat.completions.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Tests de lectura/evaluación de `HistoriaGenerada` (sin recompensas)
+# ---------------------------------------------------------------------------
+class HistoriaGeneradaLecturaYEvaluacionTests(TestCase):
+    """Verifica el acceso (propietario/expiración) y que nunca se otorgan recompensas."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(
+            username='nino_lectura', password='claveSegura123', monedas=0,
+        )
+        self.otro_usuario = UsuarioCustom.objects.create_user(username='otro_lectura', password='claveSegura123')
+
+        self.historia_generada = HistoriaGenerada.objects.create(
+            usuario=self.usuario, palabras_clave='sol, luna', fragmento_actual=1,
+        )
+        self.fragmento_1 = services.FragmentoGenerado.objects.create(
+            historia_generada=self.historia_generada,
+            orden=1,
+            texto_narracion='Había un sol y una luna.',
+            tipo_respuesta='elegir',
+            pregunta_interactiva='¿Qué brilla de día?',
+        )
+        self.opcion_correcta = services.OpcionGenerada.objects.create(
+            fragmento=self.fragmento_1, texto='El sol', es_correcta=True,
+        )
+        services.OpcionGenerada.objects.create(
+            fragmento=self.fragmento_1, texto='La luna', es_correcta=False,
+        )
+        self.fragmento_2 = services.FragmentoGenerado.objects.create(
+            historia_generada=self.historia_generada,
+            orden=2,
+            texto_narracion='Fin de la historia.',
+            tipo_respuesta='',
+        )
+
+    def test_no_se_puede_acceder_a_historia_generada_de_otro_usuario(self):
+        resultado = services.obtener_historia_generada_vigente(self.otro_usuario, self.historia_generada.id)
+        self.assertIsNone(resultado)
+
+    def test_no_se_puede_acceder_a_historia_generada_expirada(self):
+        self.historia_generada.fecha_expiracion = timezone.now() - datetime.timedelta(hours=1)
+        self.historia_generada.save()
+
+        resultado = services.obtener_historia_generada_vigente(self.usuario, self.historia_generada.id)
+        self.assertIsNone(resultado)
+
+    def test_completar_historia_generada_no_otorga_monedas_ni_insignias(self):
+        resultado_1 = services.procesar_respuesta_fragmento_generado(
+            self.usuario, self.historia_generada, fragmento_id=self.fragmento_1.id, opcion_id=self.opcion_correcta.id,
+        )
+        self.assertEqual(resultado_1['status'], 'success')
+        self.assertFalse(resultado_1['completada_ahora'])
+        self.assertNotIn('monedas_ganadas', resultado_1)
+        self.assertNotIn('insignia_nueva', resultado_1)
+
+        resultado_2 = services.procesar_respuesta_fragmento_generado(
+            self.usuario, self.historia_generada, fragmento_id=self.fragmento_2.id,
+        )
+
+        self.assertEqual(resultado_2['status'], 'success')
+        self.assertTrue(resultado_2['completada_ahora'])
+        self.assertNotIn('monedas_ganadas', resultado_2)
+        self.assertNotIn('insignia_nueva', resultado_2)
+
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.monedas, 0)
+
+        self.historia_generada.refresh_from_db()
+        self.assertTrue(self.historia_generada.completada)
+
+
+# ---------------------------------------------------------------------------
+# Tests de las vistas de historias generadas
+# ---------------------------------------------------------------------------
+class HistoriaGeneradaViewsTests(TestCase):
+    """Verifica autenticación y contrato JSON de los endpoints de historias generadas."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(username='nino_vistas', password='claveSegura123')
+        self.client.login(username='nino_vistas', password='claveSegura123')
+
+    @patch('historias.services.AzureOpenAI')
+    def test_generar_mia_devuelve_id_de_historia_generada(self, mock_azure_cls):
+        estructura_valida = {
+            'titulo': 'Historia corta',
+            'fragmentos': [
+                {'texto_narracion': 'Narración.', 'tipo_respuesta': '', 'pregunta_interactiva': '', 'opciones': []},
+            ],
+        }
+        mock_cliente = MagicMock()
+        mock_cliente.chat.completions.create.return_value = _construir_respuesta_azure_mock(estructura_valida)
+        mock_azure_cls.return_value = mock_cliente
+
+        response = self.client.post(reverse('historias_generar_mia'), {'palabras_clave': 'sol, luna'})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertIn('historia_generada_id', data)
+
+    def test_generar_mia_rechaza_palabras_clave_invalidas_sin_llamar_ia(self):
+        response = self.client.post(reverse('historias_generar_mia'), {'palabras_clave': '<script>'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(HistoriaGenerada.objects.filter(usuario=self.usuario).count(), 0)
+
+    def test_generar_mia_requiere_login(self):
+        self.client.logout()
+        response = self.client.post(reverse('historias_generar_mia'), {'palabras_clave': 'sol, luna'})
+        self.assertEqual(response.status_code, 302)
+
+    def test_listar_historias_generadas_devuelve_solo_las_vigentes(self):
+        HistoriaGenerada.objects.create(usuario=self.usuario, palabras_clave='vigente')
+        expirada = HistoriaGenerada.objects.create(usuario=self.usuario, palabras_clave='expirada')
+        expirada.fecha_expiracion = timezone.now() - datetime.timedelta(hours=1)
+        expirada.save()
+
+        response = self.client.get(reverse('historias_generadas_listar'))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        palabras = [h['palabras_clave'] for h in data['historias']]
+        self.assertIn('vigente', palabras)
+        self.assertNotIn('expirada', palabras)
+
+
+# ---------------------------------------------------------------------------
+# Test del comando de limpieza
+# ---------------------------------------------------------------------------
+class LimpiarHistoriasGeneradasCommandTests(TestCase):
+    """Verifica que el comando borre solo las historias generadas expiradas (con cascada)."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(username='nino_cleanup', password='claveSegura123')
+
+    def test_borra_expiradas_y_conserva_vigentes(self):
+        vigente = HistoriaGenerada.objects.create(usuario=self.usuario, palabras_clave='vigente')
+        expirada = HistoriaGenerada.objects.create(usuario=self.usuario, palabras_clave='expirada')
+        expirada.fecha_expiracion = timezone.now() - datetime.timedelta(hours=1)
+        expirada.save()
+
+        fragmento_expirado = services.FragmentoGenerado.objects.create(
+            historia_generada=expirada, orden=1, texto_narracion='Texto.',
+        )
+        services.OpcionGenerada.objects.create(fragmento=fragmento_expirado, texto='Opción', es_correcta=True)
+
+        call_command('limpiar_historias_generadas')
+
+        self.assertFalse(HistoriaGenerada.objects.filter(pk=expirada.id).exists())
+        self.assertTrue(HistoriaGenerada.objects.filter(pk=vigente.id).exists())
+        self.assertFalse(services.FragmentoGenerado.objects.filter(pk=fragmento_expirado.id).exists())
