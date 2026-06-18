@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from niveles.models import MisionVocabulario, Nivel
+from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante
 from recompensas.models import Coleccionable
 from . import services
 from .models import ConfiguracionDesafio, DesafioDiario, ProgresoDesafio
@@ -110,17 +110,78 @@ class ObtenerOCrearDesafioDeHoyTests(TestCase):
                 frase_historia=f"Esta es la frase número {indice}.",
             )
 
-    def test_crea_desafio_de_hoy_con_ejercicios_asignados(self):
+    def test_no_asigna_ejercicios_automaticamente(self):
+        # Los ejercicios ya no se fijan al crear el DesafioDiario: se
+        # personalizan por usuario (ver PersonalizacionEjerciciosTests).
         desafio = services.obtener_o_crear_desafio_de_hoy()
 
         self.assertEqual(desafio.fecha, timezone.localdate())
-        self.assertEqual(desafio.ejercicios_obligatorios.count(), 1)
-        self.assertLessEqual(desafio.ejercicios_opcionales.count(), services.MAXIMO_EJERCICIOS_OPCIONALES)
+        self.assertEqual(desafio.ejercicios_obligatorios.count(), 0)
+        self.assertEqual(desafio.ejercicios_opcionales.count(), 0)
 
     def test_es_idempotente_para_el_mismo_dia(self):
         desafio1 = services.obtener_o_crear_desafio_de_hoy()
         desafio2 = services.obtener_o_crear_desafio_de_hoy()
         self.assertEqual(desafio1.pk, desafio2.pk)
+
+
+# ---------------------------------------------------------------------------
+# Tests de personalización de ejercicios por nivel del usuario
+# ---------------------------------------------------------------------------
+class PersonalizacionEjerciciosTests(TestCase):
+    """Tests de `services._nivel_numero_usuario` y `_obtener_ejercicios_desafio`."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(username="nivel_user", password="claveSegura123")
+        self.nivel1 = Nivel.objects.create(numero=1, titulo="Inicio", puntos_recompensa=50)
+        self.nivel3 = Nivel.objects.create(numero=3, titulo="Avanzado", puntos_recompensa=50)
+        self.mision_nivel1 = MisionVocabulario.objects.create(
+            nivel=self.nivel1, palabra_objetivo="sol", tipo="VOZ", frase_historia="El sol brilla.",
+        )
+        self.mision_nivel3 = MisionVocabulario.objects.create(
+            nivel=self.nivel3, palabra_objetivo="estrella", tipo="VOZ", frase_historia="La estrella brilla.",
+        )
+
+    def test_sin_progreso_devuelve_nivel_1(self):
+        self.assertEqual(services._nivel_numero_usuario(self.usuario), 1)
+
+    def test_nivel_actual_se_respeta(self):
+        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel3)
+        self.assertEqual(services._nivel_numero_usuario(self.usuario), 3)
+
+    def test_usuario_sin_progreso_no_recibe_ejercicios_de_nivel_superior(self):
+        desafio = services.obtener_o_crear_desafio_de_hoy()
+        obligatorios, opcionales = services._obtener_ejercicios_desafio(self.usuario, desafio)
+        ids_asignados = {mision.id for mision in obligatorios + opcionales}
+
+        self.assertIn(self.mision_nivel1.id, ids_asignados)
+        self.assertNotIn(self.mision_nivel3.id, ids_asignados)
+
+    def test_usuario_en_nivel_avanzado_si_puede_recibir_ejercicios_de_su_nivel(self):
+        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel3)
+        desafio = services.obtener_o_crear_desafio_de_hoy()
+        obligatorios, opcionales = services._obtener_ejercicios_desafio(self.usuario, desafio)
+        ids_asignados = {mision.id for mision in obligatorios + opcionales}
+
+        self.assertIn(self.mision_nivel3.id, ids_asignados)
+
+    def test_seleccion_es_determinista_para_el_mismo_usuario_y_dia(self):
+        desafio = services.obtener_o_crear_desafio_de_hoy()
+        primera = services._obtener_ejercicios_desafio(self.usuario, desafio)
+        segunda = services._obtener_ejercicios_desafio(self.usuario, desafio)
+        self.assertEqual(
+            [mision.id for mision in primera[0] + primera[1]],
+            [mision.id for mision in segunda[0] + segunda[1]],
+        )
+
+    def test_override_admin_tiene_prioridad_sobre_la_personalizacion(self):
+        desafio = services.obtener_o_crear_desafio_de_hoy()
+        desafio.ejercicios_obligatorios.set([self.mision_nivel3])
+
+        obligatorios, opcionales = services._obtener_ejercicios_desafio(self.usuario, desafio)
+
+        self.assertEqual([mision.id for mision in obligatorios], [self.mision_nivel3.id])
+        self.assertEqual(opcionales, [])
 
 
 # ---------------------------------------------------------------------------
@@ -186,10 +247,14 @@ class ProcesarIntentoDesafioTests(TestCase):
         self.assertEqual(resultado['message'], 'El desafío de hoy ya está completado.')
 
     def test_mision_que_no_pertenece_al_desafio_de_hoy_devuelve_error(self):
+        # El usuario no tiene ProgresoEstudiante (nivel 1 por defecto), así
+        # que una misión de un nivel superior queda fuera de su selección
+        # personalizada y debe rechazarse como ejercicio ajeno al desafío.
         services.obtener_o_crear_desafio_de_hoy()
 
+        nivel_superior = Nivel.objects.create(numero=5, titulo="Avanzado", puntos_recompensa=50)
         otra_mision = MisionVocabulario.objects.create(
-            nivel=self.nivel,
+            nivel=nivel_superior,
             palabra_objetivo="luna",
             tipo="VOZ",
             frase_historia="La luna brilla por la noche.",

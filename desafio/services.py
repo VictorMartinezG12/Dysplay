@@ -67,38 +67,15 @@ def obtener_narrativa_del_dia(configuracion):
     return f'{NARRATIVA_ARCO_GENERAL} {fragmento_zona}'.strip()
 
 
-def _asignar_ejercicios_aleatorios(desafio):
-    """
-    Asigna a `desafio` un ejercicio obligatorio y hasta 3 opcionales,
-    elegidos al azar entre todas las `MisionVocabulario` existentes.
-
-    Si no hay ninguna misión disponible, el desafío queda sin ejercicios
-    (caso de proyecto recién instalado sin datos).
-
-    Args:
-        desafio (DesafioDiario): desafío recién creado al que asignar ejercicios.
-
-    Returns:
-        None
-    """
-    misiones = list(MisionVocabulario.objects.all())
-    if not misiones:
-        logger.warning('No hay MisionVocabulario disponibles para generar el desafío del %s', desafio.fecha)
-        return
-
-    random.shuffle(misiones)
-    obligatorio, *resto = misiones
-
-    desafio.ejercicios_obligatorios.set([obligatorio])
-    desafio.ejercicios_opcionales.set(resto[:MAXIMO_EJERCICIOS_OPCIONALES])
-
-
 def obtener_o_crear_desafio_de_hoy(configuracion=None):
     """
     Obtiene el `DesafioDiario` de la fecha actual, creándolo si no existe.
 
-    Al crearlo, toma `recompensa_monedas_base` de la configuración global y
-    asigna ejercicios obligatorios/opcionales aleatorios.
+    Al crearlo, toma `recompensa_monedas_base` de la configuración global.
+    Ya NO asigna ejercicios automáticamente al crearse: los ejercicios se
+    determinan por usuario en `_obtener_ejercicios_desafio` (ver ese
+    docstring), salvo que el administrador haya definido manualmente
+    `ejercicios_obligatorios`/`ejercicios_opcionales` desde el admin.
 
     Args:
         configuracion (ConfiguracionDesafio, optional): configuración ya
@@ -111,15 +88,101 @@ def obtener_o_crear_desafio_de_hoy(configuracion=None):
     configuracion = configuracion or ConfiguracionDesafio.obtener_configuracion()
     fecha_hoy = timezone.localdate()
 
-    desafio, creado = DesafioDiario.objects.get_or_create(
+    desafio, _creado = DesafioDiario.objects.get_or_create(
         fecha=fecha_hoy,
         defaults={'recompensa_monedas': configuracion.recompensa_monedas_base},
     )
 
-    if creado:
-        _asignar_ejercicios_aleatorios(desafio)
-
     return desafio
+
+
+def _nivel_numero_usuario(usuario):
+    """
+    Devuelve el nivel actual (entero) de progreso de un estudiante.
+
+    Se usa para acotar la selección de ejercicios del desafío diario al
+    nivel que el estudiante ya tiene desbloqueado (mismo patrón que
+    `camara_inteligente.services._nivel_dificultad_usuario`).
+
+    Args:
+        usuario: instancia de `UsuarioCustom` (estudiante autenticado).
+
+    Returns:
+        int: `ProgresoEstudiante.nivel_actual.numero`, o 1 si el estudiante
+            no tiene progreso o nivel asignado.
+    """
+    progreso = ProgresoEstudiante.objects.filter(usuario=usuario).first()
+    if progreso and progreso.nivel_actual:
+        return progreso.nivel_actual.numero
+    return 1
+
+
+def _seleccionar_ejercicios_para_usuario(usuario, desafio):
+    """
+    Elige un ejercicio obligatorio y hasta `MAXIMO_EJERCICIOS_OPCIONALES`
+    opcionales para `usuario` en el `desafio` de hoy, acotados a su nivel.
+
+    El pool de selección se limita a las `MisionVocabulario` de nivel menor
+    o igual al nivel actual del estudiante (`_nivel_numero_usuario`), para
+    que el desafío escale con su progreso real en vez de sortear entre todo
+    el catálogo. Si el estudiante no tiene ninguna misión disponible en su
+    rango (por ejemplo, recién empieza y aún no hay contenido en nivel 1),
+    se cae al catálogo completo como respaldo, para que el flujo nunca se
+    quede sin ejercicios.
+
+    La selección es determinista por `(usuario, fecha)`: se siembra un
+    `random.Random` propio con esa combinación, así que dentro del mismo
+    día el estudiante siempre ve el mismo conjunto, sin necesidad de
+    persistir nada nuevo en base de datos.
+
+    Args:
+        usuario: instancia de `UsuarioCustom` (estudiante autenticado).
+        desafio (DesafioDiario): desafío de la fecha actual.
+
+    Returns:
+        tuple[list[MisionVocabulario], list[MisionVocabulario]]:
+            `(ejercicios_obligatorios, ejercicios_opcionales)`.
+    """
+    nivel_usuario = _nivel_numero_usuario(usuario)
+    misiones = list(MisionVocabulario.objects.filter(nivel__numero__lte=nivel_usuario))
+    if not misiones:
+        misiones = list(MisionVocabulario.objects.all())
+    if not misiones:
+        logger.warning('No hay MisionVocabulario disponibles para generar el desafío del %s', desafio.fecha)
+        return [], []
+
+    generador_aleatorio = random.Random(f'{usuario.pk}-{desafio.fecha.isoformat()}')
+    generador_aleatorio.shuffle(misiones)
+
+    obligatorio, *resto = misiones
+    return [obligatorio], resto[:MAXIMO_EJERCICIOS_OPCIONALES]
+
+
+def _obtener_ejercicios_desafio(usuario, desafio):
+    """
+    Devuelve los ejercicios obligatorios y opcionales vigentes para
+    `usuario` en `desafio`.
+
+    Si el administrador definió manualmente `ejercicios_obligatorios`/
+    `ejercicios_opcionales` en `DesafioDiario` (override editorial,
+    compartido por todos los estudiantes ese día), se usan esos tal cual.
+    De lo contrario, se calculan de forma personalizada según el nivel del
+    usuario (`_seleccionar_ejercicios_para_usuario`).
+
+    Args:
+        usuario: instancia de `UsuarioCustom` (estudiante autenticado).
+        desafio (DesafioDiario): desafío de la fecha actual.
+
+    Returns:
+        tuple[list[MisionVocabulario], list[MisionVocabulario]]:
+            `(ejercicios_obligatorios, ejercicios_opcionales)`.
+    """
+    obligatorios_admin = list(desafio.ejercicios_obligatorios.all())
+    opcionales_admin = list(desafio.ejercicios_opcionales.all())
+    if obligatorios_admin or opcionales_admin:
+        return obligatorios_admin, opcionales_admin
+
+    return _seleccionar_ejercicios_para_usuario(usuario, desafio)
 
 
 def obtener_o_crear_progreso(usuario, desafio):
@@ -183,13 +246,14 @@ def construir_estado_desafio(usuario):
     progreso = obtener_o_crear_progreso(usuario, desafio)
 
     ids_completados = set(progreso.ejercicios_completados.values_list('id', flat=True))
+    ejercicios_obligatorios, ejercicios_opcionales = _obtener_ejercicios_desafio(usuario, desafio)
 
     return {
         'desafio': desafio,
         'progreso': progreso,
         'narrativa': obtener_narrativa_del_dia(configuracion),
-        'obligatorios': _serializar_ejercicios(desafio.ejercicios_obligatorios.all(), ids_completados),
-        'opcionales': _serializar_ejercicios(desafio.ejercicios_opcionales.all(), ids_completados),
+        'obligatorios': _serializar_ejercicios(ejercicios_obligatorios, ids_completados),
+        'opcionales': _serializar_ejercicios(ejercicios_opcionales, ids_completados),
         'bloqueado': progreso.completado,
         'segundos_restantes': calcular_segundos_hasta_reinicio() if progreso.completado else None,
     }
@@ -285,9 +349,10 @@ def procesar_intento_desafio(usuario, archivo_audio, mision_id):
         if progreso.completado:
             return {'status': 'error', 'message': 'El desafío de hoy ya está completado.'}
 
-        ids_obligatorios = set(desafio.ejercicios_obligatorios.values_list('id', flat=True))
-        ids_opcionales = set(desafio.ejercicios_opcionales.values_list('id', flat=True))
-        ids_ejercicios_desafio = ids_obligatorios | ids_opcionales
+        ejercicios_obligatorios, ejercicios_opcionales = _obtener_ejercicios_desafio(usuario, desafio)
+        ids_ejercicios_desafio = {
+            mision.id for mision in ejercicios_obligatorios + ejercicios_opcionales
+        }
 
         if mision_id not in ids_ejercicios_desafio:
             return {'status': 'error', 'message': 'Este ejercicio no pertenece al desafío de hoy.'}

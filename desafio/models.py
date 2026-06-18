@@ -58,9 +58,17 @@ class DesafioDiario(models.Model):
     fecha = models.DateField(unique=True)
     ejercicios_obligatorios = models.ManyToManyField(
         MisionVocabulario, related_name='desafios_obligatorios', blank=True,
+        help_text='Override editorial opcional, compartido por todos los estudiantes. '
+                   'Si se deja vacío (caso normal), cada estudiante recibe ejercicios '
+                   'elegidos automáticamente según su propio nivel (ver '
+                   'desafio/services.py::_obtener_ejercicios_desafio).',
     )
     ejercicios_opcionales = models.ManyToManyField(
         MisionVocabulario, related_name='desafios_opcionales', blank=True,
+        help_text='Override editorial opcional, compartido por todos los estudiantes. '
+                   'Si se deja vacío (caso normal), cada estudiante recibe ejercicios '
+                   'elegidos automáticamente según su propio nivel (ver '
+                   'desafio/services.py::_obtener_ejercicios_desafio).',
     )
     recompensa_monedas = models.PositiveIntegerField(default=10)
     recompensa_coleccionable = models.ForeignKey(
