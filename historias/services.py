@@ -580,35 +580,53 @@ def generar_historia_completa_ia(tema, nivel_dificultad, cantidad_fragmentos=4):
             api_version=AZURE_OPENAI_API_VERSION,
         )
 
-        prompt_sistema = (
-            'Eres un autor de cuentos infantiles especializado en material de lectura '
-            'para niños con dislexia. Generas historias en español, con vocabulario y '
-            'estructura de frases apropiados para el nivel de dificultad indicado '
-            f'(nivel {nivel_dificultad} de 5; 1 = vocabulario muy simple y frases cortas, '
-            '5 = vocabulario más elaborado y frases más largas). El contenido debe ser '
-            'siempre positivo, apropiado para niños y sin ambigüedad. '
-            f'Genera exactamente {cantidad_fragmentos} fragmentos secuenciales que avancen '
-            'la historia. Cada fragmento debe incluir una narración breve y, opcionalmente, '
-            'una pregunta interactiva relacionada con esa narración. El tipo de pregunta '
-            '("tipo_respuesta") debe ser uno de: "elegir" (con 2 a 4 "opciones", cada una con '
-            '"texto" y "es_correcta", y solo una opción correcta), "escribir" (la respuesta '
-            'correcta debe poder describirse como una palabra u oración corta en '
-            '"pregunta_interactiva"), "pronunciar" (una palabra simple que el niño deba '
-            'pronunciar) o "" (sin pregunta, solo narración). El último fragmento puede usar '
-            '"tipo_respuesta": "". Responde ÚNICAMENTE con un JSON con esta forma exacta: '
-            '{"titulo": "...", "fragmentos": [{"texto_narracion": "...", '
-            '"tipo_respuesta": "elegir|escribir|pronunciar|", "pregunta_interactiva": "...", '
-            '"opciones": [{"texto": "...", "es_correcta": true|false}]}]}. '
-            'No incluyas texto fuera del JSON.'
+        # El modelo configurado (Phi-4-mini-instruct) no respeta de forma confiable
+        # una instrucción de sistema separada ni el parámetro `response_format`
+        # (responde con campos de su propia invención en vez del esquema pedido).
+        # Un único mensaje de usuario con un ejemplo completo de la forma esperada
+        # (few-shot) incrustado en el prompt produce resultados consistentes.
+        nivel_descripcion = (
+            'vocabulario muy simple y frases cortas' if nivel_dificultad <= 2
+            else 'vocabulario moderado' if nivel_dificultad == 3
+            else 'vocabulario más elaborado y frases más largas'
+        )
+        ejemplo_formato = {
+            'titulo': 'El sol y la luna',
+            'fragmentos': [
+                {
+                    'texto_narracion': 'El sol brilla en el cielo.',
+                    'tipo_respuesta': '',
+                    'pregunta_interactiva': '',
+                    'opciones': [],
+                },
+                {
+                    'texto_narracion': 'La luna sale de noche.',
+                    'tipo_respuesta': 'elegir',
+                    'pregunta_interactiva': '¿Cuándo sale la luna?',
+                    'opciones': [
+                        {'texto': 'De noche', 'es_correcta': True},
+                        {'texto': 'De día', 'es_correcta': False},
+                    ],
+                },
+            ],
+        }
+        prompt = (
+            f'Genera una historia infantil corta en español sobre el tema: {tema}. '
+            f'Debe tener exactamente {cantidad_fragmentos} fragmentos, con frases breves '
+            f'({nivel_descripcion}). Al menos uno de los fragmentos debe tener '
+            '"tipo_respuesta" igual a "elegir", con 2 opciones y solo una correcta. '
+            'El contenido debe ser siempre positivo, apropiado para niños y sin ambigüedad. '
+            'Responde ÚNICAMENTE con un JSON válido, sin texto antes ni después, sin '
+            'markdown, con EXACTAMENTE esta forma (el siguiente es solo un ejemplo de '
+            'formato, tu historia debe tener un tema y contenido distintos):\n'
+            + json.dumps(ejemplo_formato, ensure_ascii=False)
         )
 
         respuesta = cliente.chat.completions.create(
             model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
-            messages=[
-                {'role': 'system', 'content': prompt_sistema},
-                {'role': 'user', 'content': f'Tema de la historia: {tema}'},
-            ],
-            response_format={'type': 'json_object'},
+            messages=[{'role': 'user', 'content': prompt}],
+            temperature=0.4,
+            max_tokens=200 * cantidad_fragmentos,
             timeout=AZURE_OPENAI_TIMEOUT_SEGUNDOS,
         )
 

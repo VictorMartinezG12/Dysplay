@@ -63,7 +63,7 @@ AZURE_OPENAI_API_VERSION = '2024-10-21'
 
 # Tiempo de espera máximo (segundos) para la llamada a Azure OpenAI, para que
 # nunca bloquee el flujo de captura de la cámara si el servicio está lento.
-AZURE_OPENAI_TIMEOUT_SEGUNDOS = 4
+AZURE_OPENAI_TIMEOUT_SEGUNDOS = 8
 
 # Tiempo (segundos) que se cachea una frase generada por el LLM para un mismo
 # objeto y nivel de dificultad. 24 horas: las frases pueden variar día a día
@@ -252,27 +252,31 @@ def generar_frase_llm(objeto_es, nivel_usuario):
             azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
             api_version=AZURE_OPENAI_API_VERSION,
         )
+        # El modelo configurado (Phi-4-mini-instruct) no respeta de forma confiable
+        # una instrucción de sistema separada: tiende a responder como asistente
+        # conversacional ("¿qué necesitas saber sobre...?") en vez de generar la
+        # frase. Una única instrucción imperativa en el mensaje de usuario, con
+        # temperatura baja y límite corto de tokens, produce resultados consistentes.
+        prompt = (
+            f'Escribe exactamente una frase corta en español (máximo 10 palabras) para '
+            f'que un niño practique pronunciación, usando la palabra "{objeto_es}". La '
+            f'dificultad debe corresponder a un nivel {nivel_usuario} de 5 (1 = muy simple, '
+            '5 = más elaborada). No expliques nada, no hagas preguntas, no agregues '
+            'comillas ni texto adicional. Responde únicamente con la frase.'
+        )
         respuesta = cliente.chat.completions.create(
             model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
-            messages=[
-                {
-                    'role': 'system',
-                    'content': (
-                        'Generas UNA sola frase corta en español (máximo 12 palabras), '
-                        'pensada para que un niño con dislexia practique pronunciación. '
-                        f'La dificultad debe corresponder a un nivel {nivel_usuario} de 5 '
-                        '(1 = muy simple, 5 = más elaborado). El contenido debe ser siempre '
-                        'apropiado para niños, positivo y sin ambigüedad. Responde únicamente '
-                        'con la frase, sin comillas ni explicaciones adicionales.'
-                    ),
-                },
-                {'role': 'user', 'content': objeto_es},
-            ],
+            messages=[{'role': 'user', 'content': prompt}],
+            temperature=0.3,
+            max_tokens=40,
             timeout=AZURE_OPENAI_TIMEOUT_SEGUNDOS,
         )
         frase_generada = respuesta.choices[0].message.content.strip()
-        if not frase_generada:
-            raise ValueError('La respuesta del LLM llegó vacía.')
+        # Defensa adicional: si el modelo igual responde con un párrafo largo
+        # (razonamiento, preguntas, disculpas) en vez de la frase pedida, se
+        # descarta y se cae al fallback de FraseTemplate/FRASE_GENERICA.
+        if not frase_generada or len(frase_generada.split()) > 20:
+            raise ValueError('La respuesta del LLM llegó vacía o no es una frase corta válida.')
     except Exception:
         logger.error(
             'Error al generar frase con Azure OpenAI para objeto=%s nivel=%s',
