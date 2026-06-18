@@ -8,8 +8,9 @@ class FraseTemplate(models.Model):
 
     objeto_keyword = models.CharField(
         max_length=50,
-        help_text='Palabra en español que identifica al objeto (debe coincidir con '
-                   'TRADUCCION_OBJETOS en camara_inteligente/services.py).',
+        help_text='Palabra en español que identifica al objeto. Usada solo como respaldo '
+                   'de emergencia si Azure OpenAI falla (ver TRADUCCION_OBJETOS en '
+                   'camara_inteligente/services.py); no es el límite real de vocabulario.',
     )
     frase_plantilla = models.TextField(help_text='Frase completa que el estudiante leerá en voz alta.')
     nivel_dificultad = models.PositiveSmallIntegerField(choices=NIVEL_DIFICULTAD_CHOICES, default=1)

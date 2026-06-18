@@ -13,6 +13,7 @@ delegar toda la lógica de negocio a las funciones definidas aquí.
 
 import base64
 import binascii
+import json
 import logging
 import os
 
@@ -70,8 +71,11 @@ AZURE_OPENAI_TIMEOUT_SEGUNDOS = 8
 # sin necesidad de llamar al LLM en cada captura del mismo objeto.
 CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS = 60 * 60 * 24
 
-# Diccionario de traducción de las etiquetas en inglés que devuelve Google
-# Cloud Vision a las palabras en español usadas en `FraseTemplate.objeto_keyword`.
+# Diccionario de traducción de respaldo, usado SOLO cuando Azure OpenAI falla
+# por completo (timeout/error de red): permite caer en una `FraseTemplate`
+# curada para los objetos más comunes en vez de la `FRASE_GENERICA`. Ya NO es
+# el límite de qué objetos puede practicar el niño — ver `generar_frase_objeto`,
+# que primero intenta el LLM con CUALQUIER etiqueta que entregue Vision.
 TRADUCCION_OBJETOS = {
     'pencil': 'lápiz',
     'book': 'libro',
@@ -216,35 +220,35 @@ def _nivel_dificultad_usuario(usuario):
     return 1
 
 
-def generar_frase_llm(objeto_es, nivel_usuario):
+def generar_objeto_y_frase_llm(etiqueta_en, nivel_usuario):
     """
-    Genera una frase corta de práctica para `objeto_es` usando Azure OpenAI.
+    Traduce `etiqueta_en` (etiqueta en inglés devuelta por Google Vision) al
+    español y genera, en el mismo llamado a Azure OpenAI, una frase corta de
+    práctica para esa palabra.
 
-    El resultado se cachea (vía `django.core.cache.cache`) por la combinación
-    `(objeto_es, nivel_usuario)` durante `CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS`,
-    para no llamar al LLM repetidamente con el mismo objeto y nivel.
-
-    El prompt separa una instrucción de sistema fija (reglas de la frase:
-    idioma, longitud, dificultad, contenido apropiado para niños) de un
-    mensaje de usuario que solo contiene el dato `objeto_es`. Aunque
-    `objeto_es` proviene de un diccionario interno fijo (`TRADUCCION_OBJETOS`)
-    y no de input arbitrario, se mantiene la separación system/user como
-    buena práctica.
+    Permite que CUALQUIER objeto detectado por Vision (no solo los ~80 del
+    diccionario `TRADUCCION_OBJETOS`) tenga su frase de práctica, sin
+    depender de un diccionario fijo. El resultado se cachea (vía
+    `django.core.cache.cache`) por la combinación `(etiqueta_en, nivel_usuario)`
+    durante `CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS`, para no llamar al LLM
+    repetidamente con el mismo objeto y nivel.
 
     Args:
-        objeto_es (str): nombre en español del objeto detectado (ej. "lápiz").
+        etiqueta_en (str): etiqueta en inglés tal cual la entrega Google
+            Vision (ej. "pencil", "dolphin", "hairbrush").
         nivel_usuario (int): nivel de dificultad del estudiante (1-5).
 
     Returns:
-        str | None: la frase generada, o `None` si la clave está en cache
-            como fallo previo, o si la llamada al LLM falla por cualquier
-            motivo (timeout, error de red, credenciales, respuesta vacía o
-            malformada). Nunca lanza una excepción hacia el caller.
+        dict | None: `{'objeto': str, 'frase': str}` con el objeto traducido
+            al español y la frase generada, o `None` si la llamada al LLM
+            falla por cualquier motivo (timeout, error de red, credenciales,
+            respuesta vacía o malformada). Nunca lanza una excepción hacia
+            el caller.
     """
-    clave_cache = f'frase_llm_camara_{objeto_es}_{nivel_usuario}'
-    frase_en_cache = cache.get(clave_cache)
-    if frase_en_cache is not None:
-        return frase_en_cache
+    clave_cache = f'frase_llm_camara_{etiqueta_en.lower()}_{nivel_usuario}'
+    resultado_en_cache = cache.get(clave_cache)
+    if resultado_en_cache is not None:
+        return resultado_en_cache
 
     try:
         cliente = AzureOpenAI(
@@ -253,53 +257,73 @@ def generar_frase_llm(objeto_es, nivel_usuario):
             api_version=AZURE_OPENAI_API_VERSION,
         )
         # El modelo configurado (Phi-4-mini-instruct) no respeta de forma confiable
-        # una instrucción de sistema separada: tiende a responder como asistente
-        # conversacional ("¿qué necesitas saber sobre...?") en vez de generar la
-        # frase. Una única instrucción imperativa en el mensaje de usuario, con
-        # temperatura baja y límite corto de tokens, produce resultados consistentes.
+        # una instrucción de sistema separada ni el parámetro `response_format`
+        # (responde con campos de su propia invención en vez del esquema pedido).
+        # Un único mensaje de usuario con un ejemplo completo de la forma esperada
+        # (few-shot) incrustado en el prompt produce resultados consistentes; mismo
+        # patrón que `historias.services.generar_historia_completa_ia`.
+        ejemplo_formato = {'objeto': 'lápiz', 'frase': 'El lápiz amarillo escribe en el cuaderno.'}
         prompt = (
-            f'Escribe exactamente una frase corta en español (máximo 10 palabras) para '
-            f'que un niño practique pronunciación, usando la palabra "{objeto_es}". La '
-            f'dificultad debe corresponder a un nivel {nivel_usuario} de 5 (1 = muy simple, '
-            '5 = más elaborada). No expliques nada, no hagas preguntas, no agregues '
-            'comillas ni texto adicional. Responde únicamente con la frase.'
+            f'La etiqueta en inglés "{etiqueta_en}" identifica un objeto detectado por la '
+            'cámara de un niño. Traduce esa etiqueta a UNA sola palabra en español (el '
+            'nombre común del objeto) y escribe una frase corta (máximo 10 palabras) en '
+            f'español para que el niño practique pronunciación usando esa palabra. La '
+            f'dificultad de la frase debe corresponder a un nivel {nivel_usuario} de 5 '
+            '(1 = muy simple, 5 = más elaborada). El contenido debe ser siempre positivo y '
+            'apropiado para niños. Responde ÚNICAMENTE con un JSON válido, sin texto antes '
+            'ni después, sin markdown, con EXACTAMENTE esta forma (el siguiente es solo un '
+            'ejemplo de formato, tu objeto y frase deben corresponder a la etiqueta dada):\n'
+            + json.dumps(ejemplo_formato, ensure_ascii=False)
         )
         respuesta = cliente.chat.completions.create(
             model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
             messages=[{'role': 'user', 'content': prompt}],
             temperature=0.3,
-            max_tokens=40,
+            max_tokens=80,
             timeout=AZURE_OPENAI_TIMEOUT_SEGUNDOS,
         )
-        frase_generada = respuesta.choices[0].message.content.strip()
-        # Defensa adicional: si el modelo igual responde con un párrafo largo
-        # (razonamiento, preguntas, disculpas) en vez de la frase pedida, se
-        # descarta y se cae al fallback de FraseTemplate/FRASE_GENERICA.
-        if not frase_generada or len(frase_generada.split()) > 20:
-            raise ValueError('La respuesta del LLM llegó vacía o no es una frase corta válida.')
+        contenido = respuesta.choices[0].message.content.strip()
+        datos = json.loads(contenido)
+        objeto = datos.get('objeto')
+        frase = datos.get('frase')
+        # Defensa adicional: si el modelo no devuelve el JSON esperado, o la frase
+        # es un párrafo largo (razonamiento, preguntas, disculpas), se descarta y
+        # se cae al fallback de TRADUCCION_OBJETOS/FraseTemplate/FRASE_GENERICA.
+        if (
+            not objeto or not isinstance(objeto, str)
+            or not frase or not isinstance(frase, str)
+            or len(frase.split()) > 20
+        ):
+            raise ValueError('La respuesta del LLM no tiene el objeto/frase esperados.')
     except Exception:
         logger.error(
-            'Error al generar frase con Azure OpenAI para objeto=%s nivel=%s',
-            objeto_es, nivel_usuario, exc_info=True,
+            'Error al generar objeto/frase con Azure OpenAI para etiqueta=%s nivel=%s',
+            etiqueta_en, nivel_usuario, exc_info=True,
         )
         return None
 
-    cache.set(clave_cache, frase_generada, CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS)
-    return frase_generada
+    resultado = {'objeto': objeto.strip(), 'frase': frase.strip()}
+    cache.set(clave_cache, resultado, CACHE_FRASE_LLM_TIMEOUT_SEGUNDOS)
+    return resultado
 
 
 def generar_frase_objeto(etiquetas_vision, nivel_usuario):
     """
     Genera la frase de práctica para el objeto detectado por Google Vision (G.2).
 
-    Recorre las etiquetas devueltas por Vision (ordenadas por confianza
-    descendente) y traduce cada una al español mediante `TRADUCCION_OBJETOS`.
-    Para la primera etiqueta traducible, busca una `FraseTemplate` cuyo
-    `nivel_dificultad` sea menor o igual al del estudiante; si no existe
-    ninguna en ese rango, usa cualquier `FraseTemplate` de ese objeto. Si
-    ninguna etiqueta es traducible o no hay `FraseTemplate` registrada,
-    devuelve una frase genérica de respaldo con la primera etiqueta
-    detectada, para que el flujo nunca se interrumpa.
+    Toma la etiqueta de mayor confianza devuelta por Vision (en inglés, tal
+    cual la entrega la API) e intenta generar el objeto en español y su
+    frase de práctica con Azure OpenAI (`generar_objeto_y_frase_llm`): así
+    CUALQUIER objeto que Vision reconozca puede practicarse, no solo los
+    registrados en `TRADUCCION_OBJETOS`.
+
+    Si el LLM falla por completo (timeout/error de red), se cae a un
+    respaldo de emergencia: si la etiqueta está en `TRADUCCION_OBJETOS`, se
+    busca una `FraseTemplate` para ese objeto (preferentemente del nivel del
+    estudiante, o cualquier nivel si no hay); si tampoco hay `FraseTemplate`,
+    se devuelve `FRASE_GENERICA` con el objeto traducido (o la etiqueta en
+    inglés si ni siquiera está en el diccionario), para que el flujo nunca
+    se interrumpa.
 
     Args:
         etiquetas_vision (list[dict]): etiquetas devueltas por
@@ -317,39 +341,37 @@ def generar_frase_objeto(etiquetas_vision, nivel_usuario):
         return None
 
     etiquetas_ordenadas = sorted(etiquetas_vision, key=lambda etiqueta: etiqueta['score'], reverse=True)
+    etiqueta_principal = etiquetas_ordenadas[0]
+    etiqueta_en = etiqueta_principal['description'].lower()
 
-    for etiqueta in etiquetas_ordenadas:
-        objeto = TRADUCCION_OBJETOS.get(etiqueta['description'].lower())
-        if not objeto:
-            continue
+    resultado_llm = generar_objeto_y_frase_llm(etiqueta_en, nivel_usuario)
+    if resultado_llm:
+        return {
+            'objeto': resultado_llm['objeto'],
+            'confianza': etiqueta_principal['score'],
+            'frase_generada': resultado_llm['frase'],
+            'recompensa_monedas': RECOMPENSA_MONEDAS_LLM,
+        }
 
-        frase_llm = generar_frase_llm(objeto, nivel_usuario)
-        if frase_llm:
-            return {
-                'objeto': objeto,
-                'confianza': etiqueta['score'],
-                'frase_generada': frase_llm,
-                'recompensa_monedas': RECOMPENSA_MONEDAS_LLM,
-            }
-
+    objeto_respaldo = TRADUCCION_OBJETOS.get(etiqueta_en)
+    if objeto_respaldo:
         frase = (
-            FraseTemplate.objects.filter(objeto_keyword=objeto, nivel_dificultad__lte=nivel_usuario).order_by('?').first()
-            or FraseTemplate.objects.filter(objeto_keyword=objeto).order_by('?').first()
+            FraseTemplate.objects.filter(objeto_keyword=objeto_respaldo, nivel_dificultad__lte=nivel_usuario).order_by('?').first()
+            or FraseTemplate.objects.filter(objeto_keyword=objeto_respaldo).order_by('?').first()
         )
         if frase:
             return {
-                'objeto': objeto,
-                'confianza': etiqueta['score'],
+                'objeto': objeto_respaldo,
+                'confianza': etiqueta_principal['score'],
                 'frase_generada': frase.frase_plantilla,
                 'recompensa_monedas': frase.recompensa_monedas,
             }
 
-    etiqueta_principal = etiquetas_ordenadas[0]
-    objeto = TRADUCCION_OBJETOS.get(etiqueta_principal['description'].lower(), etiqueta_principal['description'].lower())
+    objeto_generico = objeto_respaldo or etiqueta_en
     return {
-        'objeto': objeto,
+        'objeto': objeto_generico,
         'confianza': etiqueta_principal['score'],
-        'frase_generada': FRASE_GENERICA.format(objeto=objeto),
+        'frase_generada': FRASE_GENERICA.format(objeto=objeto_generico),
         'recompensa_monedas': RECOMPENSA_MONEDAS_FALLBACK,
     }
 
