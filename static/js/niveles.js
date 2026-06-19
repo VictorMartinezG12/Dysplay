@@ -101,16 +101,24 @@
     }
 
     /**
-     * Lee en voz alta la frase actual del ejercicio usando la API
-     * SpeechSynthesis del navegador, configurada en español ecuatoriano.
-     * @returns {void}
+     * Lee en voz alta la frase actual del ejercicio usando el motor de voz
+     * configurado por el usuario (navegador o Azure neural, con fallback
+     * automático). Deshabilita el botón "Escuchar" mientras dura la
+     * narración para evitar pulsaciones repetidas (y llamadas duplicadas a
+     * la API de Azure).
+     * @returns {Promise<void>}
      */
-    function leerTextoEnVozAlta() {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(fraseActual);
-            utterance.lang = 'es-EC';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
+    async function leerTextoEnVozAlta() {
+        const btnEscuchar = document.querySelector('[data-action="leer-frase"]');
+        try {
+            if (btnEscuchar) {
+                btnEscuchar.disabled = true;
+            }
+            await window.narrarTexto(fraseActual, 'es-EC');
+        } finally {
+            if (btnEscuchar) {
+                btnEscuchar.disabled = false;
+            }
         }
     }
 

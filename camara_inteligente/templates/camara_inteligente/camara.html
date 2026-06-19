@@ -249,6 +249,9 @@
 
     {% csrf_token %}
     {{ camara_config|json_script:"camara-config" }}
+    {# Configuración de audio/accesibilidad del usuario (velocidad, voz, volumen de narración) #}
+    {{ config_audio_json|json_script:"config-audio" }}
+    <script src="{% static 'js/utils/audio_narracion.js' %}"></script>
     <script src="{% static 'js/camara_inteligente/camara.js' %}"></script>
 </body>
 </html>

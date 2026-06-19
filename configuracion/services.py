@@ -26,6 +26,7 @@ CAMPOS_CHOICES = {
     'tema_visual': 'TEMA_CHOICES',
     'velocidad_narracion': 'VELOCIDAD_NARRACION_CHOICES',
     'tipo_voz': 'TIPO_VOZ_CHOICES',
+    'motor_voz': 'MOTOR_VOZ_CHOICES',
 }
 
 # Campos numéricos de volumen a validar y acotar entre 0 y 100.

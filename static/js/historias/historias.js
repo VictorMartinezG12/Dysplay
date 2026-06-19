@@ -263,18 +263,13 @@
     }
 
     /**
-     * Lee en voz alta un texto usando la API SpeechSynthesis del navegador,
-     * configurada en español ecuatoriano.
+     * Lee en voz alta un texto usando el motor de voz configurado por el
+     * usuario (navegador o Azure neural, con fallback automático).
      * @param {string} texto - Texto a leer.
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    function leerTextoEnVozAlta(texto) {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = 'es-EC';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
-        }
+    async function leerTextoEnVozAlta(texto) {
+        await window.narrarTexto(texto, 'es-EC');
     }
 
     /**
@@ -288,11 +283,21 @@
         document.getElementById('narracion-texto').textContent = fragmento.texto_narracion;
 
         const btnEscuchar = document.getElementById('btn-escuchar');
-        btnEscuchar.onclick = () => {
-            if (fragmento.audio_narracion_url) {
-                new Audio(fragmento.audio_narracion_url).play();
-            } else {
-                leerTextoEnVozAlta(fragmento.texto_narracion);
+        btnEscuchar.onclick = async () => {
+            try {
+                btnEscuchar.disabled = true;
+                if (fragmento.audio_narracion_url) {
+                    await new Promise((resolve) => {
+                        const audio = new Audio(fragmento.audio_narracion_url);
+                        audio.onended = resolve;
+                        audio.onerror = resolve;
+                        audio.play().catch(resolve);
+                    });
+                } else {
+                    await leerTextoEnVozAlta(fragmento.texto_narracion);
+                }
+            } finally {
+                btnEscuchar.disabled = false;
             }
         };
 

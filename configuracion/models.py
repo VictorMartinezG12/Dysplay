@@ -89,6 +89,16 @@ class ConfiguracionGlobal(models.Model):
     volumen_narracion = models.IntegerField(default=80)
     volumen_musica = models.IntegerField(default=50)
 
+    MOTOR_VOZ_CHOICES = [
+        ('navegador', 'Navegador (rápido)'),
+        ('azure', 'Voz natural (IA)'),
+    ]
+    motor_voz = models.CharField(
+        max_length=10,
+        choices=MOTOR_VOZ_CHOICES,
+        default='navegador'
+    )
+
     # --- FECHAS DE ACTUALIZACIÓN ---
     actualizado_en = models.DateTimeField(auto_now=True)
 

@@ -153,6 +153,24 @@
             </select>
         </section>
 
+        <!-- Motor de Voz -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="audio-lines" class="w-5 h-5 text-fuchsia-500"></i>
+                Motor de Voz
+            </h2>
+            <div class="flex gap-4">
+                {% for val, label in config.MOTOR_VOZ_CHOICES %}
+                <label class="flex-1 cursor-pointer">
+                    <input type="radio" name="motor_voz" value="{{ val }}" class="peer hidden" {% if config.motor_voz == val %}checked{% endif %}>
+                    <div class="p-3 border-4 border-gray-100 rounded-2xl peer-checked:border-fuchsia-500 peer-checked:bg-fuchsia-50 transition-all text-center font-bold">
+                        {{ label }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
         <!-- Volumen de Narración -->
         <section class="space-y-4">
             <h2 class="text-xl font-bold flex items-center gap-2">

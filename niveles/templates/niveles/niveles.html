@@ -643,6 +643,9 @@
     </main>
 
     {{ niveles_config|json_script:"niveles-config" }}
+    {# Configuración de audio/accesibilidad del usuario (velocidad, voz, volumen de narración) #}
+    {{ config_audio_json|json_script:"config-audio" }}
+    <script src="{% static 'js/utils/audio_narracion.js' %}"></script>
     {# Lottie Web — animaciones vectoriales para el mapa y celebraciones (B.6). async: no bloquea la carga de niveles.js #}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" async crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{% static 'js/niveles.js' %}"></script>
