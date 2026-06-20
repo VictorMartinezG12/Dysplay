@@ -58,10 +58,26 @@ class AvatarSystem {
             if (frase) {
                 this.setEmocion('feliz');
                 this.mostrarMensaje(frase);
+                this.saludar();
             }
         } catch (error) {
             console.warn('⚠️ No se pudo leer la frase contextual del avatar:', error);
         }
+    }
+
+    /**
+     * Activa la animación de saludo (el brazo derecho del avatar se levanta
+     * y saluda) durante unos segundos. Es seguro llamarla varias veces:
+     * reinicia limpio la animación si ya estaba en curso.
+     * @returns {void}
+     */
+    saludar() {
+        if (!this.avatarElement) return;
+
+        this.avatarElement.classList.remove('avatar-saludando');
+        // Forzar reflow para poder reiniciar la animación CSS desde cero.
+        void this.avatarElement.offsetWidth;
+        this.avatarElement.classList.add('avatar-saludando');
     }
 
     /**

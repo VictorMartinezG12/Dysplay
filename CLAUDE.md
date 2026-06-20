@@ -16,7 +16,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 |---|---|---|---|
 | A - Infraestructura crítica | Completado | Alto | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-13) |
 | B - Recompensas unificado | Completado | Alto | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-13) |
-| C - Avatar avanzado | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
+| C - Avatar avanzado | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, personaje visual animado SVG: 2026-06-20) |
 | D - Mapa de niveles | Completado | Alto | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, mejoras B.1-B.6: 2026-06-16, polish visual + mapa vivo + responsivo + estrellas + bloqueo de zonas: 2026-06-17) |
 | E - Desafío diario | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, personalización de ejercicios por nivel del estudiante: 2026-06-18) |
 | F - Historias | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, integración Azure OpenAI: 2026-06-18) |

@@ -9,16 +9,12 @@
     <div class="lg:col-span-5 bg-white rounded-3xl shadow-soft border-4 border-orange-100 p-8 flex flex-col items-center lg:sticky lg:top-24">
         <h1 class="text-3xl font-black text-orange-600 mb-6 text-center">¡Así me veo! ✨</h1>
         
-        <div id="main-preview-container" class="w-56 h-56 md:w-72 md:h-72 bg-gradient-to-b from-blue-50 to-white rounded-full border-8 border-white shadow-hard flex items-center justify-center relative overflow-hidden transition-all duration-300">
-            
-            <!-- Capa 1: Cuerpo Base -->
-            <picture class="absolute inset-0 w-full h-full z-10">
-                <source id="preview-layer-body-png" srcset="/static/avatar/cuerpo/{{ avatar.estado_actual|default:'neutral' }}.png" type="image/png">
-                <img id="preview-layer-body" 
-                     src="/static/avatar/cuerpo/{{ avatar.estado_actual|default:'neutral' }}.svg" 
-                     class="w-full h-full object-contain" 
-                     alt="Cuerpo">
-            </picture>
+        <div id="main-preview-container" class="w-56 h-56 md:w-72 md:h-72 bg-gradient-to-b from-blue-50 to-white rounded-full border-8 border-white shadow-hard flex items-center justify-center relative overflow-hidden transition-all duration-300 avatar-visual-root avatar-{{ avatar.estado_actual|default:'neutral' }}">
+
+            <!-- Capa 1: Cuerpo Base (personaje SVG animado) -->
+            <div id="preview-layer-body" class="absolute inset-0 w-full h-full z-10">
+                {% include 'avatar/_svg_personaje.html' %}
+            </div>
 
             <!-- Capas de Ropa e Items (Se actualizan por JS) -->
             <div id="preview-layers-items" class="absolute inset-0 z-20 pointer-events-none">
