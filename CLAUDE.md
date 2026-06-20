@@ -21,7 +21,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 | E - Desafío diario | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, personalización de ejercicios por nivel del estudiante: 2026-06-18) |
 | F - Historias | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, integración Azure OpenAI: 2026-06-18) |
 | G - Cámara inteligente | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, integración Azure OpenAI: 2026-06-18, rediseño generar_frase_llm para cualquier objeto vía IA: 2026-06-18, rediseño completo trabalenguas educativo + Google Vision ampliado + detección priorizada + overlay visual: 2026-06-20) |
-| H - Estadísticas | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
+| H - Estadísticas | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, interactividad/UX: 2026-06-20) |
 | I - Configuración accesibilidad | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, TTS dual Azure neural + fallback navegador: 2026-06-19) |
 | J - Reportes email | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | K - Celebraciones | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |

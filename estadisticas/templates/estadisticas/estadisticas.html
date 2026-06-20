@@ -52,6 +52,60 @@
         }
 
         ::-webkit-scrollbar { display: none; }
+
+        /* Animación de "salto"/pulso para el ícono de la llama al tocar la racha */
+        @keyframes saltoLlama {
+            0% { transform: scale(1) rotate(0deg); }
+            30% { transform: scale(1.35) rotate(-8deg); }
+            60% { transform: scale(1.15) rotate(6deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .animate-salto-llama {
+            animation: saltoLlama 0.6s ease-in-out;
+        }
+
+        /* Globo de diálogo con frase motivadora de la racha */
+        #racha-mensaje {
+            opacity: 0;
+            transform: translateY(8px) scale(0.95);
+            transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+            pointer-events: none;
+        }
+
+        #racha-mensaje.racha-mensaje-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Badge "¡Nueva!" para insignias recientes */
+        @keyframes brilloNueva {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+            50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+        }
+
+        .badge-insignia-nueva {
+            animation: brilloNueva 1.6s ease-in-out infinite;
+        }
+
+        /* Piezas de confeti reutilizadas del sistema de celebraciones (Módulo K) */
+        @keyframes confetiCaida {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0.9; }
+        }
+        .confeti-pieza {
+            position: absolute;
+            top: -10vh;
+            font-size: 1.75rem;
+            line-height: 1;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+        .animate-confeti {
+            animation-name: confetiCaida;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
     </style>
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
@@ -79,6 +133,12 @@
 
             <!-- TARJETA DE PERFIL (Ocupa 3 columnas) -->
             <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-8 col-span-1 md:col-span-3">
+                <!--
+                    ESPACIO RESERVADO PARA EL AVATAR (integración futura).
+                    Este círculo mostrará la cara del avatar/mascota del usuario más
+                    adelante. NO rediseñar ni cambiar su estructura/contenido sin
+                    coordinarlo primero: el usuario lo implementará él mismo.
+                -->
                 <div class="w-32 h-32 bg-primary/10 rounded-full flex flex-shrink-0 items-center justify-center text-primary shadow-sm border-4 border-primary/20">
                     <i data-lucide="smile" class="w-16 h-16 fill-current opacity-80"></i>
                 </div>
@@ -103,11 +163,14 @@
             </section>
 
             <!-- TARJETA DE RACHA (Ocupa 1 columna) -->
-            <section class="bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-reward/20 flex flex-col items-center justify-center col-span-1 md:col-span-1 text-center group">
-                <div class="w-24 h-24 bg-reward/10 rounded-full flex items-center justify-center text-reward mb-4 shadow-sm border-2 border-reward/30 group-hover:scale-110 transition-transform">
+            <section id="tarjeta-racha" data-racha="{{ racha_dias }}" class="relative bg-white p-8 md:p-10 rounded-2xl shadow-soft border-4 border-reward/20 flex flex-col items-center justify-center col-span-1 md:col-span-1 text-center group cursor-pointer focus:outline-none focus:ring-4 focus:ring-reward/40" role="button" tabindex="0" aria-label="Ver mensaje de ánimo sobre tu racha">
+                <div id="racha-mensaje" role="status" class="absolute -top-4 left-1/2 -translate-x-1/2 -translate-y-full bg-reward text-white font-bold text-[14px] px-4 py-2 rounded-2xl shadow-soft whitespace-nowrap z-10">
+                    <span id="racha-mensaje-texto"></span>
+                </div>
+                <div id="racha-icono" class="w-24 h-24 bg-reward/10 rounded-full flex items-center justify-center text-reward mb-4 shadow-sm border-2 border-reward/30 group-hover:scale-110 transition-transform">
                     <i data-lucide="flame" class="w-12 h-12 fill-current"></i>
                 </div>
-                <h3 class="text-[40px] font-bold text-reward leading-none">{{ racha_dias }}</h3>
+                <h3 id="racha-numero" class="text-[40px] font-bold text-reward leading-none">0</h3>
                 <p class="text-[18px] text-gray-500 font-bold mt-2 uppercase tracking-wider">
                     {% if racha_dias == 1 %}Día en racha{% else %}Días en racha{% endif %}
                 </p>
@@ -201,8 +264,9 @@
                 <!-- Gráfico de barras: una por cada uno de los últimos 7 días -->
                 <div class="flex items-end justify-between h-48 mt-auto gap-2 sm:gap-4 px-2">
                     {% for dia in datos_semana %}
-                    <div class="rounded-t-[12px] w-full relative transition-colors {% if dia.es_hoy %}bg-primary shadow-sm{% else %}bg-primary/20 hover:bg-primary/40{% endif %}"
-                         style="height: {{ dia.altura_porcentaje }}%; min-height: 4px;">
+                    <div class="barra-semana rounded-t-[12px] w-full relative transition-[height] duration-700 ease-out {% if dia.es_hoy %}bg-primary shadow-sm{% else %}bg-primary/20 hover:bg-primary/40{% endif %}"
+                         data-altura="{{ dia.altura_porcentaje }}"
+                         style="height: 0%; min-height: 4px;">
                         {% if dia.es_hoy %}
                         <span class="absolute -top-10 left-1/2 -translate-x-1/2 font-bold text-white bg-primary px-3 py-1 rounded-full text-xs shadow-sm">{{ dia.cantidad }}</span>
                         <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 font-bold text-primary text-sm">Hoy</span>
@@ -298,7 +362,15 @@
             {% if insignias %}
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
                 {% for insignia in insignias %}
-                <div class="flex flex-col items-center text-center group cursor-pointer" title="{{ insignia.descripcion }}">
+                <div class="insignia-clickeable relative flex flex-col items-center text-center group cursor-pointer focus:outline-none focus:ring-4 focus:ring-reward/40 rounded-2xl"
+                     role="button" tabindex="0"
+                     title="{{ insignia.descripcion }}"
+                     data-nombre="{{ insignia.nombre }}"
+                     data-descripcion="{{ insignia.descripcion }}"
+                     data-imagen="{% if insignia.imagen %}{{ insignia.imagen.url }}{% endif %}">
+                    {% if insignia.es_nueva %}
+                    <span class="badge-insignia-nueva absolute -top-2 -right-1 bg-reward text-white text-[11px] font-bold px-2 py-1 rounded-full shadow-sm z-10">¡Nueva!</span>
+                    {% endif %}
                     <div class="w-20 h-20 bg-reward/10 rounded-full flex items-center justify-center border-4 border-reward shadow-sm mb-3 group-hover:scale-110 transition-transform">
                         {% if insignia.imagen %}
                         <img src="{{ insignia.imagen.url }}" alt="{{ insignia.nombre }}" class="w-12 h-12 object-contain">
@@ -331,7 +403,8 @@
                 <h4 class="text-[16px] font-bold text-gray-400 mb-4 uppercase tracking-wider">{{ grupo.nombre_tipo }}</h4>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6">
                     {% for item in grupo.items %}
-                    <div class="flex flex-col items-center text-center{% if not item.obtenido %} opacity-50 grayscale filter{% endif %}">
+                    <div class="flex flex-col items-center text-center{% if not item.obtenido %} opacity-50 grayscale filter coleccionable-bloqueado cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/40 rounded-2xl{% endif %}"
+                         {% if not item.obtenido %}role="button" tabindex="0" aria-label="Coleccionable bloqueado, ver pista"{% endif %}>
                         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-4 {% if item.obtenido %}border-primary{% else %}border-gray-300{% endif %} shadow-sm mb-3">
                             {% if item.imagen %}
                             <img src="{{ item.imagen.url }}" alt="{{ item.nombre }}" class="w-12 h-12 object-contain">
@@ -354,6 +427,39 @@
 
     </main>
 
+    <!-- MODAL DE CELEBRACIÓN DE INSIGNIAS (Módulo K, reutilizado tal cual desde base.html) -->
+    <div id="modal-celebracion-insignia" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="celebracion-titulo">
+        <div id="confeti-contenedor" class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true"></div>
+        <div class="bg-white rounded-3xl shadow-soft p-8 md:p-10 max-w-sm w-full text-center relative z-10 border-4 border-reward/30 animate-fade-in">
+            <p class="text-[20px] font-extrabold text-reward mb-2">¡Insignia conseguida!</p>
+            <div class="flex items-center justify-center mb-4">
+                <img id="celebracion-imagen" src="" alt="" class="hidden w-24 h-24 object-contain animate-bounce">
+                <span id="celebracion-icono" class="text-6xl animate-bounce">🏅</span>
+            </div>
+            <h2 id="celebracion-titulo" class="text-[24px] font-black text-primary mb-2">Nombre de la insignia</h2>
+            <p id="celebracion-descripcion" class="text-[18px] text-gray-600 mb-6">Descripción de la insignia.</p>
+            <button id="celebracion-cerrar" type="button" class="w-full min-h-[48px] bg-primary hover:bg-primary/90 text-white font-bold text-[18px] py-3 px-6 rounded-2xl transition-all duration-200 shadow-soft">
+                ¡Genial!
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PISTA DE COLECCIONABLE BLOQUEADO -->
+    <div id="modal-pista-coleccionable" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="pista-titulo">
+        <div class="bg-white rounded-3xl shadow-soft p-8 md:p-10 max-w-sm w-full text-center relative z-10 border-4 border-primary/30 animate-fade-in">
+            <div class="flex items-center justify-center mb-4">
+                <i data-lucide="lock" class="w-12 h-12 text-primary"></i>
+            </div>
+            <h2 id="pista-titulo" class="text-[22px] font-black text-primary mb-2">Coleccionable bloqueado</h2>
+            <p class="text-[18px] text-gray-600 mb-6">Se consigue completando el Desafío Diario.</p>
+            <button id="pista-cerrar" type="button" class="w-full min-h-[48px] bg-primary hover:bg-primary/90 text-white font-bold text-[18px] py-3 px-6 rounded-2xl transition-all duration-200 shadow-soft">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <script src="{% static 'js/celebraciones/celebraciones.js' %}" defer></script>
+    <script src="{% static 'js/estadisticas/estadisticas.js' %}" defer></script>
     <script>
         lucide.createIcons();
     </script>

@@ -215,6 +215,16 @@ class ConstruirInsigniasTests(TestCase):
         self.assertEqual(insignias[0]['nombre'], 'Primera Racha')
         self.assertIsNotNone(insignias[0]['fecha_obtenida'])
 
+    def test_insignia_recien_obtenida_es_nueva(self):
+        insignias = services.construir_insignias(self.usuario)
+        self.assertTrue(insignias[0]['es_nueva'])
+
+    def test_insignia_antigua_no_es_nueva(self):
+        fecha_antigua = timezone.now() - datetime.timedelta(days=services.DIAS_INSIGNIA_NUEVA + 1)
+        Insignia.objects.filter(usuario=self.usuario).update(fecha_obtenida=fecha_antigua)
+        insignias = services.construir_insignias(self.usuario)
+        self.assertFalse(insignias[0]['es_nueva'])
+
 
 # ---------------------------------------------------------------------------
 # Tests de `construir_contexto_estadisticas`

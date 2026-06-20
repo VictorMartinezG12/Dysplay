@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 # "área de mejora" (H.1, criterio de aceptación).
 UMBRAL_AREA_MEJORA = 60
 
+# Cantidad de días tras obtener una insignia durante los cuales se marca
+# como "nueva" en el panel (para resaltarla visualmente con un brillo/badge).
+DIAS_INSIGNIA_NUEVA = 3
+
 # Abreviaturas de los días de la semana en español (lunes=0 ... domingo=6),
 # usadas en el gráfico de actividad semanal.
 NOMBRES_DIAS_SEMANA = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do']
@@ -236,15 +240,19 @@ def construir_insignias(usuario):
 
     Returns:
         list[dict]: una entrada por insignia obtenida, con `nombre`,
-            `descripcion`, `imagen` y `fecha_obtenida`, ordenadas de la más
-            reciente a la más antigua.
+            `descripcion`, `imagen`, `fecha_obtenida` y `es_nueva` (bool,
+            `True` si se obtuvo dentro de los últimos `DIAS_INSIGNIA_NUEVA`
+            días, para resaltarla visualmente en el panel), ordenadas de la
+            más reciente a la más antigua.
     """
+    limite_nueva = timezone.now() - datetime.timedelta(days=DIAS_INSIGNIA_NUEVA)
     return [
         {
             'nombre': insignia.tipo_insignia.nombre,
             'descripcion': insignia.tipo_insignia.descripcion,
             'imagen': insignia.tipo_insignia.imagen,
             'fecha_obtenida': insignia.fecha_obtenida,
+            'es_nueva': insignia.fecha_obtenida >= limite_nueva,
         }
         for insignia in Insignia.objects.filter(usuario=usuario)
             .select_related('tipo_insignia').order_by('-fecha_obtenida')
