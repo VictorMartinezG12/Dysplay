@@ -96,6 +96,11 @@
 
                     <!-- Video en vivo de la cámara del dispositivo -->
                     <video id="video-camara" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
+                    <!-- Canvas overlay: dibuja el marco de detección de objetos en vivo (TensorFlow.js + COCO-SSD)
+                         sobre el objeto más cercano al punto central del visor (ver camara.js) -->
+                    <canvas id="canvas-deteccion-vivo" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                    <!-- Punto fijo decorativo en el centro exacto del visor: siempre visible mientras se apunta -->
+                    <div id="punto-central-mira" class="absolute top-1/2 left-1/2 w-5 h-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60 border-2 border-white/90 pointer-events-none shadow-md"></div>
                     <canvas id="canvas-captura" class="hidden"></canvas>
 
                     <!-- Capa superior del visor -->
@@ -160,7 +165,7 @@
 
                 <h3 class="text-[24px] font-semibold text-gray-400 mb-10">Ahora lee en voz alta:</h3>
 
-                <!-- Frase Generada -->
+                <!-- Frase generada -->
                 <div class="mb-16">
                     <p id="frase-generada" class="text-[40px] md:text-[56px] font-bold text-textMain leading-[1.4] tracking-wide"></p>
                 </div>
@@ -251,6 +256,13 @@
     {{ camara_config|json_script:"camara-config" }}
     {# Configuración de audio/accesibilidad del usuario (velocidad, voz, volumen de narración) #}
     {{ config_audio_json|json_script:"config-audio" }}
+    {# Rutas de los scripts vendor de detección de objetos (TensorFlow.js + COCO-SSD), cargadas de forma diferida desde camara.js solo al entrar al visor de la cámara #}
+    {% static 'js/vendor/tf.min.js' as url_tf_js %}
+    {% static 'js/vendor/coco-ssd.min.js' as url_coco_ssd_js %}
+    {% static 'js/vendor/coco-ssd-model/model.json' as url_modelo_coco_ssd %}
+    {{ url_tf_js|json_script:"url-tf-js" }}
+    {{ url_coco_ssd_js|json_script:"url-coco-ssd-js" }}
+    {{ url_modelo_coco_ssd|json_script:"url-modelo-coco-ssd" }}
     <script src="{% static 'js/utils/audio_narracion.js' %}"></script>
     <script src="{% static 'js/camara_inteligente/camara.js' %}"></script>
 </body>

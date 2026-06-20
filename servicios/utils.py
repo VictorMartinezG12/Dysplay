@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import logging
 from xml.sax.saxutils import escape
@@ -5,6 +7,7 @@ from xml.sax.saxutils import escape
 import azure.cognitiveservices.speech as speechsdk
 import requests
 from django.conf import settings
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +27,10 @@ MAPA_VELOCIDAD_AZURE = {
     'rapida': '+30%',
 }
 
-# Endpoint REST de Google Cloud Vision para detección de etiquetas (Módulo G).
+# Endpoint REST de Google Cloud Vision para detección de objetos/logos/texto (Módulo G).
 URL_GOOGLE_VISION = 'https://vision.googleapis.com/v1/images:annotate'
 
-# Número máximo de etiquetas a solicitar a Google Vision por imagen.
+# Número máximo de objetos/logos a solicitar a Google Vision por imagen.
 MAXIMO_ETIQUETAS_VISION = 5
 
 # Tiempo máximo (segundos) de espera por la respuesta de Google Vision.
@@ -116,31 +119,69 @@ def evaluar_pronunciacion(audio_path, palabra_objetivo):
 
 def analizar_imagen_google_vision(imagen_base64):
     """
-    Detecta los objetos presentes en una imagen usando Google Cloud Vision (Módulo G).
+    Detecta objetos, logotipos y texto presentes en una imagen usando Google
+    Cloud Vision (Módulo G).
 
     Envía la imagen (codificada en base64) a la API REST de Google Cloud
-    Vision solicitando detección de etiquetas (`LABEL_DETECTION`).
+    Vision solicitando, en una sola petición, detección de objetos
+    (`OBJECT_LOCALIZATION`, con su cuadro delimitador para poder resaltarlo
+    en pantalla), de logotipos (`LOGO_DETECTION`), de texto (`TEXT_DETECTION`)
+    y de etiquetas generales de toda la imagen (`LABEL_DETECTION`). Esta
+    última sirve de respaldo cuando lo más prominente que `OBJECT_LOCALIZATION`
+    encuentra es algo que no es el objeto en sí (ej. un código de barras o
+    una etiqueta pegada), ya que analiza la foto completa en vez de un
+    recuadro específico.
 
     Args:
         imagen_base64 (str): contenido de la imagen codificado en base64
             (sin el prefijo `data:image/...;base64,`).
 
     Returns:
-        dict: `{'status': 'success', 'etiquetas': list[dict]}` donde cada
-            etiqueta es `{'description': str, 'score': float}` (en inglés,
-            tal como las devuelve Vision, ordenadas por confianza
-            descendente); o `{'status': 'error', 'message': str}` si la
-            petición falla o faltan credenciales.
+        dict: si la petición falla o faltan credenciales,
+            `{'status': 'error', 'message': str}`. Si tiene éxito:
+            `{'status': 'success', 'etiquetas': list[dict],
+            'etiquetas_generales': list[dict], 'logos': list[dict],
+            'texto': dict | None}`, donde:
+            - `etiquetas`: objetos localizados, cada uno
+              `{'description': str, 'score': float, 'vertices': list[dict]}`
+              (en inglés, ordenados por confianza descendente).
+            - `etiquetas_generales`: etiquetas de `LABEL_DETECTION` sobre la
+              imagen completa, cada una `{'description': str, 'score': float}`
+              (sin `vertices`: no hay un recuadro específico).
+            - `logos`: logotipos reconocidos, cada uno
+              `{'description': str, 'score': float, 'vertices': list[dict]}`.
+            - `texto`: `{'contenido': str, 'vertices': list[dict]}` con el
+              texto legible completo detectado, o `None` si no se detectó.
+            En `etiquetas`/`logos`/`texto`, `vertices` son 4 puntos
+            `{'x': float, 'y': float}` normalizados 0-1 respecto al ancho/alto
+            real de la imagen (Vision normaliza los de `etiquetas`; los de
+            `logos`/`texto` se normalizan aquí mismo con las dimensiones
+            reales de la imagen decodificada, para que todas las cajas vivan
+            en el mismo sistema de coordenadas y puedan compararse por
+            solapamiento). `etiquetas`, `etiquetas_generales` y `logos`
+            siempre están presentes (lista vacía si no hay resultados), para
+            mantener el contrato retrocompatible.
     """
     api_key = getattr(settings, 'GOOGLE_VISION_KEY', None)
     if not api_key:
         return {'status': 'error', 'message': 'Faltan las credenciales de Google Cloud Vision en el settings.py / .env'}
 
+    try:
+        ancho_imagen, alto_imagen = Image.open(io.BytesIO(base64.b64decode(imagen_base64))).size
+    except Exception:
+        logger.error('No se pudo leer el tamaño de la imagen recibida', exc_info=True)
+        return {'status': 'error', 'message': 'La imagen recibida no se pudo procesar.'}
+
     payload = {
         'requests': [
             {
                 'image': {'content': imagen_base64},
-                'features': [{'type': 'LABEL_DETECTION', 'maxResults': MAXIMO_ETIQUETAS_VISION}],
+                'features': [
+                    {'type': 'OBJECT_LOCALIZATION', 'maxResults': MAXIMO_ETIQUETAS_VISION},
+                    {'type': 'LABEL_DETECTION', 'maxResults': MAXIMO_ETIQUETAS_VISION},
+                    {'type': 'LOGO_DETECTION', 'maxResults': MAXIMO_ETIQUETAS_VISION},
+                    {'type': 'TEXT_DETECTION'},
+                ],
             }
         ]
     }
@@ -160,13 +201,57 @@ def analizar_imagen_google_vision(imagen_base64):
         logger.error('Google Cloud Vision respondió con error %s: %s', respuesta.status_code, respuesta.text)
         return {'status': 'error', 'message': 'El servicio de reconocimiento de imágenes no está disponible.'}
 
-    etiquetas_crudas = respuesta.json()['responses'][0].get('labelAnnotations', [])
+    datos_respuesta = respuesta.json()['responses'][0]
+
     etiquetas = [
-        {'description': etiqueta['description'], 'score': etiqueta['score']}
-        for etiqueta in etiquetas_crudas
+        {
+            'description': objeto['name'],
+            'score': objeto['score'],
+            'vertices': objeto['boundingPoly']['normalizedVertices'],
+        }
+        for objeto in datos_respuesta.get('localizedObjectAnnotations', [])
     ]
 
-    return {'status': 'success', 'etiquetas': etiquetas}
+    etiquetas_generales = [
+        {'description': etiqueta['description'], 'score': etiqueta['score']}
+        for etiqueta in datos_respuesta.get('labelAnnotations', [])
+    ]
+
+    logos = [
+        {
+            'description': logo['description'],
+            'score': logo.get('score', 0),
+            'vertices': _normalizar_vertices(logo['boundingPoly']['vertices'], ancho_imagen, alto_imagen),
+        }
+        for logo in datos_respuesta.get('logoAnnotations', [])
+    ]
+
+    # El primer elemento de `textAnnotations` es siempre el texto completo
+    # detectado (los siguientes son palabras individuales); no se usan.
+    texto_anotaciones = datos_respuesta.get('textAnnotations', [])
+    texto = None
+    if texto_anotaciones:
+        primera_anotacion = texto_anotaciones[0]
+        texto = {
+            'contenido': primera_anotacion['description'],
+            'vertices': _normalizar_vertices(primera_anotacion['boundingPoly']['vertices'], ancho_imagen, alto_imagen),
+        }
+
+    return {
+        'status': 'success',
+        'etiquetas': etiquetas,
+        'etiquetas_generales': etiquetas_generales,
+        'logos': logos,
+        'texto': texto,
+    }
+
+
+def _normalizar_vertices(vertices_en_pixeles, ancho_imagen, alto_imagen):
+    """Convierte vértices en píxeles (`LOGO_DETECTION`/`TEXT_DETECTION`) a fracciones 0-1."""
+    return [
+        {'x': vertice.get('x', 0) / ancho_imagen, 'y': vertice.get('y', 0) / alto_imagen}
+        for vertice in vertices_en_pixeles
+    ]
 
 
 def sintetizar_voz_azure(texto, tipo_voz, velocidad_narracion, volumen_narracion):

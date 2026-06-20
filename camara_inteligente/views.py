@@ -28,9 +28,10 @@ def capturar_objeto(request):
         return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
     imagen_base64 = request.POST.get('imagen')
+    punto_objetivo_json = request.POST.get('punto_objetivo')
 
     try:
-        resultado = services.procesar_captura_imagen(request.user, imagen_base64)
+        resultado = services.procesar_captura_imagen(request.user, imagen_base64, punto_objetivo_json)
         return JsonResponse(resultado)
     except Exception:
         logger.error('Error al procesar la captura de la cámara inteligente', exc_info=True)
