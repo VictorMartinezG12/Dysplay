@@ -11,34 +11,42 @@
         
         <div id="main-preview-container" class="w-56 h-56 md:w-72 md:h-72 bg-gradient-to-b from-blue-50 to-white rounded-full border-8 border-white shadow-hard flex items-center justify-center relative overflow-hidden transition-all duration-300 avatar-visual-root avatar-{{ avatar.estado_actual|default:'neutral' }}">
 
+            <!-- Escenario cuadrado (1:1) centrado: cuerpo y ropa comparten el mismo
+                 sistema de coordenadas aquí dentro, sin importar la forma del contenedor padre. -->
+            <div id="avatar-stage" class="relative w-full" style="height:auto;aspect-ratio:1/1;">
+
             <!-- Capa 1: Cuerpo Base (personaje SVG animado) -->
             <div id="preview-layer-body" class="absolute inset-0 w-full h-full z-10">
-                {% include 'avatar/_svg_personaje.html' %}
+                {% include 'avatar/_svg_personaje.html' with ropa_superior=avatar_equipados.ropa_superior %}
             </div>
 
             <!-- Capas de Ropa e Items (Se actualizan por JS) -->
+            <!-- Posiciones (%) calcadas del lienzo de referencia de 500x500 usado en Figma -->
             <div id="preview-layers-items" class="absolute inset-0 z-20 pointer-events-none">
                 {% if avatar_equipados.ropa_inferior %}
-                <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[12]" data-cat="ropa_inferior">
+                <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute object-contain z-[12]" style="left:31%;top:50%;width:40.2%;height:40.2%;" data-cat="ropa_inferior">
                 {% endif %}
-                
+
                 {% if avatar_equipados.calzado %}
-                <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[14]" data-cat="calzado">
+                <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute object-contain z-[14]" style="left:31.8%;top:72.8%;width:36.4%;height:27.2%;" data-cat="calzado">
                 {% endif %}
 
                 {% if avatar_equipados.ropa_superior %}
-                <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" data-cat="ropa_superior">
+                    {% if not avatar_equipados.ropa_superior.mangas_urls %}
+                    <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" data-cat="ropa_superior">
+                    {% endif %}
                 {% elif avatar_equipados.ropa %}
-                <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" data-cat="ropa">
+                <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" data-cat="ropa">
                 {% endif %}
 
                 {% if avatar_equipados.cabello %}
-                <img src="{{ avatar_equipados.cabello.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-30" data-cat="cabello">
+                <img src="{{ avatar_equipados.cabello.imagen_url_segura }}" class="absolute object-contain z-30" style="left:19.4%;top:-1.2%;width:56.4%;height:56.4%;" data-cat="cabello">
                 {% endif %}
 
                 {% if avatar_equipados.accesorio %}
-                <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-40" data-cat="accesorio">
+                <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute object-contain z-40" style="left:30%;top:-8%;width:40%;height:30%;" data-cat="accesorio">
                 {% endif %}
+            </div>
             </div>
         </div>
 
@@ -145,17 +153,23 @@ async function equiparItem(itemId, categoria, imgUrl) {
     if (!layer) {
         layer = document.createElement('img');
         layer.dataset.cat = categoria;
-        layer.className = "absolute inset-0 w-full h-full object-contain transition-all duration-300 transform scale-0";
-        // Determinar z-index según categoría
-        const zIndexes = {
-            'ropa_inferior': 12,
-            'calzado': 14,
-            'ropa_superior': 20,
-            'ropa': 20,
-            'cabello': 30,
-            'accesorio': 40
+        layer.className = "absolute object-contain transition-all duration-300 transform scale-0";
+        // Posición (%) calcada del lienzo de referencia de 500x500 usado en Figma,
+        // igual que las capas renderizadas por el servidor más arriba.
+        const posiciones = {
+            'ropa_inferior': { left: '31%', top: '50%', width: '40.2%', height: '40.2%', z: 12 },
+            'calzado':       { left: '31.8%', top: '72.8%', width: '36.4%', height: '27.2%', z: 14 },
+            'ropa_superior': { left: '28.2%', top: '37.4%', width: '43.6%', height: '35.4%', z: 20 },
+            'ropa':          { left: '28.2%', top: '37.4%', width: '43.6%', height: '35.4%', z: 20 },
+            'cabello':       { left: '19.4%', top: '-1.2%', width: '56.4%', height: '56.4%', z: 30 },
+            'accesorio':     { left: '30%', top: '-8%', width: '40%', height: '30%', z: 40 },
         };
-        layer.style.zIndex = zIndexes[categoria] || 20;
+        const pos = posiciones[categoria] || { left: '0%', top: '0%', width: '100%', height: '100%', z: 20 };
+        layer.style.left = pos.left;
+        layer.style.top = pos.top;
+        layer.style.width = pos.width;
+        layer.style.height = pos.height;
+        layer.style.zIndex = pos.z;
         layersContainer.appendChild(layer);
     }
 

@@ -130,6 +130,14 @@
                     <span class="hidden sm:inline">Configuración</span>
                 </a>
 
+                {% if user.is_staff %}
+                <!-- Panel de administración (solo staff) -->
+                <a href="{% url 'panel_admin:home' %}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 flex items-center gap-2 min-h-[48px] min-w-[48px] justify-center" aria-label="Panel de administración">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Panel</span>
+                </a>
+                {% endif %}
+
                 <!-- Cerrar Sesión -->
                 <a href="/accounts/logout/" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 flex items-center gap-2">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -149,6 +157,7 @@
     </main>
     {% endblock %}
 
+    {% block avatar_widget %}
     {% if user.is_authenticated %}
         {% include 'avatar/componente.html' %}
         <!-- Datos de reacciones del avatar (ya serializados como JSON desde el backend) -->
@@ -177,6 +186,7 @@
         </div>
         <script src="{% static 'js/celebraciones/celebraciones.js' %}" defer></script>
     {% endif %}
+    {% endblock %}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -25,6 +25,7 @@ y `doc/DysPlay_MasterPlan_IA.docx` (plan de módulos A-K). Guía del avatar en
 | I - Configuración accesibilidad | Completado | Medio | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14, TTS dual Azure neural + fallback navegador: 2026-06-19) |
 | J - Reportes email | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
 | K - Celebraciones | Completado | Bajo | Ver Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-14) |
+| Panel de administración | Completado | Alto | Iniciativa nueva fuera del Master Plan A-K. Ver doc/PANEL_ADMIN.md y Actualizaciones en auditoria_tecnica_dysplay.md (2026-06-22) |
 
 (El agente `documentador-dysplay` actualiza esta tabla al cerrar cada módulo)
 

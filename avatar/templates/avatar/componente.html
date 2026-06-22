@@ -17,39 +17,48 @@
 
         <!-- Contenedor Responsive: Círculo en móvil, Full Body en Desktop -->
         <div id="avatar-visual-wrapper"
-             class="relative overflow-hidden transition-all duration-500
+             class="relative overflow-hidden transition-all duration-500 flex items-center justify-center
                     w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-white shadow-hard
                     lg:w-64 lg:h-96 lg:rounded-2xl lg:border-0 lg:shadow-none lg:bg-transparent">
 
-            <!-- Cuerpo base: personaje SVG animado (parpadeo, respiración, saludo) -->
-            <div id="avatar-layer-body" class="absolute inset-0 w-full h-full z-10">
-                {% include 'avatar/_svg_personaje.html' %}
+            <!-- Escenario cuadrado (1:1) centrado: cuerpo y ropa comparten el mismo
+                 sistema de coordenadas aquí dentro, sin importar si el contenedor
+                 padre es cuadrado (móvil) o más alto que ancho (tarjeta de escritorio). -->
+            <div id="avatar-stage" class="relative w-full" style="height:auto;aspect-ratio:1/1;">
+
+                <!-- Cuerpo base: personaje SVG animado (parpadeo, respiración, saludo) -->
+                <div id="avatar-layer-body" class="absolute inset-0 w-full h-full z-10">
+                    {% include 'avatar/_svg_personaje.html' with ropa_superior=avatar_equipados.ropa_superior %}
+                </div>
+
+                <!-- Capas de items: posiciones (%) calcadas del lienzo de referencia de 500x500 usado en Figma -->
+                {% if avatar_equipados.ropa_inferior %}
+                <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute object-contain z-[12]" style="left:31%;top:50%;width:40.2%;height:40.2%;" alt="Ropa Inferior">
+                {% endif %}
+
+                {% if avatar_equipados.calzado %}
+                <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute object-contain z-[14]" style="left:31.8%;top:72.8%;width:36.4%;height:27.2%;" alt="Calzado">
+                {% endif %}
+
+                {% if avatar_equipados.ropa_superior %}
+                    {% if not avatar_equipados.ropa_superior.mangas_urls %}
+                    <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" alt="Ropa Superior">
+                    {% endif %}
+                {% elif avatar_equipados.ropa %}
+                <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" alt="Ropa">
+                {% endif %}
+
+                <img id="avatar-layer-cabello"
+                     src="{% if avatar_equipados.cabello %}{{ avatar_equipados.cabello.imagen_url_segura }}{% else %}/static/avatar/cabello/estandar.svg{% endif %}"
+                     class="absolute object-contain z-30"
+                     style="left:19.4%;top:-1.2%;width:56.4%;height:56.4%;"
+                     alt="Cabello">
+
+                {% if avatar_equipados.accesorio %}
+                <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute object-contain z-40" style="left:30%;top:-8%;width:40%;height:30%;" alt="Accesorio">
+                {% endif %}
+
             </div>
-
-            <!-- Capas de items (Mismo z-index que antes) -->
-            {% if avatar_equipados.ropa_inferior %}
-            <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[12]" alt="Ropa Inferior">
-            {% endif %}
-
-            {% if avatar_equipados.calzado %}
-            <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[14]" alt="Calzado">
-            {% endif %}
-
-            {% if avatar_equipados.ropa_superior %}
-            <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" alt="Ropa Superior">
-            {% elif avatar_equipados.ropa %}
-            <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-[20]" alt="Ropa">
-            {% endif %}
-
-            <img id="avatar-layer-cabello" 
-                 src="{% if avatar_equipados.cabello %}{{ avatar_equipados.cabello.imagen_url_segura }}{% else %}/static/avatar/cabello/estandar.svg{% endif %}" 
-                 class="absolute inset-0 w-full h-full object-contain z-30" 
-                 alt="Cabello">
-
-            {% if avatar_equipados.accesorio %}
-            <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute inset-0 w-full h-full object-contain z-40" alt="Accesorio">
-            {% endif %}
-
         </div>
 
         <!-- Indicador de Nivel (solo visible en pequeño) -->

@@ -1,72 +1,79 @@
+{% load static avatar_tags %}
 {% comment %}
-Personaje base del avatar de DysPlay: figura 2D simplificada tipo "blob"
-construida 100% en SVG (sin imágenes externas), con grupos anidados que
-sirven de esqueleto para animar (cabeza con pivote en el cuello, brazos con
-pivote en hombro y subgrupo de antebrazo con pivote en el codo).
+Personaje base del avatar de DysPlay: ahora se construye apilando las piezas
+en PNG dibujadas por el equipo de arte (avatar/static/avatar/cuerpo/partes/)
+sobre un lienzo cuadrado de referencia de 500x500 (el mismo que se usa en
+Figma para medir ropa/pelo/accesorios). Cada pieza es una capa absoluta que
+cubre todo el lienzo; lo que cambia entre piezas es el `transform-origin`
+(pivote de articulación) usado para animar.
 
 Se incluye dentro de un contenedor ancestro con la clase `avatar-visual-root`
 y, opcionalmente, una clase `avatar-{emocion}` (ej. `avatar-feliz`) que
-decide qué set de cara (`.cara-*`) se muestra. Esa clase la pone el propio
+decide qué cara (`.dp-cara-*`) se muestra. Esa clase la pone el propio
 template que incluye este parcial (estado inicial desde la BD) o el JS de
 `avatar_events.js` en tiempo real (`#avatar-container`).
 
 Las prendas/accesorios equipables (ropa, cabello, calzado, accesorios) NO
-viven en este SVG: siguen renderizándose como `<img>` superpuestas por
-z-index, exactamente igual que antes, sobre este mismo cuerpo base.
+viven aquí: se siguen renderizando como `<img>` superpuestas en
+personalizar.html, posicionadas con las mismas coordenadas (% del lienzo de
+500x500) que se usan acá para que calcen sobre el cuerpo.
 {% endcomment %}
 <style>
-    /* Cuerpo base del avatar: ocupa todo el espacio del contenedor padre,
-       igual que la imagen <img> que reemplaza (object-contain natural de SVG
-       vía preserveAspectRatio). */
-    .dysplay-personaje-svg {
+    .dp-lienzo {
+        position: relative;
         width: 100%;
         height: 100%;
-        display: block;
+        aspect-ratio: 1 / 1;
         overflow: visible;
+    }
+
+    .dp-capa {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
     }
 
     /* --- Caras por emoción: solo una visible a la vez --- */
     .dp-cara { display: none; }
-    .dp-cara-neutral { display: inline; }
+    .dp-cara-neutral { display: block; }
 
     .avatar-visual-root.avatar-feliz .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-feliz .dp-cara-feliz { display: inline; }
+    .avatar-visual-root.avatar-feliz .dp-cara-feliz { display: block; }
 
     .avatar-visual-root.avatar-triste .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-triste .dp-cara-triste { display: inline; }
+    .avatar-visual-root.avatar-triste .dp-cara-triste { display: block; }
 
     .avatar-visual-root.avatar-celebrando .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-celebrando .dp-cara-celebrando { display: inline; }
+    .avatar-visual-root.avatar-celebrando .dp-cara-celebrando { display: block; }
 
     .avatar-visual-root.avatar-pensando .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-pensando .dp-cara-pensando { display: inline; }
+    .avatar-visual-root.avatar-pensando .dp-cara-pensando { display: block; }
 
     .avatar-visual-root.avatar-sorprendido .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-sorprendido .dp-cara-sorprendido { display: inline; }
+    .avatar-visual-root.avatar-sorprendido .dp-cara-sorprendido { display: block; }
 
     .avatar-visual-root.avatar-preocupado .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-preocupado .dp-cara-preocupado { display: inline; }
+    .avatar-visual-root.avatar-preocupado .dp-cara-preocupado { display: block; }
 
     .avatar-visual-root.avatar-analizando .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-analizando .dp-cara-analizando { display: inline; }
+    .avatar-visual-root.avatar-analizando .dp-cara-analizando { display: block; }
 
     .avatar-visual-root.avatar-explicando .dp-cara-neutral { display: none; }
-    .avatar-visual-root.avatar-explicando .dp-cara-explicando { display: inline; }
+    .avatar-visual-root.avatar-explicando .dp-cara-explicando { display: block; }
 
-    /* --- Movimiento idle (siempre activo): solo transform/opacity, --- */
-    /* --- compositado en GPU, nunca dispara reflow.                 --- */
+    /* --- Movimiento idle (siempre activo): solo transform, --- */
+    /* --- compositado en GPU, nunca dispara reflow.         --- */
     @media (prefers-reduced-motion: no-preference) {
         .dp-torso {
+            transform-origin: 50% 50%;
             animation: dp-respirar 3.2s ease-in-out infinite;
         }
         .dp-cabeza {
+            transform-origin: 50% 39%;
             animation: dp-mecer-cabeza 4.5s ease-in-out infinite;
-        }
-        .dp-cara-neutral, .dp-cara-feliz, .dp-cara-triste, .dp-cara-celebrando,
-        .dp-cara-pensando, .dp-cara-sorprendido, .dp-cara-preocupado,
-        .dp-cara-analizando, .dp-cara-explicando {
-            transform-origin: 120px 76px;
-            animation: dp-parpadear 5.5s ease-in-out infinite;
         }
     }
 
@@ -80,13 +87,11 @@ z-index, exactamente igual que antes, sobre este mismo cuerpo base.
         50% { transform: rotate(2deg); }
     }
 
-    @keyframes dp-parpadear {
-        0%, 90%, 96%, 100% { transform: scaleY(1); }
-        93% { transform: scaleY(0.1); }
-    }
-
     /* --- Saludo: activado agregando la clase `avatar-saludando` --- */
     /* --- al ancestro `.avatar-visual-root` (ver avatar_events.js). --- */
+    .dp-brazo-der { transform-origin: 58% 40.4%; }
+    .dp-antebrazo-der { transform-origin: 60% 53.2%; }
+
     @media (prefers-reduced-motion: no-preference) {
         .avatar-visual-root.avatar-saludando .dp-brazo-der {
             animation: dp-saludo-hombro 2.4s ease-in-out 1;
@@ -98,8 +103,8 @@ z-index, exactamente igual que antes, sobre este mismo cuerpo base.
 
     @keyframes dp-saludo-hombro {
         0% { transform: rotate(0deg); }
-        15% { transform: rotate(-110deg); }
-        85% { transform: rotate(-110deg); }
+        15% { transform: rotate(-100deg); }
+        85% { transform: rotate(-100deg); }
         100% { transform: rotate(0deg); }
     }
 
@@ -113,134 +118,59 @@ z-index, exactamente igual que antes, sobre este mismo cuerpo base.
         75%, 100% { transform: rotate(0deg); }
     }
 </style>
-<svg class="dysplay-personaje-svg" viewBox="0 0 240 400" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar de DysPlay">
+<div class="dp-lienzo" role="img" aria-label="Avatar de DysPlay">
 
-    <!-- ============================================== -->
-    <!-- PIERNAS (estáticas, sin articulación)            -->
-    <!-- ============================================== -->
-    <g class="dp-piernas">
-        <rect x="85" y="248" width="28" height="120" rx="14" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-        <rect x="127" y="248" width="28" height="120" rx="14" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-        <ellipse cx="99" cy="372" rx="18" ry="11" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-        <ellipse cx="141" cy="372" rx="18" ry="11" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-    </g>
+    <!-- Piernas (estáticas) -->
+    <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/piernas.png' %}" alt="">
 
-    <!-- ============================================== -->
-    <!-- TORSO (con leve animación de respiración)        -->
-    <!-- ============================================== -->
-    <g class="dp-torso" style="transform-origin: 120px 195px;">
-        <rect x="75" y="140" width="90" height="110" rx="35" fill="#FFD966" stroke="#BF9000" stroke-width="5"/>
-    </g>
+    <!-- Torso (respiración) -->
+    <img class="dp-capa dp-torso" src="{% static 'avatar/cuerpo/partes/torso.png' %}" alt="">
 
-    <!-- ============================================== -->
-    <!-- BRAZO IZQUIERDO (hombro -> codo -> mano)         -->
-    <!-- ============================================== -->
-    <g class="dp-brazo-izq" style="transform-origin: 68px 155px;">
-        <path d="M 68 155 Q 50 175 55 210" fill="none" stroke="#BF9000" stroke-width="22" stroke-linecap="round"/>
-        <path d="M 68 155 Q 50 175 55 210" fill="none" stroke="#FFD966" stroke-width="16" stroke-linecap="round"/>
-        <g class="dp-antebrazo-izq" style="transform-origin: 55px 210px;">
-            <path d="M 55 210 Q 48 250 50 285" fill="none" stroke="#BF9000" stroke-width="20" stroke-linecap="round"/>
-            <path d="M 55 210 Q 48 250 50 285" fill="none" stroke="#FFD966" stroke-width="14" stroke-linecap="round"/>
-            <circle cx="50" cy="293" r="15" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-        </g>
-    </g>
+    {% with mangas=ropa_superior.mangas_urls %}
+    {% if mangas %}
+    <!-- Torso de la ropa equipada (con manga separada): sigue la respiración del torso -->
+    <img class="dp-capa dp-torso" src="{{ ropa_superior.imagen_url_segura }}" alt="">
+    {% endif %}
 
-    <!-- ============================================== -->
-    <!-- BRAZO DERECHO (hombro -> codo -> mano)           -->
-    <!-- El que saluda: ver animación `avatar-saludando`. -->
-    <!-- ============================================== -->
-    <g class="dp-brazo-der" style="transform-origin: 172px 155px;">
-        <path d="M 172 155 Q 190 175 185 210" fill="none" stroke="#BF9000" stroke-width="22" stroke-linecap="round"/>
-        <path d="M 172 155 Q 190 175 185 210" fill="none" stroke="#FFD966" stroke-width="16" stroke-linecap="round"/>
-        <g class="dp-antebrazo-der" style="transform-origin: 185px 210px;">
-            <path d="M 185 210 Q 192 250 190 285" fill="none" stroke="#BF9000" stroke-width="20" stroke-linecap="round"/>
-            <path d="M 185 210 Q 192 250 190 285" fill="none" stroke="#FFD966" stroke-width="14" stroke-linecap="round"/>
-            <circle cx="190" cy="293" r="15" fill="#FFD966" stroke="#BF9000" stroke-width="4"/>
-        </g>
-    </g>
+    <!-- Brazo izquierdo (estático: hombro -> antebrazo) -->
+    <div class="dp-capa dp-brazo-izq">
+        <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/brazo_sup_izq.png' %}" alt="">
+        {% if mangas.sup_izq %}<img class="dp-capa" src="{{ mangas.sup_izq }}" alt="">{% endif %}
+        <div class="dp-capa dp-antebrazo-izq">
+            <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/antebrazo_izq.png' %}" alt="">
+            {% if mangas.inf_izq %}<img class="dp-capa" src="{{ mangas.inf_izq }}" alt="">{% endif %}
+        </div>
+    </div>
 
-    <!-- ============================================== -->
-    <!-- CABEZA (pivote: cuello) + CARA (9 emociones)     -->
-    <!-- ============================================== -->
-    <g class="dp-cabeza" style="transform-origin: 120px 138px;">
-        <rect x="110" y="128" width="20" height="20" fill="#FFD966" stroke="#BF9000" stroke-width="3"/>
-        <circle cx="120" cy="80" r="58" fill="#FFD966" stroke="#BF9000" stroke-width="5"/>
+    <!-- Brazo derecho (el que saluda) -->
+    <div class="dp-capa dp-brazo-der">
+        <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/brazo_sup_der.png' %}" alt="">
+        {% if mangas.sup_der %}<img class="dp-capa" src="{{ mangas.sup_der }}" alt="">{% endif %}
+        <div class="dp-capa dp-antebrazo-der">
+            <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/antebrazo_der.png' %}" alt="">
+            {% if mangas.inf_der %}<img class="dp-capa" src="{{ mangas.inf_der }}" alt="">{% endif %}
+        </div>
+    </div>
+    {% endwith %}
 
-        <!-- Cara: NEUTRAL (visible por defecto) -->
-        <g class="dp-cara dp-cara-neutral">
-            <circle cx="100" cy="72" r="7" fill="#333"/>
-            <circle cx="140" cy="72" r="7" fill="#333"/>
-            <path d="M 100 102 Q 120 112 140 102" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-        </g>
+    <!-- Cabeza (mecer) + cara (9 emociones) -->
+    <div class="dp-capa dp-cabeza">
+        <img class="dp-capa" src="{% static 'avatar/cuerpo/partes/cabeza.png' %}" alt="">
 
-        <!-- Cara: FELIZ -->
-        <g class="dp-cara dp-cara-feliz">
-            <circle cx="100" cy="72" r="8" fill="#333"/>
-            <circle cx="140" cy="72" r="8" fill="#333"/>
-            <circle cx="92" cy="92" r="8" fill="#E06666" opacity="0.5"/>
-            <circle cx="148" cy="92" r="8" fill="#E06666" opacity="0.5"/>
-            <path d="M 96 100 Q 120 124 144 100" fill="none" stroke="#E06666" stroke-width="6" stroke-linecap="round"/>
-        </g>
-
-        <!-- Cara: TRISTE -->
-        <g class="dp-cara dp-cara-triste">
-            <path d="M 90 65 L 108 70" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <path d="M 132 70 L 150 65" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="100" cy="76" r="6" fill="#333"/>
-            <circle cx="140" cy="76" r="6" fill="#333"/>
-            <path d="M 102 110 Q 120 98 138 110" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-        </g>
-
-        <!-- Cara: CELEBRANDO -->
-        <g class="dp-cara dp-cara-celebrando">
-            <path d="M 92 72 Q 100 62 108 72" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-            <path d="M 132 72 Q 140 62 148 72" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-            <path d="M 94 98 Q 120 128 146 98 Q 120 116 94 98 Z" fill="#333"/>
-        </g>
-
-        <!-- Cara: PENSANDO -->
-        <g class="dp-cara dp-cara-pensando">
-            <path d="M 88 62 L 110 66" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="100" cy="74" r="6" fill="#333"/>
-            <circle cx="140" cy="74" r="6" fill="#333"/>
-            <path d="M 105 106 Q 125 98 142 104" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="166" cy="40" r="11" fill="#FFFFFF" stroke="#333" stroke-width="2"/>
-            <text x="162" y="45" font-family="Nunito, Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">?</text>
-        </g>
-
-        <!-- Cara: SORPRENDIDO -->
-        <g class="dp-cara dp-cara-sorprendido">
-            <path d="M 88 60 Q 100 52 112 60" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <path d="M 128 60 Q 140 52 152 60" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="100" cy="74" r="9" fill="#FFF" stroke="#333" stroke-width="2"/>
-            <circle cx="100" cy="74" r="4" fill="#333"/>
-            <circle cx="140" cy="74" r="9" fill="#FFF" stroke="#333" stroke-width="2"/>
-            <circle cx="140" cy="74" r="4" fill="#333"/>
-            <ellipse cx="120" cy="108" rx="11" ry="14" fill="#333"/>
-        </g>
-
-        <!-- Cara: PREOCUPADO -->
-        <g class="dp-cara dp-cara-preocupado">
-            <path d="M 90 68 Q 100 58 114 64" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <path d="M 126 64 Q 140 58 150 68" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="100" cy="76" r="6" fill="#333"/>
-            <circle cx="140" cy="76" r="6" fill="#333"/>
-            <path d="M 100 108 Q 110 102 120 107 Q 130 112 140 106" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-        </g>
-
-        <!-- Cara: ANALIZANDO -->
-        <g class="dp-cara dp-cara-analizando">
-            <path d="M 90 72 L 110 72" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-            <path d="M 130 72 L 150 72" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-            <path d="M 105 104 L 135 104" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-        </g>
-
-        <!-- Cara: EXPLICANDO -->
-        <g class="dp-cara dp-cara-explicando">
-            <path d="M 88 64 L 112 68" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="100" cy="76" r="7" fill="#333"/>
-            <circle cx="140" cy="76" r="7" fill="#333"/>
-            <ellipse cx="122" cy="106" rx="9" ry="7" fill="#333"/>
-        </g>
-    </g>
-</svg>
+        {% caras_avatar as caras %}
+        {% for estado, urls in caras.items %}
+        <img class="dp-capa dp-cara dp-cara-{{ estado }}" style="left:31%;top:12.4%;width:35.8%;height:35.8%;" src="{{ urls.normal }}" alt="">
+        {% if urls.parpadeo %}
+        <!-- Variante con ojos cerrados: existe en la base de datos pero no se anima
+             todavía (parpadeo pausado a pedido del usuario, ver doc/PANEL_ADMIN.md
+             y memoria project_avatar_pendientes). El elemento ya está en el DOM,
+             oculto, listo para que un futuro JS alterne su visibilidad. -->
+        <img class="dp-capa dp-cara-parpadeo" data-estado="{{ estado }}" style="left:31%;top:12.4%;width:35.8%;height:35.8%;display:none;" src="{{ urls.parpadeo }}" alt="">
+        {% endif %}
+        {% endfor %}
+        {% if not caras %}
+        <!-- Respaldo si CaraAvatar todavía no tiene ninguna fila (antes de usar el panel) -->
+        <img class="dp-capa dp-cara dp-cara-neutral" style="left:31%;top:12.4%;width:35.8%;height:35.8%;" src="{% static 'avatar/cuerpo/caras/feliz_1.svg' %}" alt="">
+        {% endif %}
+    </div>
+</div>

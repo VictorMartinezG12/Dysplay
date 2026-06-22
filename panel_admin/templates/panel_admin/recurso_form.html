@@ -1,0 +1,46 @@
+{% extends 'panel_admin/base_panel.html' %}
+
+{% block title %}{{ recurso.nombre_plural }} - Panel - DysPlay{% endblock %}
+
+{% block panel_content %}
+<h1 class="text-2xl font-black text-indigo-900 mb-6">
+    {{ recurso.icono }} {% if object %}Editar{% else %}Nuevo{% endif %} — {{ recurso.nombre_plural }}
+</h1>
+
+<form method="post" enctype="multipart/form-data" class="panel-form bg-white rounded-2xl shadow-soft border-2 border-indigo-100 p-6 max-w-2xl space-y-5">
+    {% csrf_token %}
+    {% for campo in form %}
+    <div>
+        <label for="{{ campo.id_for_label }}" class="block font-bold text-sm text-indigo-900 mb-1">{{ campo.label }}</label>
+        {{ campo }}
+        {% if campo.help_text %}<p class="text-xs text-gray-400 mt-1">{{ campo.help_text }}</p>{% endif %}
+        {% for error in campo.errors %}<p class="text-xs text-red-600 font-bold mt-1">{{ error }}</p>{% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="flex items-center gap-3 pt-2">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
+            Guardar
+        </button>
+        {% if not recurso.singleton %}
+        <a href="{% url 'panel_admin:lista' recurso.slug %}" class="text-gray-500 font-bold text-sm hover:underline">Cancelar</a>
+        {% endif %}
+    </div>
+</form>
+
+<style>
+    /* Estilos genéricos para los widgets por defecto de Django en este form */
+    .panel-form input[type="text"], .panel-form input[type="number"],
+    .panel-form input[type="email"], .panel-form input[type="date"],
+    .panel-form input[type="datetime-local"], .panel-form input[type="file"],
+    .panel-form select, .panel-form textarea {
+        width: 100%;
+        border: 2px solid #e0e7ff;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    .panel-form select[multiple] { min-height: 8rem; }
+    .panel-form input[type="checkbox"] { width: 1.1rem; height: 1.1rem; }
+</style>
+{% endblock %}

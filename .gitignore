@@ -25,3 +25,6 @@ Thumbs.db
 
 # Dependencias de Node (Tailwind build pipeline)
 node_modules/
+
+# Carpeta de MEDIA_ROOT usada solo durante `python manage.py test` (ver core/settings.py)
+.media_test/

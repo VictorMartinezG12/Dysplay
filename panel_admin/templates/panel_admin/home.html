@@ -1,0 +1,27 @@
+{% extends 'panel_admin/base_panel.html' %}
+
+{% block title %}Panel de administración - DysPlay{% endblock %}
+
+{% block panel_content %}
+<h1 class="text-2xl font-black text-indigo-900 mb-2">Hola, {{ request.user.first_name|default:request.user.username }} 👋</h1>
+<p class="text-gray-500 mb-8">Avatar todavía no está en este panel (tendrá una pantalla a medida en la Fase 2) — ver <code class="bg-gray-100 px-1.5 py-0.5 rounded">doc/PANEL_ADMIN.md</code>.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for tarjeta in tarjetas %}
+    <div class="bg-white rounded-2xl shadow-soft border-2 {% if tarjeta.disponible %}border-indigo-200{% else %}border-gray-100 opacity-60{% endif %} p-5">
+        <div class="text-3xl mb-2">{{ tarjeta.icono }}</div>
+        <h2 class="font-black text-indigo-900">{{ tarjeta.grupo }}</h2>
+        <p class="text-sm text-gray-500 mt-1">{{ tarjeta.descripcion }}</p>
+        {% if tarjeta.disponible %}
+        <ul class="mt-3 space-y-1">
+            {% for r in tarjeta.recursos %}
+            <li><a href="{% url 'panel_admin:lista' r.slug %}" class="text-sm font-bold text-indigo-600 hover:underline">→ {{ r.nombre_plural }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-xs font-bold mt-3 text-gray-400">Próximamente</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -19,6 +19,13 @@ class Item(models.Model):
     nombre = models.CharField(max_length=100)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
     imagen = models.ImageField(upload_to='avatar/items/', blank=True, null=True)
+    # Piezas de manga independientes (solo aplican a categoria='ropa_superior' con manga larga).
+    # Se superponen sobre el brazo/antebrazo del esqueleto del avatar para que se
+    # muevan junto con la animación del brazo en vez de quedar fijas sobre el torso.
+    manga_sup_izq = models.ImageField(upload_to='avatar/items/mangas/', blank=True, null=True)
+    manga_inf_izq = models.ImageField(upload_to='avatar/items/mangas/', blank=True, null=True)
+    manga_sup_der = models.ImageField(upload_to='avatar/items/mangas/', blank=True, null=True)
+    manga_inf_der = models.ImageField(upload_to='avatar/items/mangas/', blank=True, null=True)
     descripcion = models.TextField(blank=True)
     activo = models.BooleanField(default=True)
     # Precio en monedas para comprar el ítem en la tienda (Módulo C.3).
@@ -52,6 +59,25 @@ class Item(models.Model):
             return '/static/avatar/accesorios/calzado_estandar.svg' # Placeholder futuro
         
         return '/static/avatar/cuerpo/neutral.svg'
+
+    @property
+    def mangas_urls(self):
+        """Devuelve un dict {slot: url} solo con las piezas de manga que el ítem
+        realmente tiene cargadas, para que el avatar las monte sobre el brazo."""
+        slots = {
+            'sup_izq': self.manga_sup_izq,
+            'inf_izq': self.manga_inf_izq,
+            'sup_der': self.manga_sup_der,
+            'inf_der': self.manga_inf_der,
+        }
+        urls = {}
+        for slot, campo in slots.items():
+            if campo:
+                try:
+                    urls[slot] = campo.url
+                except ValueError:
+                    continue
+        return urls
 
 class Avatar(models.Model):
     usuario = models.OneToOneField(
@@ -95,6 +121,34 @@ class Avatar(models.Model):
 
     def __str__(self):
         return f"Avatar de {self.usuario.username}"
+
+class CaraAvatar(models.Model):
+    """Cara del avatar para una emoción concreta (una fila por estado).
+
+    Reemplaza los `<img>` hardcodeados a `feliz_1.svg` en
+    `_svg_personaje.html`: el template consulta este modelo (vía el
+    templatetag `avatar_tags.caras_avatar`) y muestra la imagen que
+    corresponda al estado actual, con `neutral` como respaldo si una
+    emoción todavía no tiene fila propia.
+
+    `imagen_parpadeo` es el espacio dejado listo para el parpadeo (pedido
+    explícito del usuario, 2026-06-21): mientras esté vacío, el avatar no
+    parpadea para ese estado; en cuanto se suba, `avatar_events.js` puede
+    alternar entre `imagen` e `imagen_parpadeo` con un `setInterval`.
+    """
+
+    estado = models.CharField(max_length=20, choices=Avatar.ESTADO_CHOICES, unique=True)
+    imagen = models.ImageField(upload_to='avatar/caras/')
+    imagen_parpadeo = models.ImageField(upload_to='avatar/caras/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Cara del avatar'
+        verbose_name_plural = 'Caras del avatar'
+        ordering = ['estado']
+
+    def __str__(self):
+        return f"Cara: {self.get_estado_display()}"
+
 
 class InventarioAvatar(models.Model):
     avatar = models.ForeignKey(Avatar, on_delete=models.CASCADE, related_name='inventario')

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'configuracion',
     'servicios',
     'reportes',
+    'panel_admin',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -107,6 +109,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'configuracion.context_processors.configuracion_global',
                 'avatar.context_processors.avatar_global',
+                'panel_admin.context_processors.modulos_panel',
             ],
         },
     },
@@ -163,6 +166,13 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Al correr `python manage.py test`, los archivos que suben los tests
+# (ImageField/FileField) NO se mockean por defecto: se escriben de verdad en
+# MEDIA_ROOT, ensuciando la carpeta real con archivos de prueba en cada
+# corrida. Se redirige a una carpeta temporal solo cuando se está testeando.
+if 'test' in sys.argv:
+    MEDIA_ROOT = os.path.join(BASE_DIR, '.media_test')
 
 AUTH_USER_MODEL = 'usuarios.UsuarioCustom'
 
