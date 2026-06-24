@@ -1,10 +1,10 @@
 /**
  * DysPlay - Módulo de Cámara Inteligente
  * Gestiona el acceso a la cámara y al micrófono del dispositivo: captura una
- * foto del objeto/logo/texto enfocado y la envía al backend para
- * reconocerlo (Google Cloud Vision) y generar una frase de práctica,
- * grava la pronunciación del estudiante (codificada como WAV real para
- * Azure Speech) y muestra el resultado con las monedas obtenidas.
+ * foto del objeto enfocado y la envía al backend para reconocerlo y generar
+ * una frase de práctica (Gemini), grava la pronunciación del estudiante
+ * (codificada como WAV real para Azure Speech) y muestra el resultado con
+ * las monedas obtenidas.
  */
 
 (() => {
@@ -322,6 +322,7 @@
             deteccionPrioritariaActual = deteccionPriorizada ? {
                 x: (deteccionPriorizada.bbox[0] + deteccionPriorizada.bbox[2] / 2) / video.videoWidth,
                 y: (deteccionPriorizada.bbox[1] + deteccionPriorizada.bbox[3] / 2) / video.videoHeight,
+                clase: deteccionPriorizada.class || null,
             } : null;
         } catch (err) {
             console.error('Error durante la detección de objetos en vivo.', err);
@@ -392,7 +393,10 @@
         const formData = new FormData();
         formData.append('imagen', imagenBase64);
         if (puntoObjetivo) {
-            formData.append('punto_objetivo', JSON.stringify(puntoObjetivo));
+            formData.append('punto_objetivo', JSON.stringify({ x: puntoObjetivo.x, y: puntoObjetivo.y }));
+            if (puntoObjetivo.clase) {
+                formData.append('clase_offline', puntoObjetivo.clase);
+            }
         }
 
         try {
