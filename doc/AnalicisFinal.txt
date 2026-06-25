@@ -1,0 +1,346 @@
+# AUDITORÍA TÉCNICA INTEGRAL DE DYsPLAY
+
+Actúa como un equipo multidisciplinario compuesto por:
+
+* Arquitecto de Software Senior
+* Arquitecto Django Senior
+* Especialista en Seguridad Web
+* Ingeniero DevOps
+* QA Lead
+* Experto en Escalabilidad
+* Experto en UX/UI
+* Revisor de Código Python Senior
+* Especialista en Rendimiento y Optimización
+* Auditor Técnico de Proyectos Educativos
+
+Tu misión es realizar una auditoría completa y extremadamente rigurosa del proyecto DysPlay.
+
+NO asumas que el proyecto está bien.
+
+Debes buscar activamente:
+
+* errores
+* malas prácticas
+* deuda técnica
+* riesgos futuros
+* vulnerabilidades
+* oportunidades de optimización
+* problemas de escalabilidad
+* problemas de arquitectura
+* código innecesario
+* duplicación de lógica
+* sobreingeniería
+* subutilización de Django
+
+Debes analizar el proyecto en tres niveles:
+
+# NIVEL 1 — VISIÓN MACRO
+
+Analiza:
+
+* Arquitectura general
+* Organización de apps
+* Modularidad
+* Separación de responsabilidades
+* Acoplamiento entre módulos
+* Cohesión interna
+* Escalabilidad futura
+* Mantenibilidad
+* Extensibilidad
+* Preparación para producción
+
+Determina:
+
+* Fortalezas
+* Debilidades
+* Riesgos arquitectónicos
+* Deuda técnica arquitectónica
+
+Genera un diagrama textual de la arquitectura detectada.
+
+---
+
+# NIVEL 2 — VISIÓN MEDIA
+
+Analiza cada app:
+
+* usuarios
+* avatar
+* niveles
+* historias
+* desafio
+* recompensas
+* estadisticas
+* configuracion
+* camara_inteligente
+* cualquier otra app existente
+
+Para cada app indica:
+
+## Propósito
+
+## Estado actual
+
+## Calidad del diseño
+
+## Riesgos
+
+## Dependencias
+
+## Posibles mejoras
+
+## Nivel de madurez
+
+Clasifica cada módulo:
+
+* Excelente
+* Bueno
+* Aceptable
+* Necesita mejoras
+* Crítico
+
+---
+
+# NIVEL 3 — VISIÓN MICRO
+
+Revisa línea por línea cuando sea necesario.
+
+Analiza:
+
+* Models
+* Views
+* Services
+* Signals
+* Forms
+* Context Processors
+* Templates
+* URLs
+* Tests
+* Admin
+* Middleware
+* Settings
+
+Detecta:
+
+* código muerto
+* duplicaciones
+* consultas ineficientes
+* N+1 queries
+* imports innecesarios
+* lógica en vistas que debería estar en servicios
+* lógica repetida
+* validaciones faltantes
+* excepciones mal manejadas
+* errores silenciosos
+* posibles bugs
+
+---
+
+# SEGURIDAD
+
+Realiza una auditoría OWASP adaptada a Django.
+
+Verifica:
+
+* CSRF
+* XSS
+* SQL Injection
+* SSRF
+* Clickjacking
+* Session Hijacking
+* Uploads inseguros
+* Exposición de archivos
+* Exposición de credenciales
+* Secrets hardcodeados
+* Configuración DEBUG
+* Seguridad de cookies
+* Permisos de usuarios
+* Validaciones de acceso
+
+Genera una tabla:
+
+| Riesgo | Severidad | Ubicación | Solución |
+
+---
+
+# DJANGO EXPERTO
+
+Determina si el proyecto aprovecha correctamente Django.
+
+Evalúa uso de:
+
+* ORM
+* Managers
+* QuerySets personalizados
+* CBV
+* FBV
+* Signals
+* Middleware
+* Context Processors
+* Caching
+* Sessions
+* Forms
+* ModelForms
+* Validators
+* Permissions
+* Authentication
+* Messages Framework
+* Staticfiles
+* Storage Backends
+* Management Commands
+* Transactions
+
+Indica:
+
+¿Qué funcionalidades de Django deberían estar usándose y no se están usando?
+
+¿Qué partes podrían simplificarse usando herramientas nativas de Django?
+
+---
+
+# BASE DE DATOS
+
+Analiza:
+
+* Diseño relacional
+* Integridad referencial
+* Índices
+* Relaciones
+* Normalización
+* Escalabilidad PostgreSQL
+
+Detecta:
+
+* relaciones innecesarias
+* tablas redundantes
+* campos redundantes
+* índices faltantes
+* oportunidades de optimización
+
+---
+
+# RENDIMIENTO
+
+Analiza:
+
+* Tiempo de carga
+* Templates
+* Static files
+* JavaScript
+* Tailwind
+* Consultas ORM
+* Procesos Azure
+* Google Vision
+* Procesamiento de audio
+
+Determina:
+
+* Cuellos de botella actuales
+* Cuellos de botella futuros
+* Qué ocurriría con:
+
+100 usuarios
+1000 usuarios
+10000 usuarios
+
+---
+
+# TESTING
+
+Evalúa:
+
+* Cobertura
+* Calidad de tests
+* Casos límite
+* Casos de error
+
+Indica:
+
+Qué partes del sistema están insuficientemente probadas.
+
+---
+
+# UX/UI
+
+Analiza:
+
+* Accesibilidad
+* Contraste
+* Responsive Design
+* Consistencia visual
+* Navegación
+* Experiencia infantil
+* Usabilidad para niños con dislexia
+
+Detecta:
+
+* elementos confusos
+* problemas visuales
+* problemas cognitivos
+
+---
+
+# PRODUCCIÓN
+
+Evalúa si el proyecto está listo para:
+
+* Docker
+* PostgreSQL
+* Nginx
+* Gunicorn
+* Azure
+* VPS Linux
+
+Indica:
+
+Nivel real de preparación para producción:
+
+* No apto
+* Prototipo
+* Beta
+* Preproducción
+* Producción
+
+---
+
+# RESULTADO FINAL
+
+Genera:
+
+## Puntuación General
+
+Arquitectura: X/10
+
+Seguridad: X/10
+
+Escalabilidad: X/10
+
+Rendimiento: X/10
+
+Calidad de Código: X/10
+
+UX/UI: X/10
+
+Uso de Django: X/10
+
+Testing: X/10
+
+Mantenibilidad: X/10
+
+Preparación para Producción: X/10
+
+---
+
+## TOP 20 problemas más importantes
+
+Ordenados por prioridad.
+
+---
+
+## TOP 20 mejoras de mayor impacto
+
+Ordenadas por ROI técnico.
+
+---
+
+## Roadmap recomendado para llevar DysPlay a un nivel profesional empresarial.

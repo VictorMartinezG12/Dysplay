@@ -18,6 +18,15 @@ def avatar_global(request):
             for inv in inventario
         }
 
+        # Dict por subcategoría para accesorios (sombrero/gafas/reloj/otro),
+        # así pueden coexistir varios equipados a la vez sin pisarse entre sí
+        # (a diferencia de `equipados`, que colapsa por categoría sola).
+        accesorios = {
+            inv.item.subcategoria or 'otro': inv.item
+            for inv in inventario
+            if inv.item.categoria == 'accesorio'
+        }
+
         reacciones = ReaccionAvatar.objects.filter(
             activo=True
         ).values(
@@ -59,6 +68,7 @@ def avatar_global(request):
         return {
             'avatar_user': avatar_obj,
             'avatar_equipados': equipados,
+            'avatar_accesorios': accesorios,
             'reacciones_json': json.dumps(reacciones_dict),
             'insignias_pendientes': insignias_pendientes,
             'mascota_usuario': mascota_usuario,

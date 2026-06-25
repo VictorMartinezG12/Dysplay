@@ -2,13 +2,16 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Avatar, CasaAvatar, InventarioAvatar, Item
+from .models import Avatar, CasaAvatar, InventarioAvatar, Item, ItemColocado
 from .reactions import REACCIONES, obtener_reaccion
 from .services import (
     ItemYaPoseidoError,
     SlotInvalidoError,
     colocar_item_en_casa,
     comprar_item_para_avatar,
+    comprar_y_equipar_item,
+    equipar_item_avatar,
+    obtener_items_colocados_casa,
     obtener_items_tienda_casa,
     obtener_o_crear_casa,
 )
@@ -45,10 +48,7 @@ class AvatarModelTests(TestCase):
     def test_casa_avatar_se_crea_con_slots_vacios(self):
         avatar = Avatar.objects.create(usuario=self.usuario)
         casa = CasaAvatar.objects.create(avatar=avatar)
-        self.assertIsNone(casa.cama)
-        self.assertIsNone(casa.cuadro)
-        self.assertIsNone(casa.alfombra)
-        self.assertIsNone(casa.lampara)
+        self.assertEqual(casa.items_colocados.count(), 0)
         self.assertEqual(str(casa), f"Casa de {self.usuario.username}")
 
     def test_casa_avatar_relacion_one_to_one_con_avatar(self):
@@ -130,7 +130,8 @@ class AvatarServicesTests(TestCase):
             self.usuario, self.avatar, self.item_cama.id, slot='cama'
         )
         casa = obtener_o_crear_casa(self.avatar)
-        self.assertEqual(casa.cama_id, self.item_cama.id)
+        colocado = ItemColocado.objects.get(casa=casa, slot='cama')
+        self.assertEqual(colocado.item_id, self.item_cama.id)
 
     def test_comprar_item_saldo_insuficiente_no_modifica_nada(self):
         with self.assertRaises(SaldoInsuficienteError):
@@ -167,7 +168,8 @@ class AvatarServicesTests(TestCase):
 
         self.usuario.refresh_from_db()
         self.assertEqual(self.usuario.monedas, 100)  # No se cobró nada.
-        self.assertEqual(casa.cama_id, self.item_cama.id)
+        colocado = ItemColocado.objects.get(casa=casa, slot='cama')
+        self.assertEqual(colocado.item_id, self.item_cama.id)
 
     def test_colocar_item_no_poseido_lanza_error(self):
         with self.assertRaises(InventarioAvatar.DoesNotExist):
@@ -190,7 +192,8 @@ class AvatarServicesTests(TestCase):
         )
         items_tienda = obtener_items_tienda_casa(self.avatar)
         categorias = {item.categoria for item in items_tienda}
-        self.assertTrue(categorias.issubset({'habitacion', 'fondo'}))
+        self.assertTrue(categorias.issubset({'habitacion', 'fondo', 'mueble', 'decoracion'}))
+        self.assertNotIn('accesorio', categorias)
 
 
 class CasaAvatarViewsTests(TestCase):
@@ -300,7 +303,8 @@ class CasaAvatarViewsTests(TestCase):
         self.assertTrue(data['exito'])
 
         casa = CasaAvatar.objects.get(avatar=self.avatar)
-        self.assertEqual(casa.cama_id, self.item_cama.id)
+        colocado = ItemColocado.objects.get(casa=casa, slot='cama')
+        self.assertEqual(colocado.item_id, self.item_cama.id)
 
     def test_colocar_item_slot_invalido_responde_400(self):
         comprar_item_para_avatar(self.usuario, self.avatar, self.item_cama.id)
@@ -354,3 +358,145 @@ class AvatarContextProcessorTests(TestCase):
         contenido = response.content.decode()
         self.assertIn('id="avatar-reacciones-data"', contenido)
         self.assertIn('id="avatar-frase-contextual-data"', contenido)
+
+
+class EquiparItemAvatarTests(TestCase):
+    """Tests para la exclusividad de equipado, incluida la regla fina de
+    accesorios por subcategoría (sombrero/gafas/reloj pueden coexistir)."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(
+            username='equipador', password='claveSegura123', monedas=500
+        )
+        self.avatar = Avatar.objects.create(usuario=self.usuario)
+        self.sombrero_1 = Item.objects.create(
+            nombre='Sombrero rojo', categoria='accesorio', subcategoria='sombrero', activo=True
+        )
+        self.sombrero_2 = Item.objects.create(
+            nombre='Sombrero azul', categoria='accesorio', subcategoria='sombrero', activo=True
+        )
+        self.gafas = Item.objects.create(
+            nombre='Gafas de sol', categoria='accesorio', subcategoria='gafas', activo=True
+        )
+        self.cabello_1 = Item.objects.create(
+            nombre='Cabello corto', categoria='cabello', activo=True
+        )
+        self.cabello_2 = Item.objects.create(
+            nombre='Cabello largo', categoria='cabello', activo=True
+        )
+
+    def test_equipar_dos_accesorios_de_distinta_subcategoria_coexisten(self):
+        equipar_item_avatar(self.avatar, self.sombrero_1.id)
+        equipar_item_avatar(self.avatar, self.gafas.id)
+
+        equipados = InventarioAvatar.objects.filter(avatar=self.avatar, equipado=True)
+        items_equipados = {inv.item_id for inv in equipados}
+        self.assertIn(self.sombrero_1.id, items_equipados)
+        self.assertIn(self.gafas.id, items_equipados)
+
+    def test_equipar_otro_sombrero_desequipa_el_anterior(self):
+        equipar_item_avatar(self.avatar, self.sombrero_1.id)
+        equipar_item_avatar(self.avatar, self.sombrero_2.id)
+
+        inv_1 = InventarioAvatar.objects.get(avatar=self.avatar, item=self.sombrero_1)
+        inv_2 = InventarioAvatar.objects.get(avatar=self.avatar, item=self.sombrero_2)
+        self.assertFalse(inv_1.equipado)
+        self.assertTrue(inv_2.equipado)
+
+    def test_equipar_cabello_sigue_siendo_exclusivo_por_categoria(self):
+        equipar_item_avatar(self.avatar, self.cabello_1.id)
+        equipar_item_avatar(self.avatar, self.cabello_2.id)
+
+        inv_1 = InventarioAvatar.objects.get(avatar=self.avatar, item=self.cabello_1)
+        inv_2 = InventarioAvatar.objects.get(avatar=self.avatar, item=self.cabello_2)
+        self.assertFalse(inv_1.equipado)
+        self.assertTrue(inv_2.equipado)
+
+    def test_equipar_item_inexistente_lanza_does_not_exist(self):
+        with self.assertRaises(Item.DoesNotExist):
+            equipar_item_avatar(self.avatar, 999999)
+
+    def test_comprar_y_equipar_item_descuenta_y_equipa(self):
+        item_caro = Item.objects.create(
+            nombre='Corona', categoria='accesorio', subcategoria='otro',
+            precio_monedas=50, activo=True,
+        )
+        inventario = comprar_y_equipar_item(self.usuario, self.avatar, item_caro.id)
+
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.monedas, 450)
+        self.assertTrue(inventario.equipado)
+
+    def test_endpoint_equipar_item_requiere_login(self):
+        url = reverse('avatar:equipar_item')
+        response = self.client.post(url, {'item_id': self.sombrero_1.id})
+        self.assertEqual(response.status_code, 302)
+
+    def test_endpoint_equipar_item_exitoso(self):
+        self.client.force_login(self.usuario)
+        url = reverse('avatar:equipar_item')
+        response = self.client.post(url, {'item_id': self.sombrero_1.id})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['exito'])
+        self.assertEqual(data['categoria'], 'accesorio')
+        self.assertEqual(data['subcategoria'], 'sombrero')
+
+    def test_endpoint_equipar_item_inexistente_no_expone_excepcion(self):
+        self.client.force_login(self.usuario)
+        url = reverse('avatar:equipar_item')
+        response = self.client.post(url, {'item_id': 999999})
+
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertFalse(data['exito'])
+        self.assertNotIn('DoesNotExist', data['mensaje'])
+
+    def test_endpoint_comprar_y_equipar_exitoso(self):
+        item = Item.objects.create(
+            nombre='Reloj dorado', categoria='accesorio', subcategoria='reloj',
+            precio_monedas=20, activo=True,
+        )
+        self.client.force_login(self.usuario)
+        url = reverse('avatar:comprar_y_equipar')
+        response = self.client.post(url, {'item_id': item.id})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['exito'])
+        self.assertEqual(data['subcategoria'], 'reloj')
+
+
+class ItemColocadoServiceTests(TestCase):
+    """Tests para los slots ampliados de ItemColocado en la casa del avatar."""
+
+    def setUp(self):
+        self.usuario = UsuarioCustom.objects.create_user(
+            username='decorador', password='claveSegura123', monedas=200
+        )
+        self.avatar = Avatar.objects.create(usuario=self.usuario)
+        self.item_mesa = Item.objects.create(
+            nombre='Mesa de madera', categoria='mueble', precio_monedas=30, activo=True
+        )
+
+    def test_obtener_items_colocados_casa_devuelve_dict_por_slot(self):
+        casa = obtener_o_crear_casa(self.avatar)
+        comprar_item_para_avatar(self.usuario, self.avatar, self.item_mesa.id, slot='mesa')
+
+        items_colocados = obtener_items_colocados_casa(casa)
+        self.assertEqual(items_colocados['mesa'], self.item_mesa)
+
+    def test_obtener_items_colocados_casa_vacio_cuando_no_hay_nada(self):
+        casa = obtener_o_crear_casa(self.avatar)
+        items_colocados = obtener_items_colocados_casa(casa)
+        self.assertEqual(items_colocados, {})
+
+    def test_colocar_item_en_slot_mueble_nuevo(self):
+        InventarioAvatar.objects.create(
+            avatar=self.avatar, item=self.item_mesa, desbloqueado=True
+        )
+        casa = colocar_item_en_casa(self.avatar, self.item_mesa.id, 'mesa')
+
+        colocado = ItemColocado.objects.get(casa=casa, slot='mesa')
+        self.assertEqual(colocado.item_id, self.item_mesa.id)

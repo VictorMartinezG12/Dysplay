@@ -16,8 +16,26 @@ class Item(models.Model):
         ('fondo', 'Fondo'),
     ]
 
+    # Subcategoría exclusiva de accesorios (sombrero/gafas/reloj/otro). Existe
+    # para permitir que el avatar tenga varios accesorios equipados a la vez
+    # sin que se pisen entre sí: la regla de exclusividad de equipado pasa a
+    # ser por (categoria='accesorio', subcategoria=X) en vez de por categoria
+    # sola, así sombrero+gafas+reloj pueden coexistir pero dos sombreros no.
+    SUBCATEGORIA_ACCESORIO_CHOICES = [
+        ('sombrero', 'Sombrero'),
+        ('gafas', 'Gafas'),
+        ('reloj', 'Reloj'),
+        ('otro', 'Otro'),
+    ]
+
     nombre = models.CharField(max_length=100)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
+    subcategoria = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=SUBCATEGORIA_ACCESORIO_CHOICES,
+        default='',
+    )
     imagen = models.ImageField(upload_to='avatar/items/', blank=True, null=True)
     # Piezas de manga independientes (solo aplican a categoria='ropa_superior' con manga larga).
     # Se superponen sobre el brazo/antebrazo del esqueleto del avatar para que se
@@ -198,41 +216,51 @@ class ReaccionAvatar(models.Model):
 
 
 class CasaAvatar(models.Model):
-    """Representa la habitación/casa personalizable del avatar de un usuario."""
+    """Representa la habitación/casa personalizable del avatar de un usuario.
+
+    Los ítems colocados (cama, cuadro, alfombra, lámpara, mesa, estante,
+    silla, etc.) viven en el modelo `ItemColocado`, no como campos directos
+    de esta clase: así se puede agregar nuevos slots de mueble sin migrar
+    el modelo `CasaAvatar` cada vez.
+    """
 
     avatar = models.OneToOneField(
         Avatar,
         on_delete=models.CASCADE,
         related_name='casa'
     )
-    cama = models.ForeignKey(
-        Item,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='casas_con_cama'
-    )
-    cuadro = models.ForeignKey(
-        Item,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='casas_con_cuadro'
-    )
-    alfombra = models.ForeignKey(
-        Item,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='casas_con_alfombra'
-    )
-    lampara = models.ForeignKey(
-        Item,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='casas_con_lampara'
-    )
 
     def __str__(self):
         return f"Casa de {self.avatar.usuario.username}"
+
+
+class ItemColocado(models.Model):
+    """Ítem de mueble/decoración colocado en un slot concreto de la casa.
+
+    Reemplaza los antiguos campos fijos `cama`/`cuadro`/`alfombra`/`lampara`
+    de `CasaAvatar`, permitiendo agregar nuevos slots (mesa, estante, silla)
+    sin tocar el esquema de `CasaAvatar`. El slot `armario` no vive aquí:
+    no coloca un ítem, abre el editor de personaje (se maneja en la vista).
+    """
+
+    SLOT_CHOICES = [
+        ('mesa', 'Mesa'),
+        ('estante', 'Estante de libros'),
+        ('cama', 'Cama'),
+        ('silla', 'Silla'),
+        ('cuadro', 'Cuadro'),
+        ('lampara', 'Lámpara'),
+        ('alfombra', 'Alfombra'),
+    ]
+
+    casa = models.ForeignKey(
+        'CasaAvatar', on_delete=models.CASCADE, related_name='items_colocados'
+    )
+    slot = models.CharField(max_length=20, choices=SLOT_CHOICES)
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('casa', 'slot')
+
+    def __str__(self):
+        return f"{self.casa} - {self.slot}: {self.item.nombre}"

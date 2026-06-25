@@ -1,10 +1,13 @@
 from django.contrib import admin
-from .models import Avatar, CaraAvatar, Item, InventarioAvatar, ReaccionAvatar, CasaAvatar
+from .models import (
+    Avatar, CaraAvatar, Item, InventarioAvatar, ReaccionAvatar, CasaAvatar,
+    ItemColocado,
+)
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'categoria', 'precio_monedas', 'evento_especial', 'activo')
-    list_filter = ('categoria', 'activo')
+    list_display = ('nombre', 'categoria', 'subcategoria', 'precio_monedas', 'evento_especial', 'activo')
+    list_filter = ('categoria', 'subcategoria', 'activo')
     search_fields = ('nombre',)
 
 @admin.register(CaraAvatar)
@@ -20,8 +23,14 @@ class AvatarAdmin(admin.ModelAdmin):
 
 @admin.register(CasaAvatar)
 class CasaAvatarAdmin(admin.ModelAdmin):
-    list_display = ('avatar', 'cama', 'cuadro', 'alfombra', 'lampara')
+    list_display = ('avatar',)
     search_fields = ('avatar__usuario__username',)
+
+@admin.register(ItemColocado)
+class ItemColocadoAdmin(admin.ModelAdmin):
+    list_display = ('casa', 'slot', 'item')
+    list_filter = ('slot',)
+    search_fields = ('casa__avatar__usuario__username', 'item__nombre')
 
 @admin.register(InventarioAvatar)
 class InventarioAvatarAdmin(admin.ModelAdmin):

@@ -11,15 +11,19 @@ import logging
 from django.db import transaction
 
 from recompensas.services import cobrar_monedas, SaldoInsuficienteError
-from .models import CasaAvatar, InventarioAvatar, Item
+from .models import CasaAvatar, InventarioAvatar, Item, ItemColocado
 
-# Categorías de ítems que pueden colocarse en la casa del avatar.
-CATEGORIAS_CASA = ('habitacion', 'fondo')
+# Categorías de ítems que pueden colocarse en la casa del avatar. Se amplía
+# con 'mueble' y 'decoracion' (ya existían en Item.CATEGORIA_CHOICES pero no
+# se usaban en la tienda de casa) para que mesa/estante/cama/silla tengan
+# ítems disponibles en la tienda.
+CATEGORIAS_CASA = ('habitacion', 'fondo', 'mueble', 'decoracion')
 
 logger = logging.getLogger(__name__)
 
-# Campos de CasaAvatar que pueden recibir un ítem (slots de habitación).
-SLOTS_CASA_VALIDOS = ('cama', 'cuadro', 'alfombra', 'lampara')
+# Slots de `ItemColocado` que aceptan un ítem colocado en la casa. El slot
+# 'armario' no está acá: no coloca un ítem, abre el editor de personaje.
+SLOTS_CASA_VALIDOS = ('mesa', 'estante', 'cama', 'silla', 'cuadro', 'lampara', 'alfombra')
 
 
 class ItemYaPoseidoError(Exception):
@@ -100,8 +104,9 @@ def comprar_item_para_avatar(usuario, avatar_obj, item_id, slot=None):
 
         if slot is not None:
             casa = obtener_o_crear_casa(avatar_obj)
-            setattr(casa, slot, item)
-            casa.save(update_fields=[slot])
+            ItemColocado.objects.update_or_create(
+                casa=casa, slot=slot, defaults={'item': item}
+            )
 
     logger.info(
         "Compra de ítem completada: usuario=%s item=%s slot=%s",
@@ -142,8 +147,9 @@ def colocar_item_en_casa(avatar_obj, item_id, slot):
     InventarioAvatar.objects.get(avatar=avatar_obj, item=item, desbloqueado=True)
 
     casa = obtener_o_crear_casa(avatar_obj)
-    setattr(casa, slot, item)
-    casa.save(update_fields=[slot])
+    ItemColocado.objects.update_or_create(
+        casa=casa, slot=slot, defaults={'item': item}
+    )
 
     logger.info(
         "Ítem colocado en la casa: avatar=%s item=%s slot=%s",
@@ -175,3 +181,94 @@ def obtener_items_tienda_casa(avatar_obj):
         categoria__in=CATEGORIAS_CASA,
         activo=True,
     ).exclude(id__in=ids_poseidos).order_by('precio_monedas')
+
+
+def obtener_items_colocados_casa(casa):
+    """
+    Devuelve los ítems colocados en una `CasaAvatar`, indexados por slot.
+
+    Args:
+        casa: instancia de `CasaAvatar` cuyos ítems colocados se consultan.
+
+    Returns:
+        dict[str, Item]: mapeo `{slot: item}` con un ítem por cada slot de
+        `ItemColocado.SLOT_CHOICES` que tenga algo asignado. Los slots
+        vacíos simplemente no aparecen como clave.
+    """
+    return {
+        colocado.slot: colocado.item
+        for colocado in casa.items_colocados.select_related('item')
+    }
+
+
+def equipar_item_avatar(avatar_obj, item_id):
+    """
+    Equipa un ítem en el avatar, desequipando solo lo que comparte su misma
+    clave de exclusividad.
+
+    Para la mayoría de categorías (cabello, ropa_superior, ropa_inferior,
+    calzado, etc.) la exclusividad sigue siendo "uno por categoría", igual
+    que antes. Para accesorios, la exclusividad es más fina: se calcula por
+    `(categoria='accesorio', subcategoria=item.subcategoria)`, de modo que
+    un sombrero nuevo solo desequipa el sombrero anterior, sin afectar a las
+    gafas ni al reloj que el avatar ya tenga puestos — así pueden coexistir
+    varios accesorios de distinta subcategoría a la vez.
+
+    Args:
+        avatar_obj: instancia de `Avatar` cuyo inventario se actualiza.
+        item_id (int): identificador del `Item` a equipar.
+
+    Returns:
+        InventarioAvatar: el registro de inventario recién equipado.
+
+    Raises:
+        Item.DoesNotExist: si no existe un ítem activo con `item_id`.
+    """
+    item = Item.objects.get(pk=item_id, activo=True)
+
+    filtro_exclusividad = {'item__categoria': item.categoria}
+    if item.categoria == 'accesorio':
+        filtro_exclusividad['item__subcategoria'] = item.subcategoria
+
+    with transaction.atomic():
+        InventarioAvatar.objects.filter(
+            avatar=avatar_obj, **filtro_exclusividad
+        ).update(equipado=False)
+
+        inventario, _creado = InventarioAvatar.objects.get_or_create(
+            avatar=avatar_obj, item=item
+        )
+        inventario.equipado = True
+        inventario.save(update_fields=['equipado'])
+
+    logger.info(
+        "Ítem equipado: avatar=%s item=%s categoria=%s subcategoria=%s",
+        avatar_obj.pk, item.pk, item.categoria, item.subcategoria,
+    )
+
+    return inventario
+
+
+def comprar_y_equipar_item(usuario, avatar_obj, item_id):
+    """
+    Compra un ítem para el avatar y lo equipa inmediatamente.
+
+    Combina `comprar_item_para_avatar` (sin slot de casa, ya que es un ítem
+    de armario) con `equipar_item_avatar`, para el flujo de "comprar y
+    equipar en un solo paso" desde la tienda del armario.
+
+    Args:
+        usuario: instancia de `UsuarioCustom` que realiza la compra.
+        avatar_obj: instancia de `Avatar` del usuario.
+        item_id (int): identificador del `Item` a comprar y equipar.
+
+    Returns:
+        InventarioAvatar: el registro de inventario comprado y equipado.
+
+    Raises:
+        Item.DoesNotExist: si no existe un ítem activo con `item_id`.
+        ItemYaPoseidoError: si el usuario ya tiene el ítem desbloqueado.
+        SaldoInsuficienteError: si el usuario no tiene monedas suficientes.
+    """
+    comprar_item_para_avatar(usuario, avatar_obj, item_id, slot=None)
+    return equipar_item_avatar(avatar_obj, item_id)

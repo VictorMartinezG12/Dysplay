@@ -54,8 +54,19 @@
                      style="left:19.4%;top:-1.2%;width:56.4%;height:56.4%;"
                      alt="Cabello">
 
-                {% if avatar_equipados.accesorio %}
-                <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute object-contain z-40" style="left:30%;top:-8%;width:40%;height:30%;" alt="Accesorio">
+                <!-- Posiciones por subcategoría (sombrero/gafas/reloj/otro) para que no
+                     se apilen exactamente en el mismo lugar, igual que en el armario. -->
+                {% if avatar_accesorios.sombrero %}
+                <img src="{{ avatar_accesorios.sombrero.imagen_url_segura }}" class="absolute object-contain z-40" style="left:24%;top:-4%;width:48%;height:34%;" alt="Accesorio: {{ avatar_accesorios.sombrero.nombre }}" data-subcategoria="sombrero">
+                {% endif %}
+                {% if avatar_accesorios.gafas %}
+                <img src="{{ avatar_accesorios.gafas.imagen_url_segura }}" class="absolute object-contain z-40" style="left:28%;top:24%;width:42%;height:14%;" alt="Accesorio: {{ avatar_accesorios.gafas.nombre }}" data-subcategoria="gafas">
+                {% endif %}
+                {% if avatar_accesorios.reloj %}
+                <img src="{{ avatar_accesorios.reloj.imagen_url_segura }}" class="absolute object-contain z-40" style="left:9%;top:49%;width:15%;height:15%;" alt="Accesorio: {{ avatar_accesorios.reloj.nombre }}" data-subcategoria="reloj">
+                {% endif %}
+                {% if avatar_accesorios.otro %}
+                <img src="{{ avatar_accesorios.otro.imagen_url_segura }}" class="absolute object-contain z-40" style="left:30%;top:-2%;width:40%;height:30%;" alt="Accesorio: {{ avatar_accesorios.otro.nombre }}" data-subcategoria="otro">
                 {% endif %}
 
             </div>

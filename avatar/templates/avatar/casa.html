@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Mi Casa - DysPlay{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl w-full">
+<div class="max-w-5xl w-full">
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 class="text-3xl font-black text-orange-600 text-center sm:text-left">¡Mi casa! 🏠</h1>
@@ -14,194 +15,173 @@
                 <span id="casa-monedas-valor">{{ monedas_usuario }}</span>
                 <span class="sr-only">monedas disponibles</span>
             </div>
-            <a href="{% url 'avatar:personalizar' %}" class="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 min-h-[48px]">
+            <button type="button" id="btn-abrir-armario" class="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-2.5 px-4 rounded-2xl text-sm transition-all duration-200 min-h-[48px]">
                 <i data-lucide="shirt" class="w-5 h-5" aria-hidden="true"></i>
                 <span>Mi Armario</span>
-            </a>
+            </button>
         </div>
     </div>
 
     <!-- Mensaje accesible de estado (éxito/error de compras y colocaciones) -->
     <div id="casa-mensaje" role="status" aria-live="polite" class="hidden mb-4 rounded-2xl border-4 p-4 font-bold text-base"></div>
 
-    <!-- Habitación isométrica -->
-    <div class="bg-white rounded-3xl shadow-soft border-4 border-orange-100 p-6 md:p-8 mb-8">
-        <h2 class="text-xl md:text-2xl font-black text-orange-600 mb-6 flex items-center gap-3">
+    <!-- Habitación con hotspots clicables -->
+    <div class="bg-white rounded-3xl shadow-soft border-4 border-orange-100 p-4 md:p-6">
+        <h2 class="text-xl md:text-2xl font-black text-orange-600 mb-4 flex items-center gap-3">
             <i data-lucide="layout-dashboard" class="w-7 h-7" aria-hidden="true"></i>
             La habitación de {{ avatar.nombre_avatar }}
         </h2>
+        <p class="text-sm font-bold text-gray-400 mb-4">Toca cualquier mueble para ver tus opciones.</p>
 
-        <div class="room-iso mx-auto">
-            <!-- Pared de fondo -->
-            <div class="room-pared">
-                <!-- Cuadro -->
-                <div class="room-slot room-slot-cuadro" data-slot="cuadro">
-                    {% if casa.cuadro %}
-                        <img src="{{ casa.cuadro.imagen_url_segura }}" alt="Cuadro: {{ casa.cuadro.nombre }}" class="room-item-img">
-                    {% else %}
-                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para un cuadro de pared">
-                            <i data-lucide="image" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
-                        </div>
-                    {% endif %}
-                </div>
+        <div id="habitacion-canvas" class="room-canvas mx-auto">
+            <img src="{% static 'avatar/casa/habitacion_base.svg' %}" alt="Ilustración de una habitación con armario, mesa, estante de libros, cama, silla, cuadro, lámpara y alfombra" class="room-bg-img">
 
-                <!-- Lámpara -->
-                <div class="room-slot room-slot-lampara" data-slot="lampara">
-                    {% if casa.lampara %}
-                        <img src="{{ casa.lampara.imagen_url_segura }}" alt="Lámpara: {{ casa.lampara.nombre }}" class="room-item-img">
-                    {% else %}
-                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una lámpara">
-                            <i data-lucide="lamp" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            <!-- Hotspots posicionados en % sobre el SVG de fondo (800x600) -->
+            <button type="button" class="room-hotspot" data-slot="armario" data-modal-target="modal-armario"
+                    style="left:5%;top:28%;width:20%;height:35%;"
+                    aria-label="Abrir armario para vestir al personaje">
+                <span class="room-hotspot-label">Armario</span>
+            </button>
 
-            <!-- Piso -->
-            <div class="room-piso">
-                <!-- Alfombra -->
-                <div class="room-slot room-slot-alfombra" data-slot="alfombra">
-                    {% if casa.alfombra %}
-                        <img src="{{ casa.alfombra.imagen_url_segura }}" alt="Alfombra: {{ casa.alfombra.nombre }}" class="room-item-img">
-                    {% else %}
-                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una alfombra">
-                            <i data-lucide="square" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
-                        </div>
-                    {% endif %}
-                </div>
+            <button type="button" class="room-hotspot" data-slot="estante" data-modal-target="modal-slot"
+                    style="left:32.5%;top:31.5%;width:18.75%;height:25%;"
+                    aria-label="Elegir estante de libros">
+                <span class="room-hotspot-label">Estante</span>
+            </button>
 
-                <!-- Cama -->
-                <div class="room-slot room-slot-cama" data-slot="cama">
-                    {% if casa.cama %}
-                        <img src="{{ casa.cama.imagen_url_segura }}" alt="Cama: {{ casa.cama.nombre }}" class="room-item-img">
-                    {% else %}
-                        <div class="room-placeholder" role="img" aria-label="Espacio vacío para una cama">
-                            <i data-lucide="bed" class="w-8 h-8 opacity-40" aria-hidden="true"></i>
-                        </div>
-                    {% endif %}
-                </div>
+            <button type="button" class="room-hotspot" data-slot="cuadro" data-modal-target="modal-slot"
+                    style="left:7.5%;top:10%;width:15%;height:15%;"
+                    aria-label="Elegir cuadro de pared">
+                <span class="room-hotspot-label">Cuadro</span>
+            </button>
 
-                <!-- Avatar parado en su habitación -->
-                <div class="room-slot room-slot-avatar" aria-hidden="true">
-                    <img src="/static/avatar/cuerpo/cuerpo_base_1.png" alt="" class="room-item-img">
-                </div>
-            </div>
+            <button type="button" class="room-hotspot" data-slot="lampara" data-modal-target="modal-slot"
+                    style="left:72.5%;top:3.3%;width:10%;height:22.5%;"
+                    aria-label="Elegir lámpara">
+                <span class="room-hotspot-label">Lámpara</span>
+            </button>
+
+            <button type="button" class="room-hotspot" data-slot="cama" data-modal-target="modal-slot"
+                    style="left:70%;top:38%;width:23.75%;height:18.3%;"
+                    aria-label="Elegir cama">
+                <span class="room-hotspot-label">Cama</span>
+            </button>
+
+            <button type="button" class="room-hotspot" data-slot="mesa" data-modal-target="modal-slot"
+                    style="left:27.5%;top:68.3%;width:16.25%;height:13%;"
+                    aria-label="Elegir mesa">
+                <span class="room-hotspot-label">Mesa</span>
+            </button>
+
+            <button type="button" class="room-hotspot" data-slot="silla" data-modal-target="modal-slot"
+                    style="left:47.5%;top:64.2%;width:7.5%;height:15.7%;"
+                    aria-label="Elegir silla">
+                <span class="room-hotspot-label">Silla</span>
+            </button>
+
+            <button type="button" class="room-hotspot" data-slot="alfombra" data-modal-target="modal-slot"
+                    style="left:41.25%;top:74.2%;width:17.5%;height:18.3%;"
+                    aria-label="Elegir alfombra">
+                <span class="room-hotspot-label">Alfombra</span>
+            </button>
+
+            <!-- Ítems colocados, superpuestos en la misma posición que su hotspot -->
+            {% for slot, item in items_colocados.items %}
+            <img src="{{ item.imagen_url_segura }}" alt="{{ item.get_categoria_display }}: {{ item.nombre }}"
+                 class="room-item-placed" data-slot-img="{{ slot }}"
+                 style="{% if slot == 'estante' %}left:32.5%;top:31.5%;width:18.75%;height:25%;{% endif %}
+                        {% if slot == 'cuadro' %}left:7.5%;top:10%;width:15%;height:15%;{% endif %}
+                        {% if slot == 'lampara' %}left:72.5%;top:3.3%;width:10%;height:22.5%;{% endif %}
+                        {% if slot == 'cama' %}left:70%;top:38%;width:23.75%;height:18.3%;{% endif %}
+                        {% if slot == 'mesa' %}left:27.5%;top:68.3%;width:16.25%;height:13%;{% endif %}
+                        {% if slot == 'silla' %}left:47.5%;top:64.2%;width:7.5%;height:15.7%;{% endif %}
+                        {% if slot == 'alfombra' %}left:41.25%;top:74.2%;width:17.5%;height:18.3%;{% endif %}">
+            {% endfor %}
         </div>
-
-        <!-- Resumen de slots actuales -->
-        <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 text-center">
-            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
-                <dt class="text-xs font-black text-orange-700 uppercase">Cama</dt>
-                <dd class="font-bold text-sm mt-1">{{ casa.cama.nombre|default:'Vacío' }}</dd>
-            </div>
-            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
-                <dt class="text-xs font-black text-orange-700 uppercase">Cuadro</dt>
-                <dd class="font-bold text-sm mt-1">{{ casa.cuadro.nombre|default:'Vacío' }}</dd>
-            </div>
-            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
-                <dt class="text-xs font-black text-orange-700 uppercase">Alfombra</dt>
-                <dd class="font-bold text-sm mt-1">{{ casa.alfombra.nombre|default:'Vacío' }}</dd>
-            </div>
-            <div class="bg-orange-50 rounded-2xl p-3 border-2 border-orange-200">
-                <dt class="text-xs font-black text-orange-700 uppercase">Lámpara</dt>
-                <dd class="font-bold text-sm mt-1">{{ casa.lampara.nombre|default:'Vacío' }}</dd>
-            </div>
-        </dl>
     </div>
+</div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- ===== MODAL: ARMARIO (grande, 90% viewport, scroll interno) ===== -->
+<div id="modal-armario" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-armario-titulo">
+    <div class="bg-white rounded-3xl shadow-soft w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+        <h2 id="modal-armario-titulo" class="sr-only">Mi Armario Mágico</h2>
+        <button type="button" data-cerrar-modal="modal-armario" aria-label="Cerrar armario"
+                class="absolute top-4 right-4 min-w-[48px] min-h-[48px] rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10">
+            <i data-lucide="x" class="w-6 h-6" aria-hidden="true"></i>
+        </button>
 
-        <!-- Mis ítems de habitación -->
-        <div class="bg-white rounded-3xl shadow-soft border-4 border-purple-100 p-6 md:p-8">
-            <h2 class="text-xl md:text-2xl font-black text-purple-600 mb-6 flex items-center gap-3">
-                <i data-lucide="package" class="w-7 h-7" aria-hidden="true"></i>
-                Mis ítems de habitación
-            </h2>
+        {% include 'avatar/_armario_contenido.html' %}
+    </div>
+</div>
 
-            <div class="space-y-4">
-                {% for inv in items_disponibles %}
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-purple-50 border-2 border-purple-200 rounded-2xl p-4">
-                    <div class="flex items-center gap-4 flex-1">
-                        {% if inv.item.imagen %}
-                            <img src="{{ inv.item.imagen_url_segura }}" alt="{{ inv.item.nombre }}" class="w-16 h-16 object-contain rounded-xl bg-white border-2 border-purple-100">
-                        {% else %}
-                            <div class="w-16 h-16 flex items-center justify-center text-3xl rounded-xl bg-white border-2 border-purple-100" aria-hidden="true">🎁</div>
-                        {% endif %}
-                        <div>
-                            <p class="font-black text-purple-900">{{ inv.item.nombre }}</p>
-                            <p class="text-sm font-bold text-purple-500">{{ inv.item.get_categoria_display }}</p>
-                        </div>
-                    </div>
+<!-- ===== MODAL: SLOT DE MUEBLE/DECORACIÓN (pequeño, 2 pestañas) ===== -->
+<div id="modal-slot" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-slot-titulo">
+    <div class="bg-white rounded-3xl shadow-soft w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 relative">
+        <button type="button" data-cerrar-modal="modal-slot" aria-label="Cerrar"
+                class="absolute top-4 right-4 min-w-[48px] min-h-[48px] rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10">
+            <i data-lucide="x" class="w-6 h-6" aria-hidden="true"></i>
+        </button>
 
-                    <div class="flex items-center gap-2">
-                        <label for="slot-select-{{ inv.item.id }}" class="sr-only">Elegir ubicación para {{ inv.item.nombre }}</label>
-                        <select id="slot-select-{{ inv.item.id }}" class="slot-select min-h-[48px] rounded-xl border-2 border-purple-200 bg-white px-3 text-base font-bold text-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-200">
-                            <option value="cama">Cama</option>
-                            <option value="cuadro">Cuadro</option>
-                            <option value="alfombra">Alfombra</option>
-                            <option value="lampara">Lámpara</option>
-                        </select>
-                        <button type="button"
-                                class="btn-colocar min-h-[48px] px-5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-base shadow-hard hover:scale-105 active:scale-95 transition-transform"
-                                data-item-id="{{ inv.item.id }}"
-                                data-item-nombre="{{ inv.item.nombre }}">
-                            Colocar
-                        </button>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="py-12 flex flex-col items-center text-gray-400 text-center">
-                    <i data-lucide="ghost" class="w-16 h-16 mb-4 opacity-20" aria-hidden="true"></i>
-                    <p class="font-bold text-base">Todavía no tienes ítems de habitación.</p>
-                    <p class="text-sm mt-1">¡Visita la tienda para conseguir tu primera decoración!</p>
-                </div>
-                {% endfor %}
-            </div>
+        <h2 id="modal-slot-titulo" class="text-2xl font-black text-purple-600 mb-4 pr-12">Elegir ítem</h2>
+
+        <!-- Sub-tabs Tengo/Tienda -->
+        <div class="flex gap-2 mb-4" role="tablist" aria-label="Tengo o Tienda">
+            <button type="button" role="tab" aria-selected="true" data-slot-subtab="tengo"
+                    class="slot-subtab-btn min-h-[48px] px-4 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white">Tengo</button>
+            <button type="button" role="tab" aria-selected="false" data-slot-subtab="tienda"
+                    class="slot-subtab-btn min-h-[48px] px-4 py-2 rounded-xl font-bold text-sm bg-gray-100 text-gray-500">Tienda</button>
         </div>
 
-        <!-- Tienda de la casa -->
-        <div class="bg-white rounded-3xl shadow-soft border-4 border-amber-100 p-6 md:p-8">
-            <h2 class="text-xl md:text-2xl font-black text-amber-600 mb-6 flex items-center gap-3">
-                <i data-lucide="store" class="w-7 h-7" aria-hidden="true"></i>
-                Tienda de la casa
-            </h2>
-
-            <div class="space-y-4">
-                {% for item in items_tienda %}
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
-                    <div class="flex items-center gap-4 flex-1">
-                        {% if item.imagen %}
-                            <img src="{{ item.imagen_url_segura }}" alt="{{ item.nombre }}" class="w-16 h-16 object-contain rounded-xl bg-white border-2 border-amber-100">
-                        {% else %}
-                            <div class="w-16 h-16 flex items-center justify-center text-3xl rounded-xl bg-white border-2 border-amber-100" aria-hidden="true">🛍️</div>
-                        {% endif %}
-                        <div>
-                            <p class="font-black text-amber-900">{{ item.nombre }}</p>
-                            <p class="text-sm font-bold text-amber-500">{{ item.get_categoria_display }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <span class="flex items-center gap-1 font-black text-amber-700 text-base">
-                            <span aria-hidden="true">🪙</span>{{ item.precio_monedas }}
-                        </span>
-                        <button type="button"
-                                class="btn-comprar min-h-[48px] px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-base shadow-hard hover:scale-105 active:scale-95 transition-transform"
-                                data-item-id="{{ item.id }}"
-                                data-item-nombre="{{ item.nombre }}"
-                                data-item-precio="{{ item.precio_monedas }}">
-                            Comprar
-                        </button>
-                    </div>
+        <!-- Panel "Tengo": ítems ya poseídos, filtrados por slot vía JS -->
+        <div id="modal-slot-panel-tengo" class="space-y-3">
+            {% for inv in items_disponibles %}
+            <div class="slot-item-card flex items-center gap-4 bg-purple-50 border-2 border-purple-200 rounded-2xl p-3" data-categoria="{{ inv.item.categoria }}">
+                {% if inv.item.imagen %}
+                <img src="{{ inv.item.imagen_url_segura }}" alt="{{ inv.item.nombre }}" class="w-14 h-14 object-contain rounded-xl bg-white border-2 border-purple-100">
+                {% else %}
+                <div class="w-14 h-14 flex items-center justify-center text-2xl rounded-xl bg-white border-2 border-purple-100" aria-hidden="true">🎁</div>
+                {% endif %}
+                <div class="flex-1">
+                    <p class="font-black text-purple-900 text-sm">{{ inv.item.nombre }}</p>
+                    <p class="text-xs font-bold text-purple-500">{{ inv.item.get_categoria_display }}</p>
                 </div>
-                {% empty %}
-                <div class="py-12 flex flex-col items-center text-gray-400 text-center">
-                    <i data-lucide="sparkles" class="w-16 h-16 mb-4 opacity-20" aria-hidden="true"></i>
-                    <p class="font-bold text-base">No hay nuevos ítems en la tienda por ahora.</p>
-                    <p class="text-sm mt-1">¡Vuelve más tarde para ver novedades!</p>
-                </div>
-                {% endfor %}
+                <button type="button" data-colocar-item data-item-id="{{ inv.item.id }}" data-item-nombre="{{ inv.item.nombre }}"
+                        class="min-h-[48px] px-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-sm shadow-hard hover:scale-105 active:scale-95 transition-transform">
+                    Colocar
+                </button>
             </div>
+            {% empty %}
+            <div class="py-10 flex flex-col items-center text-gray-400 text-center">
+                <i data-lucide="ghost" class="w-12 h-12 mb-3 opacity-20" aria-hidden="true"></i>
+                <p class="font-bold text-sm">Todavía no tienes ítems de habitación.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Panel "Tienda": ítems no poseídos, filtrados por slot vía JS -->
+        <div id="modal-slot-panel-tienda" class="space-y-3 hidden">
+            {% for item in items_tienda %}
+            <div class="slot-item-card flex items-center gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl p-3" data-categoria="{{ item.categoria }}">
+                {% if item.imagen %}
+                <img src="{{ item.imagen_url_segura }}" alt="{{ item.nombre }}" class="w-14 h-14 object-contain rounded-xl bg-white border-2 border-amber-100">
+                {% else %}
+                <div class="w-14 h-14 flex items-center justify-center text-2xl rounded-xl bg-white border-2 border-amber-100" aria-hidden="true">🛍️</div>
+                {% endif %}
+                <div class="flex-1">
+                    <p class="font-black text-amber-900 text-sm">{{ item.nombre }}</p>
+                    <p class="text-xs font-bold text-amber-500 flex items-center gap-1"><span aria-hidden="true">🪙</span>{{ item.precio_monedas }}</p>
+                </div>
+                <button type="button" data-comprar-item data-item-id="{{ item.id }}" data-item-nombre="{{ item.nombre }}"
+                        class="min-h-[48px] px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow-hard hover:scale-105 active:scale-95 transition-transform">
+                    Comprar
+                </button>
+            </div>
+            {% empty %}
+            <div class="py-10 flex flex-col items-center text-gray-400 text-center">
+                <i data-lucide="sparkles" class="w-12 h-12 mb-3 opacity-20" aria-hidden="true"></i>
+                <p class="font-bold text-sm">No hay nuevos ítems en la tienda por ahora.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
@@ -211,78 +191,100 @@
 {
     "urlComprarItem": "{% url 'avatar:comprar_item' %}",
     "urlColocarItem": "{% url 'avatar:colocar_item' %}",
-    "csrfToken": "{{ csrf_token }}"
+    "urlEquiparItem": "{% url 'avatar:equipar_item' %}",
+    "urlComprarYEquipar": "{% url 'avatar:comprar_y_equipar' %}",
+    "csrfToken": "{{ csrf_token }}",
+    "slotCategorias": {
+        "mesa": ["mueble"],
+        "estante": ["mueble"],
+        "cama": ["mueble"],
+        "silla": ["mueble"],
+        "cuadro": ["decoracion", "habitacion"],
+        "lampara": ["decoracion", "habitacion"],
+        "alfombra": ["habitacion", "fondo"]
+    }
 }
 </script>
 
 <style>
-    /* Vista "isométrica" simple de la habitación, sin librerías externas */
-    .room-iso {
-        max-width: 480px;
+    /* Habitación con hotspots clicables sobre la ilustración SVG de fondo.
+       Posiciones documentadas también en línea junto a cada hotspot (%) para
+       que sea fácil ajustarlas cuando llegue el arte final. */
+    .room-canvas {
+        position: relative;
         width: 100%;
+        max-width: 820px;
+        aspect-ratio: 4 / 3;
         border-radius: 1.5rem;
         overflow: hidden;
         border: 4px solid #FED7AA;
         box-shadow: 0 8px 0 rgba(0,0,0,0.05), 0 15px 20px rgba(0,0,0,0.08);
     }
 
-    .room-pared {
-        position: relative;
-        height: 160px;
-        background: linear-gradient(180deg, #BFDBFE 0%, #E0F2FE 100%);
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        padding: 1rem;
-    }
-
-    .room-piso {
-        position: relative;
-        height: 180px;
-        background: linear-gradient(180deg, #FDE68A 0%, #FBBF24 100%);
-        transform: perspective(400px) rotateX(8deg);
-        transform-origin: top;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        padding: 1.5rem 1rem 1rem;
-    }
-
-    .room-slot {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 96px;
-        height: 96px;
-    }
-
-    .room-slot-avatar {
-        width: 72px;
-        height: 110px;
-    }
-
-    .room-item-img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
-    }
-
-    .room-placeholder {
+    .room-bg-img {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        border: 3px dashed rgba(30, 41, 59, 0.2);
+        object-fit: cover;
+    }
+
+    .room-hotspot {
+        position: absolute;
+        border: 3px dashed rgba(124, 58, 237, 0.35);
         border-radius: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.05);
+        transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+        cursor: pointer;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .room-hotspot:hover,
+    .room-hotspot:focus-visible {
+        background: rgba(168, 85, 247, 0.18);
+        border-color: rgba(124, 58, 237, 0.7);
+        transform: scale(1.03);
+    }
+
+    .room-hotspot:focus-visible {
+        outline: 3px solid #7C3AED;
+        outline-offset: 2px;
+    }
+
+    .room-hotspot-label {
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: 800;
+        color: #6B21A8;
+        background: rgba(255,255,255,0.85);
+        padding: 1px 6px;
+        border-radius: 999px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .room-hotspot:hover .room-hotspot-label,
+    .room-hotspot:focus-visible .room-hotspot-label {
+        opacity: 1;
+    }
+
+    .room-item-placed {
+        position: absolute;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
     }
 
     @media (min-width: 640px) {
-        .room-slot { width: 120px; height: 120px; }
-        .room-slot-avatar { width: 90px; height: 140px; }
+        .room-hotspot-label { font-size: 13px; }
     }
 </style>
-<script src="/static/js/avatar/casa.js"></script>
+<script src="{% static 'js/avatar/casa.js' %}" defer></script>
+<script src="{% static 'js/avatar/armario.js' %}" defer></script>
 {% endblock %}

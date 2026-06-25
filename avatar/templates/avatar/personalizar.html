@@ -1,215 +1,33 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Personalizar mi Avatar - DysPlay{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    
-    <!-- Vista Previa del Avatar (Columna Izquierda) -->
-    <div class="lg:col-span-5 bg-white rounded-3xl shadow-soft border-4 border-orange-100 p-8 flex flex-col items-center lg:sticky lg:top-24">
-        <h1 class="text-3xl font-black text-orange-600 mb-6 text-center">¡Así me veo! ✨</h1>
-        
-        <div id="main-preview-container" class="w-56 h-56 md:w-72 md:h-72 bg-gradient-to-b from-blue-50 to-white rounded-full border-8 border-white shadow-hard flex items-center justify-center relative overflow-hidden transition-all duration-300 avatar-visual-root avatar-{{ avatar.estado_actual|default:'neutral' }}">
+<div class="max-w-6xl w-full">
+    {% include 'avatar/_armario_contenido.html' %}
 
-            <!-- Escenario cuadrado (1:1) centrado: cuerpo y ropa comparten el mismo
-                 sistema de coordenadas aquí dentro, sin importar la forma del contenedor padre. -->
-            <div id="avatar-stage" class="relative w-full" style="height:auto;aspect-ratio:1/1;">
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
+        <a href="{% url 'avatar:casa' %}" class="w-full flex items-center justify-center gap-3 bg-orange-500 text-white py-4 rounded-2xl font-black text-xl shadow-hard hover:scale-105 active:scale-95 transition-transform">
+            <i data-lucide="home" class="w-6 h-6" aria-hidden="true"></i>
+            Mi Casa 🏠
+        </a>
 
-            <!-- Capa 1: Cuerpo Base (personaje SVG animado) -->
-            <div id="preview-layer-body" class="absolute inset-0 w-full h-full z-10">
-                {% include 'avatar/_svg_personaje.html' with ropa_superior=avatar_equipados.ropa_superior %}
-            </div>
-
-            <!-- Capas de Ropa e Items (Se actualizan por JS) -->
-            <!-- Posiciones (%) calcadas del lienzo de referencia de 500x500 usado en Figma -->
-            <div id="preview-layers-items" class="absolute inset-0 z-20 pointer-events-none">
-                {% if avatar_equipados.ropa_inferior %}
-                <img src="{{ avatar_equipados.ropa_inferior.imagen_url_segura }}" class="absolute object-contain z-[12]" style="left:31%;top:50%;width:40.2%;height:40.2%;" data-cat="ropa_inferior">
-                {% endif %}
-
-                {% if avatar_equipados.calzado %}
-                <img src="{{ avatar_equipados.calzado.imagen_url_segura }}" class="absolute object-contain z-[14]" style="left:31.8%;top:72.8%;width:36.4%;height:27.2%;" data-cat="calzado">
-                {% endif %}
-
-                {% if avatar_equipados.ropa_superior %}
-                    {% if not avatar_equipados.ropa_superior.mangas_urls %}
-                    <img src="{{ avatar_equipados.ropa_superior.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" data-cat="ropa_superior">
-                    {% endif %}
-                {% elif avatar_equipados.ropa %}
-                <img src="{{ avatar_equipados.ropa.imagen_url_segura }}" class="absolute object-contain z-[20]" style="left:28.2%;top:37.4%;width:43.6%;height:35.4%;" data-cat="ropa">
-                {% endif %}
-
-                {% if avatar_equipados.cabello %}
-                <img src="{{ avatar_equipados.cabello.imagen_url_segura }}" class="absolute object-contain z-30" style="left:19.4%;top:-1.2%;width:56.4%;height:56.4%;" data-cat="cabello">
-                {% endif %}
-
-                {% if avatar_equipados.accesorio %}
-                <img src="{{ avatar_equipados.accesorio.imagen_url_segura }}" class="absolute object-contain z-40" style="left:30%;top:-8%;width:40%;height:30%;" data-cat="accesorio">
-                {% endif %}
-            </div>
-            </div>
-        </div>
-
-        <div class="mt-8 w-full space-y-4">
-            <div class="bg-orange-50 rounded-2xl p-4 border-2 border-orange-200">
-                <p class="text-center font-bold text-orange-800">Nombre: <span class="font-black">{{ avatar.nombre_avatar }}</span></p>
-                <div class="flex items-center justify-center gap-2 mt-2">
-                    <span class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-black">LVL {{ avatar.nivel_visual }}</span>
-                    <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-black">⭐ {{ request.user.monedas }}</span>
-                </div>
-            </div>
-            
-            <a href="{% url 'avatar:casa' %}" class="w-full flex items-center justify-center gap-3 bg-orange-500 text-white py-4 rounded-2xl font-black text-xl shadow-hard hover:scale-105 active:scale-95 transition-transform">
-                <i data-lucide="home" class="w-6 h-6"></i>
-                Mi Casa 🏠
-            </a>
-
-            <a href="{% url 'home' %}" class="w-full flex items-center justify-center gap-3 bg-success text-white py-4 rounded-2xl font-black text-xl shadow-hard hover:scale-105 active:scale-95 transition-transform">
-                <i data-lucide="check-circle" class="w-6 h-6"></i>
-                ¡Todo listo!
-            </a>
-        </div>
-    </div>
-
-    <!-- Armario (Columna Derecha) -->
-    <div class="lg:col-span-7 bg-white rounded-3xl shadow-soft border-4 border-purple-100 p-6 md:p-8">
-        <h2 class="text-2xl font-black text-purple-600 mb-6 flex items-center gap-3">
-            <i data-lucide="backpack" class="w-8 h-8"></i>
-            Mi Armario Mágico
-        </h2>
-
-        <!-- Tabs de Categorías -->
-        <div class="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-6">
-            {% for cat_id, cat_name in categorias_display.items %}
-            <button onclick="switchTab('{{ cat_id }}')" id="tab-{{ cat_id }}" class="tab-btn whitespace-nowrap px-6 py-3 rounded-2xl font-bold text-sm transition-all border-b-4 {% if forloop.first %}bg-purple-600 text-white border-purple-800 shadow-md{% else %}bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100{% endif %}">
-                {{ cat_name }}
-            </button>
-            {% endfor %}
-        </div>
-
-        <!-- Contenedores de Items -->
-        <div id="items-container" class="min-h-[400px]">
-            {% for cat_id, items in items_por_cat.items %}
-            <div id="panel-{{ cat_id }}" class="tab-panel {% if not forloop.first %}hidden{% endif %} animate-fade-in">
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {% for item in items %}
-                    <div class="relative group">
-                        <button onclick="equiparItem('{{ item.id }}', '{{ item.categoria }}', '{{ item.imagen_url_segura }}')" 
-                                class="item-btn w-full aspect-square rounded-2xl border-4 transition-all flex flex-col items-center justify-center gap-2 p-4 
-                                {% if item.id in equipados_ids %}border-purple-500 bg-purple-50 shadow-inner{% else %}border-gray-100 bg-gray-50 hover:border-purple-200 hover:shadow-md{% endif %}">
-                            
-                            {% if item.imagen %}
-                                <img src="{{ item.imagen_url_segura }}" alt="{{ item.nombre }}" class="w-20 h-20 object-contain group-hover:scale-110 transition-transform">
-                            {% else %}
-                                <div class="text-4xl group-hover:scale-110 transition-transform">🎁</div>
-                            {% endif %}
-                            
-                            <span class="text-xs font-black text-gray-600 text-center leading-tight">{{ item.nombre }}</span>
-
-                            {% if item.id in equipados_ids %}
-                            <div class="absolute -top-2 -right-2 bg-purple-600 text-white rounded-full p-1 shadow-md">
-                                <i data-lucide="check" class="w-4 h-4"></i>
-                            </div>
-                            {% endif %}
-                        </button>
-                    </div>
-                    {% empty %}
-                        <div class="col-span-full py-20 flex flex-col items-center text-gray-400">
-                            <i data-lucide="ghost" class="w-16 h-16 mb-4 opacity-20"></i>
-                            <p class="font-bold">Aún no tienes objetos aquí.</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+        <a href="{% url 'home' %}" class="w-full flex items-center justify-center gap-3 bg-success text-white py-4 rounded-2xl font-black text-xl shadow-hard hover:scale-105 active:scale-95 transition-transform">
+            <i data-lucide="check-circle" class="w-6 h-6" aria-hidden="true"></i>
+            ¡Todo listo!
+        </a>
     </div>
 </div>
 
-<script>
-function switchTab(catId) {
-    // Ocultar todos los paneles
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-    // Mostrar el seleccionado
-    document.getElementById('panel-' + catId).classList.remove('hidden');
-    
-    // Actualizar botones de tab
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('bg-purple-600', 'text-white', 'border-purple-800', 'shadow-md');
-        b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-200');
-    });
-    const activeTab = document.getElementById('tab-' + catId);
-    activeTab.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-200');
-    activeTab.classList.add('bg-purple-600', 'text-white', 'border-purple-800', 'shadow-md');
-}
-
-async function equiparItem(itemId, categoria, imgUrl) {
-    // 1. Mostrar feedback inmediato en la vista previa
-    const layersContainer = document.getElementById('preview-layers-items');
-    
-    // Buscar si ya existe una capa para esta categoría
-    let layer = layersContainer.querySelector(`img[data-cat="${categoria}"]`);
-    
-    if (!layer) {
-        layer = document.createElement('img');
-        layer.dataset.cat = categoria;
-        layer.className = "absolute object-contain transition-all duration-300 transform scale-0";
-        // Posición (%) calcada del lienzo de referencia de 500x500 usado en Figma,
-        // igual que las capas renderizadas por el servidor más arriba.
-        const posiciones = {
-            'ropa_inferior': { left: '31%', top: '50%', width: '40.2%', height: '40.2%', z: 12 },
-            'calzado':       { left: '31.8%', top: '72.8%', width: '36.4%', height: '27.2%', z: 14 },
-            'ropa_superior': { left: '28.2%', top: '37.4%', width: '43.6%', height: '35.4%', z: 20 },
-            'ropa':          { left: '28.2%', top: '37.4%', width: '43.6%', height: '35.4%', z: 20 },
-            'cabello':       { left: '19.4%', top: '-1.2%', width: '56.4%', height: '56.4%', z: 30 },
-            'accesorio':     { left: '30%', top: '-8%', width: '40%', height: '30%', z: 40 },
-        };
-        const pos = posiciones[categoria] || { left: '0%', top: '0%', width: '100%', height: '100%', z: 20 };
-        layer.style.left = pos.left;
-        layer.style.top = pos.top;
-        layer.style.width = pos.width;
-        layer.style.height = pos.height;
-        layer.style.zIndex = pos.z;
-        layersContainer.appendChild(layer);
-    }
-
-    // Actualizar imagen con efecto
-    layer.src = imgUrl;
-    setTimeout(() => layer.classList.remove('scale-0'), 10);
-
-    // 2. Enviar al servidor
-    const formData = new FormData();
-    formData.append('item_id', itemId);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
-    try {
-        const response = await fetch('{% url "avatar:personalizar" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-        
-        if (response.ok) {
-            // Recargar solo los botones de items para actualizar el check de "Equipado"
-            // Para simplicidad en este MVP, recargamos la página o actualizamos clases por JS
-            // Aquí simplemente recargamos para asegurar que todo el sistema (incluyendo componente global) esté sincronizado
-            window.location.reload();
-        }
-    } catch (error) {
-        console.error("Error al equipar item:", error);
-    }
+<!-- Configuración para armario.js cuando se accede directo por esta URL
+     (sin casa.js cargado, a diferencia del modal de armario dentro de casa.html) -->
+<script type="application/json" id="armario-config-data">
+{
+    "urlEquiparItem": "{% url 'avatar:equipar_item' %}",
+    "urlComprarYEquipar": "{% url 'avatar:comprar_y_equipar' %}",
+    "csrfToken": "{{ csrf_token }}"
 }
 </script>
-
-<style>
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-    animation: fade-in 0.3s ease-out forwards;
-}
-</style>
+<script src="{% static 'js/avatar/armario.js' %}" defer></script>
 {% endblock %}

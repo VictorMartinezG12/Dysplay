@@ -1,0 +1,99 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Habitación ilustrada con armario, mesa, estante, cama, silla, cuadro, lámpara y alfombra">
+  <defs>
+    <linearGradient id="pared" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BFDBFE"/>
+    </linearGradient>
+    <linearGradient id="piso" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Pared -->
+  <rect x="0" y="0" width="800" height="380" fill="url(#pared)"/>
+  <!-- Zócalo -->
+  <rect x="0" y="350" width="800" height="30" fill="#93C5FD" opacity="0.5"/>
+  <!-- Piso -->
+  <rect x="0" y="380" width="800" height="220" fill="url(#piso)"/>
+  <!-- Líneas de piso (perspectiva simple) -->
+  <g stroke="#F59E0B" stroke-opacity="0.35" stroke-width="3">
+    <line x1="0" y1="430" x2="800" y2="430"/>
+    <line x1="0" y1="490" x2="800" y2="490"/>
+    <line x1="0" y1="550" x2="800" y2="550"/>
+  </g>
+
+  <!-- ===== CUADRO (pared, izquierda) ===== -->
+  <g id="silueta-cuadro">
+    <rect x="60" y="60" width="120" height="90" rx="8" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="6"/>
+    <rect x="78" y="78" width="84" height="54" rx="4" fill="#DDD6FE"/>
+    <circle cx="100" cy="100" r="10" fill="#A78BFA"/>
+    <path d="M82 122 L108 96 L126 114 L140 100 L156 122 Z" fill="#A78BFA"/>
+  </g>
+
+  <!-- ===== LAMPARA (pared/techo, derecha) ===== -->
+  <g id="silueta-lampara">
+    <line x1="620" y1="20" x2="620" y2="70" stroke="#92400E" stroke-width="4"/>
+    <path d="M580 70 L660 70 L645 130 L595 130 Z" fill="#FDBA74" stroke="#EA580C" stroke-width="4"/>
+    <ellipse cx="620" cy="135" rx="35" ry="8" fill="#FED7AA" opacity="0.6"/>
+  </g>
+
+  <!-- ===== ARMARIO (centro-izquierda, contra la pared) ===== -->
+  <g id="silueta-armario">
+    <rect x="40" y="170" width="160" height="210" rx="10" fill="#F3E8FF" stroke="#9333EA" stroke-width="6"/>
+    <line x1="120" y1="170" x2="120" y2="380" stroke="#9333EA" stroke-width="5"/>
+    <circle cx="105" cy="270" r="6" fill="#7C3AED"/>
+    <circle cx="135" cy="270" r="6" fill="#7C3AED"/>
+    <rect x="55" y="185" width="50" height="70" rx="6" fill="#E9D5FF"/>
+    <rect x="135" y="185" width="50" height="70" rx="6" fill="#E9D5FF"/>
+  </g>
+
+  <!-- ===== ESTANTE DE LIBROS (pared, centro) ===== -->
+  <g id="silueta-estante">
+    <rect x="260" y="190" width="150" height="150" rx="6" fill="#FFF7ED" stroke="#C2410C" stroke-width="6"/>
+    <line x1="260" y1="240" x2="410" y2="240" stroke="#C2410C" stroke-width="5"/>
+    <line x1="260" y1="290" x2="410" y2="290" stroke="#C2410C" stroke-width="5"/>
+    <rect x="270" y="200" width="14" height="35" fill="#FB923C"/>
+    <rect x="288" y="200" width="14" height="35" fill="#FBBF24"/>
+    <rect x="306" y="200" width="14" height="35" fill="#F87171"/>
+    <rect x="324" y="200" width="14" height="35" fill="#60A5FA"/>
+    <rect x="270" y="250" width="14" height="35" fill="#34D399"/>
+    <rect x="288" y="250" width="14" height="35" fill="#FB923C"/>
+    <rect x="306" y="250" width="14" height="35" fill="#A78BFA"/>
+    <rect x="270" y="300" width="60" height="30" rx="4" fill="#FDBA74"/>
+  </g>
+
+  <!-- ===== CAMA (derecha, contra la pared) ===== -->
+  <g id="silueta-cama">
+    <rect x="560" y="230" width="190" height="110" rx="12" fill="#FECACA" stroke="#DC2626" stroke-width="6"/>
+    <rect x="560" y="230" width="50" height="110" rx="10" fill="#FEE2E2"/>
+    <rect x="575" y="245" width="22" height="35" rx="6" fill="#FFFFFF"/>
+    <rect x="615" y="270" width="160" height="20" rx="6" fill="#FCA5A5"/>
+  </g>
+
+  <!-- ===== MESA (piso, centro-izquierda) ===== -->
+  <g id="silueta-mesa">
+    <rect x="220" y="410" width="130" height="18" rx="6" fill="#FDE68A" stroke="#B45309" stroke-width="5"/>
+    <rect x="230" y="428" width="14" height="60" fill="#B45309"/>
+    <rect x="326" y="428" width="14" height="60" fill="#B45309"/>
+  </g>
+
+  <!-- ===== SILLA (piso, junto a la mesa) ===== -->
+  <g id="silueta-silla">
+    <rect x="380" y="420" width="60" height="14" rx="5" fill="#FCD34D" stroke="#B45309" stroke-width="4"/>
+    <rect x="386" y="434" width="10" height="45" fill="#B45309"/>
+    <rect x="424" y="434" width="10" height="45" fill="#B45309"/>
+    <rect x="386" y="385" width="48" height="35" rx="6" fill="#FCD34D" stroke="#B45309" stroke-width="4"/>
+  </g>
+
+  <!-- ===== ALFOMBRA (piso, frente, ancha) ===== -->
+  <g id="silueta-alfombra">
+    <ellipse cx="500" cy="500" rx="170" ry="55" fill="#FB923C" opacity="0.55" stroke="#EA580C" stroke-width="4" stroke-dasharray="2 0"/>
+    <ellipse cx="500" cy="500" rx="120" ry="38" fill="#FDBA74" opacity="0.5"/>
+  </g>
+
+  <!-- Zona vacía para el avatar (referencia visual, no clicable) -->
+  <g opacity="0.25">
+    <ellipse cx="470" cy="560" rx="40" ry="10" fill="#92400E"/>
+  </g>
+</svg>
