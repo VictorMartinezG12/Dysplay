@@ -458,6 +458,13 @@
         </div>
     </div>
 
+    {# ── Compañero avatar ── #}
+    {% include 'avatar/componente.html' %}
+    <script type="application/json" id="avatar-reacciones-data">{{ reacciones_json|safe }}</script>
+    <script type="application/json" id="avatar-frase-contextual-data">"{{ avatar_frase_contextual|escapejs }}"</script>
+    <script type="application/json" id="avatar-stats-data">{"racha_dias": {{ racha_dias|default:0 }}}</script>
+    <script src="{% static 'js/avatar_events.js' %}"></script>
+
     <script src="{% static 'js/celebraciones/celebraciones.js' %}" defer></script>
     <script src="{% static 'js/estadisticas/estadisticas.js' %}" defer></script>
     <script>

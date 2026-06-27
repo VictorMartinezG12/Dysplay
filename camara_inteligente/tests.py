@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from niveles.models import Nivel, ProgresoEstudiante
+from niveles.models import Nivel, ProgresoEstudiante, ProgresoNivel
 
 from . import services
 from .models import ConfiguracionCamara, FraseTemplate
@@ -168,8 +168,11 @@ class NivelDificultadUsuarioTests(TestCase):
         self.assertEqual(services._nivel_dificultad_usuario(self.usuario), 1)
 
     def test_nivel_alto_se_acota_a_5(self):
-        nivel = Nivel.objects.create(numero=8, titulo='Avanzado', puntos_recompensa=50)
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=nivel)
+        # Con 35+ niveles completados se alcanza la dificultad máxima (5).
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        for i in range(35):
+            nivel = Nivel.objects.create(numero=100 + i, titulo=f'Nivel {i}', puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
         self.assertEqual(services._nivel_dificultad_usuario(self.usuario), 5)
 
 

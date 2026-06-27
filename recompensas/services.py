@@ -143,7 +143,7 @@ def verificar_y_otorgar_insignias(usuario):
             estar vacía si no se cumplió ningún criterio nuevo).
     """
     # Import local para evitar dependencias circulares entre apps al cargarse.
-    from niveles.models import ProgresoEstudiante
+    from niveles.models import ProgresoEstudiante, ProgresoNivel
 
     try:
         progreso = ProgresoEstudiante.objects.get(usuario=usuario)
@@ -156,19 +156,22 @@ def verificar_y_otorgar_insignias(usuario):
         Insignia.objects.filter(usuario=usuario).values_list('tipo_insignia_id', flat=True)
     )
 
+    # Conteo real de niveles completados (suma de todas las zonas).
+    niveles_completados = ProgresoNivel.objects.filter(progreso=progreso).count()
+
     insignias_nuevas = []
 
     for tipo in TipoInsignia.objects.exclude(pk__in=tipos_obtenidos):
         criterio_cumplido = False
 
         if tipo.criterio == 'primer_nivel':
-            criterio_cumplido = progreso.nivel_actual is not None and progreso.nivel_actual.numero >= 2
+            criterio_cumplido = niveles_completados >= 5
 
         elif tipo.criterio == 'nivel_5':
-            criterio_cumplido = progreso.nivel_actual is not None and progreso.nivel_actual.numero >= 5
+            criterio_cumplido = niveles_completados >= 10
 
         elif tipo.criterio == 'nivel_10':
-            criterio_cumplido = progreso.nivel_actual is not None and progreso.nivel_actual.numero >= 10
+            criterio_cumplido = niveles_completados >= 20
 
         elif tipo.criterio == 'palabras_100':
             criterio_cumplido = progreso.puntos_acumulados >= tipo.valor_umbral

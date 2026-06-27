@@ -78,6 +78,7 @@
             return;
         }
 
+        mostrarSidebar(false);
         document.getElementById('global-header').classList.add('hidden');
         document.getElementById('global-header').classList.remove('flex');
 
@@ -94,6 +95,7 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
 
+        mostrarSidebar(false);
         document.getElementById('global-header').classList.add('hidden');
         document.getElementById('global-header').classList.remove('flex');
 
@@ -366,8 +368,12 @@
             pronunciacion_incorrecta: '💪',
         };
         const emoji = emojisPorTipo[reaccionAvatar.tipo] || '🙂';
-
         elementoMensaje.textContent = `${emoji} ${reaccionAvatar.mensaje}`;
+
+        // Avatar visual también reacciona
+        window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+            detail: { tipo: reaccionAvatar.tipo, data: {} },
+        }));
     }
 
     /**
@@ -440,7 +446,13 @@
      * `view-map` desde cualquiera de las otras vistas.
      * @returns {void}
      */
+    function mostrarSidebar(visible) {
+        const sidebar = document.getElementById('zona-sidebar');
+        if (sidebar) sidebar.style.display = visible ? '' : 'none';
+    }
+
     function goToMap() {
+        mostrarSidebar(true);
         document.getElementById('global-header').classList.remove('hidden');
         document.getElementById('global-header').classList.add('flex');
 
@@ -576,6 +588,14 @@
 
         document.querySelectorAll('[data-action="salir-al-mapa"]').forEach((btn) => {
             btn.addEventListener('click', salirAlMapa);
+        });
+
+        document.querySelectorAll('.zona-sidebar-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const clave = btn.dataset.zonaClave;
+                const ancla = document.getElementById('zona-anchor-' + clave);
+                if (ancla) ancla.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
         });
 
         const btnComenzarNarrativa = document.getElementById('btn-comenzar-narrativa');

@@ -173,26 +173,14 @@ def guardar_progreso_estudiante(usuario, nivel_id, resultado_evaluacion):
 
     progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=usuario)
 
-    # Determinar ANTES de avanzar si este nivel ya estaba superado anteriormente.
-    ya_completado = (
-        progreso.nivel_actual is not None
-        and nivel.numero < progreso.nivel_actual.numero
-    )
+    # Un nivel está ya completado si existe un ProgresoNivel previo para él.
+    ya_completado = ProgresoNivel.objects.filter(progreso=progreso, nivel=nivel).exists()
 
     score_global = resultado_evaluacion.get('score_global', 0)
     avanzo_de_nivel = False
 
     if score_global >= UMBRAL_SUPERACION_NIVEL:
         progreso.puntos_acumulados += nivel.puntos_recompensa
-
-        # Avanzamos al siguiente nivel disponible (si el estudiante estaba
-        # justo en este nivel y existe uno con número mayor).
-        siguiente_nivel = Nivel.objects.filter(numero__gt=nivel.numero).order_by('numero').first()
-        if siguiente_nivel and (progreso.nivel_actual is None or progreso.nivel_actual.numero <= nivel.numero):
-            progreso.nivel_actual = siguiente_nivel
-            avanzo_de_nivel = True
-
-        progreso.save()
 
         # Guardamos el mejor resultado en estrellas de este nivel (para el
         # mapa), sin afectar las monedas: si ya tenía un resultado mejor en
@@ -202,6 +190,18 @@ def guardar_progreso_estudiante(usuario, nivel_id, resultado_evaluacion):
         if estrellas_obtenidas > progreso_nivel.mejores_estrellas:
             progreso_nivel.mejores_estrellas = estrellas_obtenidas
             progreso_nivel.save()
+
+        # Avanzamos dentro de la misma zona (orden_en_zona siguiente).
+        # nivel_actual queda apuntando al nivel recién completado (cosmético).
+        siguiente_en_zona = Nivel.objects.filter(
+            zona=nivel.zona,
+            orden_en_zona=nivel.orden_en_zona + 1,
+        ).first()
+        if siguiente_en_zona and not ya_completado:
+            avanzo_de_nivel = True
+
+        progreso.nivel_actual = nivel
+        progreso.save()
 
     return progreso, avanzo_de_nivel, ya_completado
 
@@ -281,26 +281,36 @@ ZONAS_MAPA_AVENTURA = [
         'clave': Nivel.ZONA_BOSQUE,
         'nombre': 'Bosque Encantado',
         'descripcion': 'Vocales y sonidos básicos',
+        'dificultad': 'facil',
+        'emoji': '🌳',
     },
     {
         'clave': Nivel.ZONA_MONTANA,
         'nombre': 'Montaña de las Letras',
         'descripcion': 'Consonantes y combinaciones',
+        'dificultad': 'facil',
+        'emoji': '⛰️',
     },
     {
         'clave': Nivel.ZONA_VALLE,
         'nombre': 'Valle de las Sílabas',
         'descripcion': 'Sílabas y ritmo',
+        'dificultad': 'medio',
+        'emoji': '🌾',
     },
     {
         'clave': Nivel.ZONA_CASTILLO,
         'nombre': 'Castillo de las Palabras',
         'descripcion': 'Palabras completas',
+        'dificultad': 'medio',
+        'emoji': '🏰',
     },
     {
         'clave': Nivel.ZONA_REINO,
         'nombre': 'Reino de la Lectura',
         'descripcion': 'Frases y comprensión',
+        'dificultad': 'dificil',
+        'emoji': '📖',
     },
 ]
 
@@ -469,6 +479,8 @@ def obtener_mapa_unico(zonas):
         ribbons.append({
             'zona_clave': zona['clave'],
             'zona_nombre': zona['nombre'],
+            'dificultad': zona.get('dificultad', 'facil'),
+            'emoji': zona.get('emoji', '⭐'),
             'desbloqueada': zona['desbloqueada'],
             'y': oldest_y + 52,
         })
@@ -597,7 +609,6 @@ def obtener_mapa_aventura(usuario):
             antes de que existiera este seguimiento).
     """
     progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=usuario)
-    nivel_actual_numero = progreso.nivel_actual.numero if progreso.nivel_actual else None
 
     niveles_por_zona = {}
     for nivel in Nivel.objects.all().order_by('zona', 'orden_en_zona', 'numero'):
@@ -609,21 +620,24 @@ def obtener_mapa_aventura(usuario):
         if mision.nivel_id not in primera_mision_por_nivel:
             primera_mision_por_nivel[mision.nivel_id] = mision
 
-    # Mejor resultado en estrellas por nivel (una sola query) para el badge del mapa.
-    mejores_estrellas_por_nivel = dict(
+    # IDs de niveles completados (con ProgresoNivel) y sus mejores estrellas.
+    completados_map = dict(
         ProgresoNivel.objects.filter(progreso=progreso).values_list('nivel_id', 'mejores_estrellas')
     )
 
     zonas = []
-    for indice, zona_info in enumerate(ZONAS_MAPA_AVENTURA):
+    for zona_info in ZONAS_MAPA_AVENTURA:
         niveles_zona = []
+        # El primer nivel sin completar en la zona es el 'actual'.
+        # El nivel 1 de cada zona (orden_en_zona=1) siempre está desbloqueado.
+        nivel_actual_zona_marcado = False
+
         for nivel in niveles_por_zona.get(zona_info['clave'], []):
-            if nivel_actual_numero is None:
-                estado = 'bloqueado'
-            elif nivel.numero < nivel_actual_numero:
+            if nivel.id in completados_map:
                 estado = 'completado'
-            elif nivel.numero == nivel_actual_numero:
+            elif not nivel_actual_zona_marcado:
                 estado = 'actual'
+                nivel_actual_zona_marcado = True
             else:
                 estado = 'bloqueado'
 
@@ -636,12 +650,11 @@ def obtener_mapa_aventura(usuario):
                 'estado': estado,
                 'frase_historia': mision.frase_historia if mision else '',
                 'palabra_objetivo': mision.palabra_objetivo if mision else '',
-                'mejores_estrellas': mejores_estrellas_por_nivel.get(nivel.id, 3) if estado == 'completado' else 0,
+                'mejores_estrellas': completados_map.get(nivel.id, 3) if estado == 'completado' else 0,
             })
 
-        desbloqueada = any(n['estado'] in ('actual', 'completado') for n in niveles_zona)
-        if indice == 0 and nivel_actual_numero is None:
-            desbloqueada = True
+        # Todas las zonas siempre desbloqueadas (nivel 1 de cada zona accesible).
+        desbloqueada = True
 
         # Geometría del camino SVG (coordenadas de nodos y puntos del polyline).
         geo = _calcular_posiciones_zona(len(niveles_zona)) if niveles_zona else {
@@ -658,6 +671,8 @@ def obtener_mapa_aventura(usuario):
             'clave': zona_info['clave'],
             'nombre': zona_info['nombre'],
             'descripcion': zona_info['descripcion'],
+            'dificultad': zona_info['dificultad'],
+            'emoji': zona_info['emoji'],
             'desbloqueada': desbloqueada,
             'canvas_height': geo['canvas_height'],
             'polyline_points': geo['polyline_points'],

@@ -15,7 +15,7 @@ from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
 from avatar.context_processors import avatar_global
-from niveles.models import Nivel, ProgresoEstudiante
+from niveles.models import Nivel, ProgresoEstudiante, ProgresoNivel
 from django.db.models.signals import post_save
 
 from . import services
@@ -222,9 +222,11 @@ class VerificarYOtorgarInsigniasTests(TestCase):
         self.assertEqual(Insignia.objects.filter(usuario=self.usuario).count(), 0)
 
     def test_otorga_insignia_primer_nivel_al_cumplir_criterio(self):
-        # nivel_actual.numero >= 2 indica que el estudiante ya completó el
-        # nivel 1 y avanzó al 2.
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel_2)
+        # El criterio 'primer_nivel' se cumple al completar 5 niveles en total.
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        for i in range(5):
+            nivel = Nivel.objects.create(numero=10 + i, titulo=f"Nivel {i}", puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
 
         insignias_nuevas = services.verificar_y_otorgar_insignias(self.usuario)
 
@@ -236,8 +238,11 @@ class VerificarYOtorgarInsigniasTests(TestCase):
         )
 
     def test_no_otorga_insignia_si_no_se_cumple_criterio(self):
-        # nivel_actual.numero == 1 -> no cumple el criterio "primer_nivel" (>= 2).
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel_1)
+        # Con menos de 5 niveles completados no se cumple 'primer_nivel'.
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        for i in range(3):
+            nivel = Nivel.objects.create(numero=10 + i, titulo=f"Nivel {i}", puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
 
         insignias_nuevas = services.verificar_y_otorgar_insignias(self.usuario)
 
@@ -245,7 +250,10 @@ class VerificarYOtorgarInsigniasTests(TestCase):
         self.assertEqual(Insignia.objects.filter(usuario=self.usuario).count(), 0)
 
     def test_no_duplica_insignia_ya_obtenida(self):
-        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel_2)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        for i in range(5):
+            nivel = Nivel.objects.create(numero=10 + i, titulo=f"Nivel {i}", puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
 
         primera_pasada = services.verificar_y_otorgar_insignias(self.usuario)
         self.assertEqual(len(primera_pasada), 1)
@@ -323,16 +331,18 @@ class SignalProgresoEstudianteTests(TestCase):
         )
 
     def test_guardar_progreso_dispara_otorgamiento_de_insignia(self):
-        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel_1)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
 
-        # Aún no cumple el criterio "primer_nivel" (nivel_actual.numero >= 2).
+        # Sin ProgresoNivel aún no cumple el criterio.
         self.assertFalse(
             Insignia.objects.filter(usuario=self.usuario, tipo_insignia=self.tipo_primer_nivel).exists()
         )
 
-        # El estudiante avanza al nivel 2 y se vuelve a guardar el progreso,
-        # lo que dispara el signal `post_save` -> `verificar_y_otorgar_insignias`.
-        progreso.nivel_actual = self.nivel_2
+        # Al agregar 5 ProgresoNivel y re-guardar el progreso, el signal
+        # `post_save` -> `verificar_y_otorgar_insignias` debe otorgar la insignia.
+        for i in range(5):
+            nivel = Nivel.objects.create(numero=10 + i, titulo=f"Nivel {i}", puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
         progreso.save()
 
         self.assertTrue(
@@ -340,9 +350,13 @@ class SignalProgresoEstudianteTests(TestCase):
         )
 
     def test_guardar_progreso_no_duplica_insignia_en_guardados_repetidos(self):
-        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel_2)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        for i in range(5):
+            nivel = Nivel.objects.create(numero=10 + i, titulo=f"Nivel {i}", puntos_recompensa=50)
+            ProgresoNivel.objects.create(progreso=progreso, nivel=nivel, mejores_estrellas=2)
 
-        # El primer `save()` (en `create`) ya dispara el signal y otorga la insignia.
+        # El primer save() dispara el signal y otorga la insignia.
+        progreso.save()
         self.assertEqual(
             Insignia.objects.filter(usuario=self.usuario, tipo_insignia=self.tipo_primer_nivel).count(),
             1,

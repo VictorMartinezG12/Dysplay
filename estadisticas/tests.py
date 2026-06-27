@@ -13,7 +13,7 @@ from desafio import services as desafio_services
 from historias import services as historias_services
 from historias.models import Historia, ProgresoHistoria
 from niveles import services as niveles_services
-from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante
+from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante, ProgresoNivel
 from recompensas.models import Coleccionable, ColeccionableUsuario, Insignia, TipoInsignia
 
 from . import services
@@ -103,7 +103,10 @@ class ConstruirProgresoPorZonaTests(TestCase):
         self.nivel3 = Nivel.objects.create(numero=3, titulo='Tres', zona=Nivel.ZONA_MONTANA)
 
     def test_porcentaje_completado_por_zona(self):
-        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel3)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        # Marcar los dos niveles del bosque como completados via ProgresoNivel.
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=3)
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel2, mejores_estrellas=2)
         resultado = services.construir_progreso_por_zona(progreso)
 
         bosque = next(z for z in resultado if z['clave'] == Nivel.ZONA_BOSQUE)
@@ -236,7 +239,8 @@ class ConstruirContextoEstadisticasTests(TestCase):
         )
         self.nivel1 = Nivel.objects.create(numero=1, titulo='Inicio', zona=Nivel.ZONA_BOSQUE)
         self.nivel2 = Nivel.objects.create(numero=2, titulo='Avance', zona=Nivel.ZONA_BOSQUE)
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel2)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel2)
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=3)
         RegistroActividad.objects.registrar(self.usuario, RegistroActividad.TIPO_NIVEL, 80, zona=Nivel.ZONA_BOSQUE)
 
     def test_contiene_todas_las_claves_esperadas(self):

@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante
+from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante, ProgresoNivel
 from recompensas.models import Coleccionable
 from . import services
 from .models import ConfiguracionDesafio, DesafioDiario, ProgresoDesafio
@@ -146,7 +146,9 @@ class PersonalizacionEjerciciosTests(TestCase):
         self.assertEqual(services._nivel_numero_usuario(self.usuario), 1)
 
     def test_nivel_actual_se_respeta(self):
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel3)
+        # _nivel_numero_usuario devuelve el número más alto de los ProgresoNivel.
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel3, mejores_estrellas=2)
         self.assertEqual(services._nivel_numero_usuario(self.usuario), 3)
 
     def test_usuario_sin_progreso_no_recibe_ejercicios_de_nivel_superior(self):
@@ -158,7 +160,8 @@ class PersonalizacionEjerciciosTests(TestCase):
         self.assertNotIn(self.mision_nivel3.id, ids_asignados)
 
     def test_usuario_en_nivel_avanzado_si_puede_recibir_ejercicios_de_su_nivel(self):
-        ProgresoEstudiante.objects.create(usuario=self.usuario, nivel_actual=self.nivel3)
+        progreso = ProgresoEstudiante.objects.create(usuario=self.usuario)
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel3, mejores_estrellas=2)
         desafio = services.obtener_o_crear_desafio_de_hoy()
         obligatorios, opcionales = services._obtener_ejercicios_desafio(self.usuario, desafio)
         ids_asignados = {mision.id for mision in obligatorios + opcionales}

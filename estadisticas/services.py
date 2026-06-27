@@ -14,7 +14,7 @@ from django.db.models import Avg, Sum
 from django.utils import timezone
 
 from historias.models import ProgresoHistoria
-from niveles.models import Nivel, ProgresoEstudiante
+from niveles.models import Nivel, ProgresoEstudiante, ProgresoNivel
 from niveles.services import ZONAS_MAPA_AVENTURA
 from recompensas.models import Coleccionable, ColeccionableUsuario, Insignia
 
@@ -42,19 +42,17 @@ def _nivel_maximo_completado(progreso):
     """
     Calcula cuántos niveles del Mapa de Aventura ha completado el estudiante.
 
-    Un nivel se considera completado si su `numero` es menor al del
-    `nivel_actual` del progreso del estudiante (mismo criterio que
-    `niveles.services.obtener_mapa_aventura`).
+    Cuenta los registros reales de `ProgresoNivel`, que se crean solo cuando
+    el estudiante supera el umbral de pronunciación en un nivel (independiente
+    de la zona en que esté trabajando).
 
     Args:
         progreso (ProgresoEstudiante): progreso del estudiante.
 
     Returns:
-        int: cantidad de niveles completados (0 si no tiene `nivel_actual`).
+        int: cantidad de niveles completados.
     """
-    if progreso.nivel_actual is None:
-        return 0
-    return Nivel.objects.filter(numero__lt=progreso.nivel_actual.numero).count()
+    return ProgresoNivel.objects.filter(progreso=progreso).count()
 
 
 def construir_datos_semana(usuario):
@@ -106,18 +104,15 @@ def construir_progreso_por_zona(progreso):
         list[dict]: una entrada por cada zona con al menos un `Nivel`, con
             `clave`, `nombre` y `porcentaje` (0-100).
     """
-    nivel_actual_numero = progreso.nivel_actual.numero if progreso.nivel_actual else None
-
     resultado = []
     for zona_info in ZONAS_MAPA_AVENTURA:
-        niveles_zona = Nivel.objects.filter(zona=zona_info['clave'])
-        total = niveles_zona.count()
+        total = Nivel.objects.filter(zona=zona_info['clave']).count()
         if total == 0:
             continue
 
-        completados = 0
-        if nivel_actual_numero is not None:
-            completados = niveles_zona.filter(numero__lt=nivel_actual_numero).count()
+        completados = ProgresoNivel.objects.filter(
+            progreso=progreso, nivel__zona=zona_info['clave']
+        ).count()
 
         resultado.append({
             'clave': zona_info['clave'],

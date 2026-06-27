@@ -47,11 +47,18 @@ class FragmentoHistoria(models.Model):
         ('pronunciar', 'Pronunciar'),
         ('escribir', 'Escribir'),
         ('elegir', 'Elegir opción'),
+        ('comprender', 'Comprensión libre (micrófono)'),
     ]
 
     historia = models.ForeignKey(Historia, on_delete=models.CASCADE, related_name='fragmentos')
     orden = models.PositiveSmallIntegerField()
     texto_narracion = models.TextField()
+    imagen = models.ImageField(
+        upload_to='historias/fragmentos/',
+        blank=True,
+        null=True,
+        help_text='Imagen representativa que acompaña la narración de este fragmento.',
+    )
     audio_narracion = models.FileField(upload_to='historias/audios/', blank=True, null=True)
     pregunta_interactiva = models.TextField(blank=True)
     tipo_respuesta = models.CharField(

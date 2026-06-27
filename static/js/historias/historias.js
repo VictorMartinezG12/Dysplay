@@ -282,6 +282,17 @@
         fragmentoActual = fragmento;
         document.getElementById('narracion-texto').textContent = fragmento.texto_narracion;
 
+        const imgFragmento = document.getElementById('fragmento-imagen');
+        if (imgFragmento) {
+            if (fragmento.imagen_url) {
+                imgFragmento.src = fragmento.imagen_url;
+                imgFragmento.classList.remove('hidden');
+            } else {
+                imgFragmento.classList.add('hidden');
+                imgFragmento.src = '';
+            }
+        }
+
         const btnEscuchar = document.getElementById('btn-escuchar');
         btnEscuchar.onclick = async () => {
             try {
@@ -321,11 +332,19 @@
         const bloqueElegir = document.getElementById('bloque-elegir');
         const bloqueEscribir = document.getElementById('bloque-escribir');
         const bloquePronunciar = document.getElementById('bloque-pronunciar');
+        const bloqueComprender = document.getElementById('bloque-comprender');
 
-        [bloqueElegir, bloqueEscribir, bloquePronunciar].forEach((bloque) => {
-            bloque.classList.add('hidden');
-            bloque.classList.remove('flex');
+        [bloqueElegir, bloqueEscribir, bloquePronunciar, bloqueComprender].forEach((bloque) => {
+            if (bloque) { bloque.classList.add('hidden'); bloque.classList.remove('flex'); }
         });
+
+        // Cambiar header de pausa según tipo
+        const headerPausa = document.querySelector('#view-interaction .absolute.top-0');
+        if (headerPausa) {
+            headerPausa.innerHTML = fragmentoActual.tipo_respuesta === 'comprender'
+                ? '<i data-lucide="message-circle" class="w-6 h-6"></i> ¿Qué entendiste de la historia?'
+                : '<i data-lucide="pause-circle" class="w-6 h-6"></i> ¡Pausa en la historia!';
+        }
 
         if (fragmentoActual.tipo_respuesta === 'elegir') {
             bloqueElegir.innerHTML = '';
@@ -348,9 +367,15 @@
         } else if (fragmentoActual.tipo_respuesta === 'pronunciar') {
             bloquePronunciar.classList.remove('hidden');
             bloquePronunciar.classList.add('flex');
+        } else if (fragmentoActual.tipo_respuesta === 'comprender') {
+            if (bloqueComprender) {
+                bloqueComprender.classList.remove('hidden');
+                bloqueComprender.classList.add('flex');
+            }
         }
 
         cambiarVista('view-narration', 'view-interaction');
+        lucide.createIcons();
     }
 
     /**
@@ -503,6 +528,60 @@
     }
 
     /**
+     * Versión del grabador para el bloque de comprensión libre ('comprender').
+     * Misma lógica que alternarGrabacion pero usa #btn-grabar-comprender y
+     * #text-grabar-comprender para no interferir con el bloque pronunciar.
+     * @returns {Promise<void>}
+     */
+    async function alternarGrabacionComprender() {
+        const btn = document.getElementById('btn-grabar-comprender');
+        const textBtn = document.getElementById('text-grabar-comprender');
+
+        if (!isRecording) {
+            try {
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(audioStream);
+                recorderNode = audioContext.createScriptProcessor(4096, 1, 1);
+                audioBufferList = [];
+                recordingLength = 0;
+
+                recorderNode.onaudioprocess = (e) => {
+                    if (!isRecording) return;
+                    const channelData = e.inputBuffer.getChannelData(0);
+                    audioBufferList.push(new Float32Array(channelData));
+                    recordingLength += channelData.length;
+                };
+
+                source.connect(recorderNode);
+                recorderNode.connect(audioContext.destination);
+                isRecording = true;
+
+                btn.classList.remove('bg-white', 'text-error');
+                btn.classList.add('bg-error', 'text-white', 'animate-pulse');
+                textBtn.textContent = 'Detener (Grabando...)';
+            } catch (err) {
+                console.error(err);
+                alert(obtenerMensajeErrorMicrofono(err));
+            }
+        } else {
+            isRecording = false;
+            if (recorderNode) recorderNode.disconnect();
+            if (audioStream) audioStream.getTracks().forEach((t) => t.stop());
+            const sr = audioContext.sampleRate;
+            if (audioContext) audioContext.close();
+
+            btn.classList.remove('bg-error', 'text-white', 'animate-pulse');
+            btn.classList.add('bg-white', 'text-error');
+            textBtn.textContent = 'Procesando...';
+
+            const samples = unirBuffers(audioBufferList, recordingLength);
+            const audioBlob = codificarWAV(samples, sr);
+            await enviarRespuesta({ audio: audioBlob });
+        }
+    }
+
+    /**
      * Envía la respuesta del estudiante al fragmento actual y actualiza la
      * vista de resolución con el resultado.
      * @param {Object} payload - `{ opcion_id }`, `{ texto_respuesta }` o `{ audio: Blob }`.
@@ -572,8 +651,22 @@
         if (data.reaccion_avatar && data.reaccion_avatar.mensaje) {
             const emoji = emojisPorTipo[data.reaccion_avatar.tipo] || '🙂';
             mensajeAvatar.textContent = `${emoji} ${data.reaccion_avatar.mensaje}`;
+            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+                detail: { tipo: data.reaccion_avatar.tipo, data: {} },
+            }));
         } else {
             mensajeAvatar.textContent = '';
+        }
+
+        // Mensaje de comprensión libre (tipo='comprender')
+        const msgComprension = document.getElementById('resolucion-mensaje-comprension');
+        if (msgComprension) {
+            if (data.mensaje_comprension) {
+                msgComprension.textContent = `🎤 ${data.mensaje_comprension}`;
+                msgComprension.classList.remove('hidden');
+            } else {
+                msgComprension.classList.add('hidden');
+            }
         }
 
         const resumen = document.getElementById('resumen-final');
@@ -581,12 +674,9 @@
         const btnSiguiente = document.getElementById('btn-siguiente-fragmento');
 
         if (data.completada_ahora) {
-            // Las historias generadas por IA nunca otorgan monedas/insignias
-            // (condición de arquitectura del backend): el campo simplemente
-            // no viene en la respuesta, así que se oculta esa caja en vez de
-            // mostrar "+undefined".
+            const esRepeticion = data.es_repeticion || esHistoriaGenerada;
             const monedasBox = document.getElementById('resumen-monedas-box');
-            if (typeof data.monedas_ganadas === 'number') {
+            if (!esRepeticion && typeof data.monedas_ganadas === 'number' && data.monedas_ganadas > 0) {
                 document.getElementById('resumen-monedas').innerHTML =
                     `<i data-lucide="coins" class="w-8 h-8"></i> +${data.monedas_ganadas}`;
                 monedasBox.classList.remove('hidden');
@@ -597,7 +687,7 @@
             }
 
             const insigniaBox = document.getElementById('resumen-insignia');
-            if (data.insignia_nueva) {
+            if (!esRepeticion && data.insignia_nueva) {
                 insigniaBox.classList.remove('hidden');
                 insigniaBox.classList.add('flex');
             } else {
@@ -626,13 +716,6 @@
     function inicializar() {
         lucide.createIcons();
 
-        if (lectura.completada) {
-            // La historia ya fue completada antes: solo se permite volver al menú.
-            document.getElementById('btn-continuar').classList.add('hidden');
-            renderizarFragmento(fragmentoActual);
-            return;
-        }
-
         renderizarFragmento(fragmentoActual);
 
         document.getElementById('btn-continuar').addEventListener('click', () => {
@@ -649,6 +732,15 @@
         });
 
         document.getElementById('btn-grabar').addEventListener('click', alternarGrabacion);
+
+        // Micrófono para el bloque de comprensión libre
+        const btnGrabarComprender = document.getElementById('btn-grabar-comprender');
+        if (btnGrabarComprender) {
+            btnGrabarComprender.addEventListener('click', () => {
+                // Reutiliza el mismo mecanismo de grabación WAV pero con el botón propio
+                alternarGrabacionComprender();
+            });
+        }
 
         document.getElementById('btn-siguiente-fragmento').addEventListener('click', () => {
             if (fragmentoSiguientePendiente) {

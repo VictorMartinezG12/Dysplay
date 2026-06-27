@@ -87,10 +87,10 @@ SITE_ID = 1
 #ACCOUNT_UNIQUE_EMAIL = True
 #ACCOUNT_USERNAME_REQUIRED = False # No les pedimos un nombre de usuario obligatorio
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*']
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 
 # ¿A dónde los enviamos después de iniciar o cerrar sesión?
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/juego/'
 LOGIN_URL = '/accounts/login/'# Al inicio (pronto crearemos esta ruta)
 #LOGOUT_REDIRECT_URL = '/'  # Al inicio
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'

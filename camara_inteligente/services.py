@@ -26,7 +26,7 @@ from google.genai import types
 
 from avatar.reactions import obtener_reaccion
 from estadisticas.models import RegistroActividad
-from niveles.models import ProgresoEstudiante
+from niveles.models import ProgresoEstudiante, ProgresoNivel
 from niveles.services import (
     UMBRAL_SUPERACION_NIVEL,
     evaluar_pronunciacion_azure,
@@ -307,9 +307,8 @@ def _nivel_dificultad_usuario(usuario):
     """
     Calcula el nivel de dificultad (1-5) de las frases de cámara para un estudiante.
 
-    Se basa en `ProgresoEstudiante.nivel_actual.numero`, acotado al rango
-    1-5 que usa `FraseTemplate.nivel_dificultad`. Si el estudiante no tiene
-    progreso o nivel asignado, se usa el nivel 1 (más sencillo).
+    Se basa en el total de niveles completados por el estudiante en todas las
+    zonas (ProgresoNivel), mapeado a la escala 1-5 que usa FraseTemplate.
 
     Args:
         usuario: instancia de `UsuarioCustom` (estudiante autenticado).
@@ -318,8 +317,17 @@ def _nivel_dificultad_usuario(usuario):
         int: nivel de dificultad entre 1 y 5.
     """
     progreso = ProgresoEstudiante.objects.filter(usuario=usuario).first()
-    if progreso and progreso.nivel_actual:
-        return min(max(progreso.nivel_actual.numero, 1), 5)
+    if not progreso:
+        return 1
+    completados = ProgresoNivel.objects.filter(progreso=progreso).count()
+    if completados >= 35:
+        return 5
+    elif completados >= 20:
+        return 4
+    elif completados >= 10:
+        return 3
+    elif completados >= 3:
+        return 2
     return 1
 
 

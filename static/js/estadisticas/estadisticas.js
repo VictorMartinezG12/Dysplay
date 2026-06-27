@@ -218,4 +218,18 @@ document.addEventListener('DOMContentLoaded', () => {
     animarBarrasSemana();
     inicializarInsigniasClickeables();
     inicializarPistaColeccionables();
+
+    // El avatar saluda con la racha activa o con un mensaje de bienvenida
+    try {
+        const statsData = JSON.parse(document.getElementById('avatar-stats-data').textContent);
+        const rachaActiva = statsData.racha_dias > 1;
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+                detail: {
+                    tipo: rachaActiva ? 'racha_activa' : 'bienvenida_diaria',
+                    data: { dias: statsData.racha_dias },
+                },
+            }));
+        }, 1200);
+    } catch (_e) { /* sin datos de racha */ }
 });

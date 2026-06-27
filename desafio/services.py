@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from avatar.reactions import obtener_reaccion
 from estadisticas.models import RegistroActividad
-from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante
+from niveles.models import MisionVocabulario, Nivel, ProgresoEstudiante, ProgresoNivel
 from niveles.services import (
     UMBRAL_SUPERACION_NIVEL,
     evaluar_pronunciacion_azure,
@@ -98,23 +98,26 @@ def obtener_o_crear_desafio_de_hoy(configuracion=None):
 
 def _nivel_numero_usuario(usuario):
     """
-    Devuelve el nivel actual (entero) de progreso de un estudiante.
+    Devuelve el número del nivel más alto completado por el estudiante.
 
     Se usa para acotar la selección de ejercicios del desafío diario al
-    nivel que el estudiante ya tiene desbloqueado (mismo patrón que
-    `camara_inteligente.services._nivel_dificultad_usuario`).
+    rango de misiones que el estudiante ya ha desbloqueado en cualquier zona.
+    Usa el número global más alto de los niveles con ProgresoNivel registrado.
 
     Args:
         usuario: instancia de `UsuarioCustom` (estudiante autenticado).
 
     Returns:
-        int: `ProgresoEstudiante.nivel_actual.numero`, o 1 si el estudiante
-            no tiene progreso o nivel asignado.
+        int: número del nivel más alto completado, o 1 si no hay progreso.
     """
+    from django.db.models import Max
     progreso = ProgresoEstudiante.objects.filter(usuario=usuario).first()
-    if progreso and progreso.nivel_actual:
-        return progreso.nivel_actual.numero
-    return 1
+    if not progreso:
+        return 1
+    max_num = ProgresoNivel.objects.filter(progreso=progreso).aggregate(
+        max_num=Max('nivel__numero')
+    )['max_num']
+    return max_num or 1
 
 
 def _seleccionar_ejercicios_para_usuario(usuario, desafio):

@@ -484,6 +484,69 @@
         .ribbon-valle_silabas      { --r-bg: #d97706; --r-sombra: #b45309; }
         .ribbon-castillo_palabras  { --r-bg: #7c3aed; --r-sombra: #6d28d9; }
         .ribbon-reino_lectura      { --r-bg: #2563eb; --r-sombra: #1d4ed8; }
+
+        /* Borde de color por dificultad en el ribbon */
+        .ribbon-dif-facil   { border-bottom: 3px solid #4ade80; }
+        .ribbon-dif-medio   { border-bottom: 3px solid #facc15; }
+        .ribbon-dif-dificil { border-bottom: 3px solid #f87171; }
+
+        /* Badge de dificultad dentro del ribbon */
+        .ribbon-dif-badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            background: rgba(0,0,0,0.25);
+            border-radius: 999px;
+            padding: 1px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Sidebar de navegación rápida entre zonas */
+        .zona-sidebar {
+            position: fixed;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 60;
+        }
+        .zona-sidebar-btn {
+            width: 60px;
+            min-height: 60px;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.8);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            transition: transform 0.15s, box-shadow 0.15s;
+            padding: 6px 4px;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .zona-sidebar-btn .sidebar-label {
+            font-size: 0.55rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            line-height: 1;
+            text-align: center;
+        }
+        .zona-sidebar-btn:hover {
+            transform: scale(1.12) translateX(-3px);
+            box-shadow: 0 5px 16px rgba(0,0,0,0.35);
+        }
+        .zona-sidebar-btn.dif-facil   { background: linear-gradient(160deg, #059669, #047857); }
+        .zona-sidebar-btn.dif-medio   { background: linear-gradient(160deg, #d97706, #b45309); }
+        .zona-sidebar-btn.dif-dificil { background: linear-gradient(160deg, #dc2626, #b91c1c); }
         /* Navidad: todos los ribbons en rojo */
         #mapa-container.mapa-tema-navidad .zona-ribbon {
             --r-bg: #991b1b; --r-sombra: #7f1d1d;
@@ -514,6 +577,21 @@
             <span class="text-[20px] font-bold text-reward">{{ progreso.puntos_acumulados|default:0 }}</span>
         </div>
     </header>
+
+    {# ── Sidebar de navegación rápida entre zonas (fija, visible solo en el mapa) ── #}
+    <nav id="zona-sidebar" class="zona-sidebar" aria-label="Navegar entre zonas">
+      {% for zona in zonas_mapa %}
+      <button class="zona-sidebar-btn dif-{{ zona.dificultad }}"
+              data-zona-clave="{{ zona.clave }}"
+              title="{{ zona.nombre }}"
+              aria-label="Ir a {{ zona.nombre }}">
+        <span>{{ zona.emoji }}</span>
+        <span class="sidebar-label">
+          {% if zona.dificultad == 'facil' %}Fácil{% elif zona.dificultad == 'medio' %}Medio{% else %}Difícil{% endif %}
+        </span>
+      </button>
+      {% endfor %}
+    </nav>
 
     <main class="w-full max-w-5xl px-6 md:px-8 flex-grow flex flex-col items-center justify-start pb-16 relative">
 
@@ -648,6 +726,13 @@
     <script src="{% static 'js/utils/audio_narracion.js' %}"></script>
     {# Lottie Web — animaciones vectoriales para el mapa y celebraciones (B.6). async: no bloquea la carga de niveles.js #}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" async crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    {# ── Compañero avatar (flotante, reacciona a eventos del módulo) ── #}
+    {% include 'avatar/componente.html' %}
+    <script type="application/json" id="avatar-reacciones-data">{{ reacciones_json|safe }}</script>
+    <script type="application/json" id="avatar-frase-contextual-data">"{{ avatar_frase_contextual|escapejs }}"</script>
+    <script src="{% static 'js/avatar_events.js' %}"></script>
+
     <script src="{% static 'js/niveles.js' %}"></script>
 </body>
 </html>

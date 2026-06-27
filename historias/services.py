@@ -21,6 +21,9 @@ from django.db.models import Max
 from django.utils import timezone
 from openai import AzureOpenAI
 
+from google import genai
+from google.genai import types
+
 from avatar.reactions import obtener_reaccion
 from estadisticas.models import RegistroActividad
 from niveles.services import (
@@ -76,7 +79,7 @@ NIVEL_DIFICULTAD_NUMERICO_A_CHOICE = {
     5: 'dificil',
 }
 
-TIPOS_RESPUESTA_VALIDOS = {'', 'elegir', 'escribir', 'pronunciar'}
+TIPOS_RESPUESTA_VALIDOS = {'', 'elegir', 'escribir', 'pronunciar', 'comprender'}
 
 # Longitud máxima permitida para las palabras clave que el niño escribe al
 # pedir una historia generada por IA (debe coincidir con
@@ -213,7 +216,8 @@ def obtener_o_crear_progreso(usuario, historia):
     """
     progreso, _creado = ProgresoHistoria.objects.get_or_create(usuario=usuario, historia=historia)
 
-    if progreso.fragmento_actual is None and not progreso.completada:
+    necesita_reset = progreso.completada or progreso.fragmento_actual is None
+    if necesita_reset:
         primer_fragmento = historia.fragmentos.order_by('orden').first()
         if primer_fragmento:
             progreso.fragmento_actual = primer_fragmento
@@ -236,6 +240,7 @@ def _serializar_fragmento(fragmento):
         'id': fragmento.id,
         'orden': fragmento.orden,
         'texto_narracion': fragmento.texto_narracion,
+        'imagen_url': fragmento.imagen.url if getattr(fragmento, 'imagen', None) and fragmento.imagen else None,
         'audio_narracion_url': fragmento.audio_narracion.url if fragmento.audio_narracion else None,
         'pregunta_interactiva': fragmento.pregunta_interactiva,
         'tipo_respuesta': fragmento.tipo_respuesta,
@@ -375,6 +380,78 @@ def _evaluar_pronunciar(usuario, fragmento, archivo_audio):
     return correcta, siguiente, None
 
 
+def _evaluar_comprender(usuario, historia, fragmento, archivo_audio):
+    """
+    Evalúa la comprensión libre del estudiante: transcribe su audio con Gemini
+    y puntúa qué tan bien explicó los puntos clave de la historia.
+
+    Args:
+        usuario: instancia de `UsuarioCustom`.
+        historia (Historia): historia que acaba de leer el estudiante.
+        fragmento (FragmentoHistoria): fragmento actual (último de la historia).
+        archivo_audio: archivo WAV subido desde el navegador.
+
+    Returns:
+        tuple: `(correcta, siguiente_fragmento, mensaje_error, mensaje_feedback)`.
+            `correcta` es `True` si el score ≥ UMBRAL_SUPERACION_NIVEL (70).
+            `mensaje_feedback` es la frase de aliento devuelta por Gemini.
+    """
+    if not archivo_audio:
+        return None, _siguiente_fragmento_por_orden(fragmento), 'Graba tu respuesta antes de continuar.', None
+
+    ruta_audio = None
+    try:
+        ruta_audio = procesar_audio_subido(archivo_audio)
+        with open(ruta_audio, 'rb') as f:
+            audio_bytes = f.read()
+
+        resumen = ' '.join(
+            fr.texto_narracion for fr in historia.fragmentos.order_by('orden')
+        )[:700]
+
+        prompt = (
+            f'Eres un evaluador educativo para niños con dislexia de primaria.\n'
+            f'Historia: "{historia.titulo}"\n'
+            f'Texto de la historia: {resumen}\n\n'
+            f'El niño acaba de escuchar esta historia y grabó un audio '
+            f'explicando con sus propias palabras lo que entendió.\n'
+            f'Analiza el audio y devuelve SOLO este JSON sin texto extra:\n'
+            f'{{"score": <número 0-100>, "mensaje": "<frase de aliento en español, máximo 15 palabras>"}}\n'
+            f'Score 70 o más significa que el niño comprendió los puntos esenciales.'
+        )
+
+        cliente = genai.Client(
+            api_key=settings.GEMINI_API_KEY,
+            http_options=types.HttpOptions(timeout=25000),
+        )
+        respuesta = cliente.models.generate_content(
+            model='gemini-2.5-flash-preview-05-14',
+            contents=[prompt, types.Part.from_bytes(data=audio_bytes, mime_type='audio/wav')],
+        )
+
+        texto = (respuesta.text or '').strip()
+        if texto.startswith('```'):
+            texto = texto.strip('`')
+            if texto.lower().startswith('json'):
+                texto = texto[4:]
+            texto = texto.strip()
+
+        datos = json.loads(texto)
+        score = max(0, min(100, int(datos.get('score', 0))))
+        mensaje = str(datos.get('mensaje', '¡Buen intento, sigue adelante!'))[:120]
+
+        correcta = score >= UMBRAL_SUPERACION_NIVEL
+        siguiente = _siguiente_fragmento_por_orden(fragmento)
+        return correcta, siguiente, None, mensaje
+
+    except Exception:
+        logger.error('Error al evaluar comprensión libre con Gemini', exc_info=True)
+        return False, _siguiente_fragmento_por_orden(fragmento), None, '¡Buen intento, sigue adelante!'
+    finally:
+        if ruta_audio and os.path.exists(ruta_audio):
+            os.remove(ruta_audio)
+
+
 def _construir_reaccion_avatar(completada_ahora, correcta):
     """Construye los datos planos `{tipo, mensaje}` de la reacción del avatar para un intento."""
     if completada_ahora:
@@ -429,20 +506,23 @@ def procesar_respuesta_fragmento(usuario, historia, fragmento_id, opcion_id=None
             return {'status': 'error', 'message': 'El fragmento solicitado no existe.'}
 
         progreso = obtener_o_crear_progreso(usuario, historia)
-
-        if progreso.completada:
-            return {'status': 'error', 'message': 'Esta historia ya está completada.'}
+        ya_completada_antes = progreso.completada
 
         if progreso.fragmento_actual_id != fragmento.id:
             return {'status': 'error', 'message': 'Este fragmento no corresponde a tu progreso actual.'}
 
         correcta = None
+        mensaje_comprension = None
         if fragmento.tipo_respuesta == 'elegir':
             correcta, siguiente, mensaje_error = _evaluar_elegir(fragmento, opcion_id)
         elif fragmento.tipo_respuesta == 'escribir':
             correcta, siguiente, mensaje_error = _evaluar_escribir(fragmento, texto_respuesta)
         elif fragmento.tipo_respuesta == 'pronunciar':
             correcta, siguiente, mensaje_error = _evaluar_pronunciar(usuario, fragmento, archivo_audio)
+        elif fragmento.tipo_respuesta == 'comprender':
+            correcta, siguiente, mensaje_error, mensaje_comprension = _evaluar_comprender(
+                usuario, historia, fragmento, archivo_audio,
+            )
         else:
             siguiente, mensaje_error = _siguiente_fragmento_por_orden(fragmento), None
 
@@ -459,10 +539,12 @@ def procesar_respuesta_fragmento(usuario, historia, fragmento_id, opcion_id=None
             progreso.fecha_fin = timezone.now()
             progreso.save()
 
-            monedas_totales = otorgar_monedas(usuario, historia.recompensa_monedas, concepto='historia_completada')
-            monedas_ganadas = historia.recompensa_monedas
-            insignias_nuevas = verificar_y_otorgar_insignias(usuario)
-            insignia_nueva = bool(insignias_nuevas)
+            if not ya_completada_antes:
+                monedas_totales = otorgar_monedas(usuario, historia.recompensa_monedas, concepto='historia_completada')
+                monedas_ganadas = historia.recompensa_monedas
+                insignias_nuevas = verificar_y_otorgar_insignias(usuario)
+                insignia_nueva = bool(insignias_nuevas)
+
             completada_ahora = True
         else:
             progreso.fragmento_actual = siguiente
@@ -474,10 +556,12 @@ def procesar_respuesta_fragmento(usuario, historia, fragmento_id, opcion_id=None
             'siguiente_fragmento': _serializar_fragmento(siguiente) if siguiente else None,
             'completada': progreso.completada,
             'completada_ahora': completada_ahora,
+            'es_repeticion': ya_completada_antes,
             'reaccion_avatar': _construir_reaccion_avatar(completada_ahora, correcta),
             'monedas_ganadas': monedas_ganadas,
             'monedas_totales': monedas_totales,
             'insignia_nueva': insignia_nueva,
+            'mensaje_comprension': mensaje_comprension,
         }
     except Exception:
         logger.error('Error inesperado al procesar la respuesta de un fragmento de historia', exc_info=True)

@@ -98,14 +98,16 @@ Mapa de Aventura — UN ÚNICO canvas continuo estilo Candy Crush (B.6).
           aria-hidden="true">{% if forloop.counter|divisibleby:"2" %}🌟{% else %}⭐{% endif %}</span>
     {% endfor %}
 
-    {# ── Ribbons de nombre de zona ── #}
+    {# ── Ribbons de nombre de zona con color por dificultad ── #}
     {% for ribbon in mapa_unico.ribbons %}
-    <div class="zona-ribbon ribbon-{{ ribbon.zona_clave }}{% if not ribbon.desbloqueada %} opacity-50{% endif %}"
+    <div id="zona-anchor-{{ ribbon.zona_clave }}"
+         class="zona-ribbon ribbon-{{ ribbon.zona_clave }} ribbon-dif-{{ ribbon.dificultad }}"
          style="top:{{ ribbon.y }}px;"
          aria-hidden="true">
-      {% if ribbon.zona_clave == 'bosque_encantado' %}🌳{% elif ribbon.zona_clave == 'montana_letras' %}⛰️{% elif ribbon.zona_clave == 'valle_silabas' %}🌾{% elif ribbon.zona_clave == 'castillo_palabras' %}🏰{% elif ribbon.zona_clave == 'reino_lectura' %}📖{% endif %}
-      &nbsp;{{ ribbon.zona_nombre }}&nbsp;
-      {% if ribbon.zona_clave == 'bosque_encantado' %}🌳{% elif ribbon.zona_clave == 'montana_letras' %}⛰️{% elif ribbon.zona_clave == 'valle_silabas' %}🌾{% elif ribbon.zona_clave == 'castillo_palabras' %}🏰{% elif ribbon.zona_clave == 'reino_lectura' %}📖{% endif %}
+      {{ ribbon.emoji }}&nbsp;{{ ribbon.zona_nombre }}&nbsp;{{ ribbon.emoji }}
+      <span class="ribbon-dif-badge">
+        {% if ribbon.dificultad == 'facil' %}🟢 Fácil{% elif ribbon.dificultad == 'medio' %}🟡 Medio{% else %}🔴 Difícil{% endif %}
+      </span>
     </div>
     {% endfor %}
 
@@ -120,13 +122,13 @@ Mapa de Aventura — UN ÚNICO canvas continuo estilo Candy Crush (B.6).
               data-palabra-objetivo="{{ nivel.palabra_objetivo }}"
               data-narrativa-intro="{{ nivel.narrativa_intro }}"
               style="left:{{ nivel.x }}px; top:{{ nivel.y }}px; animation-delay:{{ nivel.float_delay }}s;"
-              aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Completado con {{ nivel.mejores_estrellas }} de 3 estrellas. Toca para repetir.">
+              aria-label="Nivel {{ nivel.orden_en_zona }}: {{ nivel.titulo }}. Completado con {{ nivel.mejores_estrellas }} de 3 estrellas. Toca para repetir.">
         <span class="lvl-estrellas" aria-hidden="true">
           <span class="lvl-estrella{% if nivel.mejores_estrellas >= 1 %} llena{% endif %}">★</span>
           <span class="lvl-estrella{% if nivel.mejores_estrellas >= 2 %} llena{% endif %}">★</span>
           <span class="lvl-estrella{% if nivel.mejores_estrellas >= 3 %} llena{% endif %}">★</span>
         </span>
-        {{ nivel.numero }}
+        {{ nivel.orden_en_zona }}
       </button>
 
       {% elif nivel.estado == 'actual' %}
@@ -143,14 +145,14 @@ Mapa de Aventura — UN ÚNICO canvas continuo estilo Candy Crush (B.6).
               data-palabra-objetivo="{{ nivel.palabra_objetivo }}"
               data-narrativa-intro="{{ nivel.narrativa_intro }}"
               style="left:{{ nivel.x }}px; top:{{ nivel.y }}px;"
-              aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Nivel actual, toca para comenzar.">
-        {{ nivel.numero }}
+              aria-label="Nivel {{ nivel.orden_en_zona }}: {{ nivel.titulo }}. Nivel actual, toca para comenzar.">
+        {{ nivel.orden_en_zona }}
       </button>
 
       {% else %}
       <button class="lvl-nodo lvl-bloqueado"
               style="left:{{ nivel.x }}px; top:{{ nivel.y }}px; animation-delay:{{ nivel.float_delay }}s;"
-              aria-label="Nivel {{ nivel.numero }}: {{ nivel.titulo }}. Bloqueado."
+              aria-label="Nivel {{ nivel.orden_en_zona }}: {{ nivel.titulo }}. Bloqueado."
               disabled>
         🔒
       </button>

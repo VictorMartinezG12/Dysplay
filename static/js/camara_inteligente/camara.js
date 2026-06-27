@@ -733,9 +733,18 @@
             : 'Casi lo logras, inténtalo de nuevo.';
 
         const elementoMensaje = document.getElementById('resultado-mensaje-avatar');
-        elementoMensaje.textContent = data.reaccion_avatar && data.reaccion_avatar.mensaje
-            ? data.reaccion_avatar.mensaje
-            : '';
+        if (data.reaccion_avatar && data.reaccion_avatar.mensaje) {
+            elementoMensaje.textContent = data.reaccion_avatar.mensaje;
+            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+                detail: { tipo: data.reaccion_avatar.tipo, data: {} },
+            }));
+        } else {
+            const tipoAutoAvatar = data.correcta ? 'pronunciacion_correcta' : 'pronunciacion_incorrecta';
+            elementoMensaje.textContent = '';
+            window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+                detail: { tipo: tipoAutoAvatar, data: {} },
+            }));
+        }
 
         const cajaMonedas = document.getElementById('caja-monedas');
         if (data.monedas_ganadas > 0) {

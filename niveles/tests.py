@@ -298,21 +298,24 @@ class ObtenerMapaAventuraTests(TestCase):
         self.assertEqual(ordenes, [1, 2, 3])
         self.assertEqual(numeros, [1, 2, 3])
 
-    def test_usuario_sin_nivel_actual_todos_bloqueados_y_bosque_desbloqueado(self):
-        # El usuario recién creado no tiene ProgresoEstudiante con nivel_actual.
+    def test_usuario_sin_nivel_actual_primer_nivel_de_cada_zona_desbloqueado(self):
+        # Sin ProgresoNivel, el primer nivel de cada zona queda como 'actual'.
         zonas = services.obtener_mapa_aventura(self.usuario)
         bosque = zonas[0]
         self.assertTrue(bosque['desbloqueada'])
-        for nivel in bosque['niveles']:
-            self.assertEqual(nivel['estado'], 'bloqueado')
-        # El resto de zonas, sin niveles, no deben estar desbloqueadas.
-        for zona in zonas[1:]:
-            self.assertFalse(zona['desbloqueada'])
+        estados = [n['estado'] for n in bosque['niveles']]
+        # Primer nivel = 'actual', el resto = 'bloqueado'.
+        self.assertEqual(estados[0], 'actual')
+        for estado in estados[1:]:
+            self.assertEqual(estado, 'bloqueado')
+        # Todas las zonas están siempre desbloqueadas (nivel 1 accesible).
+        for zona in zonas:
+            self.assertTrue(zona['desbloqueada'])
 
-    def test_estado_de_niveles_segun_nivel_actual(self):
+    def test_estado_de_niveles_segun_progresonivel(self):
+        # El estado se determina por ProgresoNivel, no por nivel_actual.
         progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
-        progreso.nivel_actual = self.nivel2
-        progreso.save()
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=2)
 
         zonas = services.obtener_mapa_aventura(self.usuario)
         bosque = zonas[0]
@@ -328,16 +331,15 @@ class ObtenerMapaAventuraTests(TestCase):
         for zona in zonas[1:]:
             self.assertEqual(zona['niveles'], [])
 
-    def test_completado_sin_registro_de_estrellas_usa_3_por_defecto(self):
-        """Nivel completado sin ProgresoNivel (datos de antes de esta función) -> 3 estrellas."""
+    def test_completado_muestra_las_estrellas_de_progresonivel(self):
+        """Nivel completado con ProgresoNivel -> muestra las estrellas guardadas."""
         progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
-        progreso.nivel_actual = self.nivel2
-        progreso.save()
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=2)
 
         zonas = services.obtener_mapa_aventura(self.usuario)
         nivel1 = next(n for n in zonas[0]['niveles'] if n['numero'] == 1)
         self.assertEqual(nivel1['estado'], 'completado')
-        self.assertEqual(nivel1['mejores_estrellas'], 3)
+        self.assertEqual(nivel1['mejores_estrellas'], 2)
 
     def test_completado_con_registro_usa_las_estrellas_guardadas(self):
         progreso, _creado = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
@@ -399,7 +401,8 @@ class GuardarProgresoEstudianteServicioTests(TestCase):
         )
         self.assertTrue(avanzo_de_nivel)
         self.assertFalse(ya_completado)
-        self.assertEqual(progreso.nivel_actual, self.nivel2)
+        # nivel_actual apunta al nivel recién completado (cosmético).
+        self.assertEqual(progreso.nivel_actual, self.nivel1)
 
     def test_score_insuficiente_no_avanza(self):
         progreso, avanzo_de_nivel, ya_completado = services.guardar_progreso_estudiante(
@@ -410,10 +413,9 @@ class GuardarProgresoEstudianteServicioTests(TestCase):
         self.assertIsNone(progreso.nivel_actual)
 
     def test_repeticion_detecta_ya_completado(self):
-        """Si el nivel está por debajo del nivel_actual, ya_completado debe ser True."""
+        """Si el nivel ya tiene ProgresoNivel, ya_completado debe ser True."""
         progreso, _ = ProgresoEstudiante.objects.get_or_create(usuario=self.usuario)
-        progreso.nivel_actual = self.nivel2
-        progreso.save()
+        ProgresoNivel.objects.create(progreso=progreso, nivel=self.nivel1, mejores_estrellas=2)
 
         _progreso, _avanzo, ya_completado = services.guardar_progreso_estudiante(
             self.usuario, self.nivel1.numero, {'score_global': 85},

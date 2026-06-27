@@ -353,8 +353,11 @@
             pronunciacion_incorrecta: '💪',
         };
         const emoji = emojisPorTipo[reaccionAvatar.tipo] || '🙂';
-
         elementoMensaje.textContent = `${emoji} ${reaccionAvatar.mensaje}`;
+
+        window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+            detail: { tipo: reaccionAvatar.tipo, data: {} },
+        }));
     }
 
     /**

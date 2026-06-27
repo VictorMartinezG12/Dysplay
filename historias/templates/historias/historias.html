@@ -209,7 +209,11 @@
                 <div class="relative z-10 bg-white/95 backdrop-blur-md rounded-2xl p-8 md:p-12 w-full max-w-3xl shadow-xl flex flex-col items-center text-center">
                     <h2 class="text-[28px] font-bold text-primary mb-8 border-b-4 border-primary/20 pb-4 inline-block">{{ lectura.historia.titulo }}</h2>
 
-                    <p id="narracion-texto" class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-12 tracking-wide text-left"></p>
+                    <p id="narracion-texto" class="text-[28px] md:text-[36px] font-bold text-textMain leading-[1.6] mb-6 tracking-wide text-left"></p>
+
+                    <img id="fragmento-imagen" src="" alt="Imagen de la historia"
+                         class="hidden w-full max-w-sm rounded-2xl shadow-lg mb-10 mx-auto object-cover"
+                         style="max-height:220px;">
 
                     <div class="flex flex-col sm:flex-row gap-6 w-full justify-center mt-auto">
                         <button id="btn-escuchar" type="button" class="bg-primary/10 text-primary border-4 border-primary rounded-full px-8 py-5 font-bold text-[22px] hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-4">
@@ -258,6 +262,17 @@
                         <span id="text-grabar">Grabar</span>
                     </button>
                 </div>
+
+                <!-- Comprensión libre (tipo='comprender') — siempre al final de la historia -->
+                <div id="bloque-comprender" class="hidden flex-col items-center justify-center gap-6 w-full">
+                    <p class="text-[20px] text-gray-500 font-medium text-center max-w-sm">
+                        Cuéntanos con tus propias palabras lo que entendiste de la historia
+                    </p>
+                    <button id="btn-grabar-comprender" type="button" class="w-full sm:w-auto bg-white text-error border-4 border-error rounded-full px-8 py-5 font-bold text-[22px] hover:bg-error hover:text-white transition-colors shadow-soft flex items-center justify-center gap-4">
+                        <i data-lucide="mic" class="w-8 h-8"></i>
+                        <span id="text-grabar-comprender">Grabar</span>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -284,6 +299,7 @@
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
 
                 <h2 id="resolucion-titulo" class="text-[36px] md:text-[44px] font-bold text-success mb-6 drop-shadow-sm leading-tight"></h2>
+                <p id="resolucion-mensaje-comprension" class="hidden text-[22px] font-bold text-primary mb-4 bg-primary/10 rounded-2xl px-6 py-4 w-full max-w-sm text-center"></p>
                 <p id="resolucion-mensaje-avatar" class="text-[22px] text-gray-600 mb-10"></p>
 
                 <!-- Resumen final (solo cuando la historia se completó) -->
@@ -320,6 +336,13 @@
     {# Configuración de audio/accesibilidad del usuario (velocidad, voz, volumen de narración) #}
     {{ config_audio_json|json_script:"config-audio" }}
     <script src="{% static 'js/utils/audio_narracion.js' %}"></script>
+
+    {# ── Compañero avatar ── #}
+    {% include 'avatar/componente.html' %}
+    <script type="application/json" id="avatar-reacciones-data">{{ reacciones_json|safe }}</script>
+    <script type="application/json" id="avatar-frase-contextual-data">"{{ avatar_frase_contextual|escapejs }}"</script>
+    <script src="{% static 'js/avatar_events.js' %}"></script>
+
     <script src="{% static 'js/historias/historias.js' %}"></script>
 </body>
 </html>

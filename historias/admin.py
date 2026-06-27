@@ -40,6 +40,7 @@ class FragmentoHistoriaInline(admin.StackedInline):
     model = FragmentoHistoria
     extra = 1
     show_change_link = True
+    fields = ('orden', 'texto_narracion', 'imagen', 'audio_narracion', 'pregunta_interactiva', 'tipo_respuesta')
 
 
 @admin.register(Historia)
