@@ -36,7 +36,7 @@ def avatar_global(request):
         )
 
         reacciones_dict = {
-            r['tipo_evento']: {
+            r['tipo_evento'].lower(): {
                 'emocion': r['emocion'],
                 'mensaje': r['mensaje']
             }

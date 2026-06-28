@@ -192,6 +192,10 @@ class ReaccionAvatar(models.Model):
         ('ERROR_CONEXION', 'Error de Conexión'),
         ('ERROR_CARGA', 'Error de Carga'),
         ('RECOMPENSA_GANADA', 'Recompensa Ganada'),
+        ('BIENVENIDA_DIARIA', 'Bienvenida Diaria'),
+        ('RACHA_ACTIVA', 'Racha Activa'),
+        ('INSIGNIA_NUEVA', 'Insignia Nueva'),
+        ('DESAFIO_COMPLETADO', 'Desafío Completado'),
     ]
 
     EMOCION_CHOICES = [

@@ -3,6 +3,76 @@
  * Gestiona las reacciones del avatar ante eventos globales del sistema.
  */
 
+// Tipos de evento que disparan confetti global en pantalla completa.
+const EVENTOS_FESTIVOS = new Set([
+    'nivel_completado',
+    'historia_completada',
+    'desafio_completado',
+    'insignia_nueva',
+    'recompensa_ganada',
+]);
+
+/**
+ * Lanza confetti de emojis animados sobre toda la pantalla.
+ * Crea un overlay `position:fixed` temporal que se autodestruye al terminar.
+ * @returns {void}
+ */
+function lanzarConfettiGlobal() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;';
+
+    const emojis = ['🎉', '✨', '🎊', '⭐', '🏆', '🎈', '🌟', '🎀'];
+    const total = 40;
+    let terminadas = 0;
+
+    for (let i = 0; i < total; i++) {
+        const pieza = document.createElement('span');
+        const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+        const duracion = 1.8 + Math.random() * 1.4;
+        const demora = Math.random() * 0.8;
+        const tamaño = 1.2 + Math.random() * 1.4;
+        const izq = Math.random() * 100;
+        const rotacion = Math.random() * 720 - 360;
+
+        pieza.textContent = emoji;
+        pieza.style.cssText = `
+            position:absolute;
+            left:${izq}%;
+            top:-60px;
+            font-size:${tamaño}rem;
+            animation: confetti-caida ${duracion}s ease-in ${demora}s forwards;
+        `;
+
+        pieza.addEventListener('animationend', () => {
+            terminadas++;
+            if (terminadas >= total) overlay.remove();
+        });
+
+        overlay.appendChild(pieza);
+    }
+
+    if (!document.getElementById('confetti-keyframes')) {
+        const estilos = document.createElement('style');
+        estilos.id = 'confetti-keyframes';
+        estilos.textContent = `
+            @keyframes confetti-caida {
+                0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+                80%  { opacity: 1; }
+                100% { transform: translateY(110vh) rotate(var(--rot, 360deg)) scale(0.6); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(estilos);
+    }
+
+    // Asignar rotación aleatoria por pieza via CSS custom property
+    overlay.querySelectorAll('span').forEach(s => {
+        const rot = Math.random() * 720 - 360;
+        s.style.setProperty('--rot', `${rot}deg`);
+    });
+
+    document.body.appendChild(overlay);
+}
+
 class AvatarSystem {
     /**
      * Crea el sistema de avatar a partir del diccionario de reacciones
@@ -15,7 +85,8 @@ class AvatarSystem {
         this.bubbleElement = document.getElementById('avatar-bubble');
         this.textElement = document.getElementById('avatar-text');
         this.currentTimeout = null;
-        
+        this.bounceTimeout = null;
+
         this.init();
     }
 
@@ -25,22 +96,18 @@ class AvatarSystem {
      * @returns {void}
      */
     init() {
-        console.log("🦁 Avatar System Initialized");
-
         // Escuchar eventos globales del sistema
         window.addEventListener('AVATAR_EVENT', (e) => {
             const { tipo, data } = e.detail;
             this.reaccionar(tipo, data);
         });
 
-        // Eventos de prueba (pueden eliminarse luego)
         window.avatarTest = (tipo) => {
             window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
                 detail: { tipo: tipo, data: {} }
             }));
         };
 
-        // Mostrar la frase contextual de saludo al cargar la página, si existe.
         this.mostrarFraseContextual();
     }
 
@@ -66,25 +133,22 @@ class AvatarSystem {
     }
 
     /**
-     * Activa la animación de saludo (el brazo derecho del avatar se levanta
-     * y saluda) durante unos segundos. Es seguro llamarla varias veces:
-     * reinicia limpio la animación si ya estaba en curso.
+     * Activa la animación de saludo durante unos segundos.
      * @returns {void}
      */
     saludar() {
         if (!this.avatarElement) return;
 
         this.avatarElement.classList.remove('avatar-saludando');
-        // Forzar reflow para poder reiniciar la animación CSS desde cero.
         void this.avatarElement.offsetWidth;
         this.avatarElement.classList.add('avatar-saludando');
     }
 
     /**
      * Aplica la reacción configurada para un tipo de evento: cambia la
-     * emoción del avatar y muestra el mensaje correspondiente.
+     * emoción del avatar, muestra el mensaje y lanza confetti si aplica.
      * @param {string} tipo - Tipo de evento (clave del diccionario de reacciones).
-     * @param {Object<string, string>} [data] - Variables para interpolar en el mensaje (ej: {objeto: 'manzana'}).
+     * @param {Object<string, string>} [data] - Variables para interpolar en el mensaje.
      * @returns {void}
      */
     reaccionar(tipo, data) {
@@ -94,15 +158,9 @@ class AvatarSystem {
             return;
         }
 
-        console.log(`🎬 Avatar reaccionando a: ${tipo}`, reaccion);
-
-        // 1. Cambiar Animación/Emoción
         this.setEmocion(reaccion.emocion);
 
-        // 2. Mostrar Mensaje
         let mensaje = reaccion.mensaje;
-        
-        // Reemplazo básico de variables en el mensaje (ej: {objeto})
         if (data) {
             Object.keys(data).forEach(key => {
                 mensaje = mensaje.replace(`{${key}}`, data[key]);
@@ -110,48 +168,57 @@ class AvatarSystem {
         }
 
         this.mostrarMensaje(mensaje);
-    }
 
-    /**
-     * Cambia la clase CSS de emoción aplicada al avatar y dispara la
-     * animación de rebote si corresponde.
-     * @param {string} emocion - Nueva emoción (neutral, feliz, triste, celebrando, etc.).
-     * @returns {void}
-     */
-    setEmocion(emocion) {
-        if (!this.avatarElement) return;
-        
-        // En una implementación real, aquí cambiaríamos el sprite o el SVG
-        // Por ahora, usamos clases CSS para simular estados visuales
-        const emociones = ['neutral', 'feliz', 'triste', 'celebrando', 'pensando', 'sorprendido', 'preocupado', 'analizando', 'explicando'];
-        emociones.forEach(e => this.avatarElement.classList.remove(`avatar-${e}`));
-        this.avatarElement.classList.add(`avatar-${emocion}`);
-        
-        // Animación de rebote al cambiar de emoción
-        this.avatarElement.classList.remove('animate-bounce');
-        void this.avatarElement.offsetWidth; // Force reflow
-        if (['feliz', 'celebrando', 'sorprendido'].includes(emocion)) {
-            this.avatarElement.classList.add('animate-bounce');
+        if (EVENTOS_FESTIVOS.has(tipo)) {
+            lanzarConfettiGlobal();
         }
     }
 
     /**
-     * Muestra un mensaje en la burbuja de texto del avatar durante unos
-     * segundos y luego la oculta automáticamente.
+     * Cambia la clase CSS de emoción aplicada al avatar y dispara la
+     * animación de rebote. El rebote dura 3 segundos y luego se detiene
+     * para que el avatar vuelva a su posición normal.
+     * @param {string} emocion - Nueva emoción.
+     * @returns {void}
+     */
+    setEmocion(emocion) {
+        if (!this.avatarElement) return;
+
+        const emociones = ['neutral', 'feliz', 'triste', 'celebrando', 'pensando', 'sorprendido', 'preocupado', 'analizando', 'explicando'];
+        emociones.forEach(e => this.avatarElement.classList.remove(`avatar-${e}`));
+        this.avatarElement.classList.add(`avatar-${emocion}`);
+
+        // Detener bounce anterior si existe
+        if (this.bounceTimeout) {
+            clearTimeout(this.bounceTimeout);
+            this.bounceTimeout = null;
+        }
+        this.avatarElement.classList.remove('avatar-bouncing');
+        void this.avatarElement.offsetWidth;
+
+        if (['feliz', 'celebrando', 'sorprendido'].includes(emocion)) {
+            this.avatarElement.classList.add('avatar-bouncing');
+            // El rebote dura 3 s y luego para (no queda rebotando infinito)
+            this.bounceTimeout = setTimeout(() => {
+                this.avatarElement.classList.remove('avatar-bouncing');
+            }, 3000);
+        }
+    }
+
+    /**
+     * Muestra un mensaje en la burbuja de texto del avatar durante 6 segundos.
      * @param {string} texto - Mensaje a mostrar en la burbuja.
      * @returns {void}
      */
     mostrarMensaje(texto) {
         if (!this.bubbleElement || !this.textElement) return;
 
-        // Limpiar timeout anterior si existe
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
 
         this.textElement.innerText = texto;
         this.bubbleElement.classList.remove('hidden');
         this.bubbleElement.classList.add('animate-fade-in');
 
-        // Ocultar mensaje después de 6 segundos (ajustable)
         this.currentTimeout = setTimeout(() => {
             this.bubbleElement.classList.add('hidden');
         }, 6000);
@@ -160,7 +227,6 @@ class AvatarSystem {
 
 // Inicialización global
 document.addEventListener('DOMContentLoaded', () => {
-    // Las reacciones vienen inyectadas desde el context processor como un JSON
     const reaccionesData = document.getElementById('avatar-reacciones-data');
     if (reaccionesData) {
         const reacciones = JSON.parse(reaccionesData.textContent);
