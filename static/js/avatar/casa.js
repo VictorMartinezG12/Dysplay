@@ -13,6 +13,7 @@
     const URL_COLOCAR_ITEM = config.urlColocarItem || '';
     const URL_EQUIPAR_ITEM = config.urlEquiparItem || '';
     const URL_COMPRAR_Y_EQUIPAR = config.urlComprarYEquipar || '';
+    const URL_DESEQUIPAR_ITEM = config.urlDesequiparItem || '';
     const CSRF_TOKEN = config.csrfToken || '';
     const SLOT_CATEGORIAS = config.slotCategorias || {};
 
@@ -373,6 +374,7 @@
         mostrarMensaje,
         urlEquiparItem: URL_EQUIPAR_ITEM,
         urlComprarYEquipar: URL_COMPRAR_Y_EQUIPAR,
+        urlDesequiparItem: URL_DESEQUIPAR_ITEM,
         csrfToken: CSRF_TOKEN,
     };
 })();

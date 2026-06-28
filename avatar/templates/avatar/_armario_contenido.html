@@ -132,7 +132,7 @@ equipados_ids, ids_poseidos, avatar_equipados, avatar_accesorios.
                         <div data-subpanel data-subtab-group="accesorio-{{ nombre_sub }}" data-subtab-target="tengo" class="subpanel">
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" data-items-grid>
                                 {% for item in datos_sub.tengo %}
-                                <button type="button" data-equipar-item data-item-id="{{ item.id }}" data-item-categoria="{{ item.categoria }}" data-item-subcategoria="{{ item.subcategoria }}" data-item-img="{{ item.imagen_url_segura }}"
+                                <button type="button" data-equipar-item data-item-id="{{ item.id }}" data-item-categoria="{{ item.categoria }}" data-item-subcategoria="{{ item.subcategoria }}" data-item-img="{{ item.imagen_url_segura }}" data-equipado="{% if item.id in equipados_ids %}true{% else %}false{% endif %}"
                                         class="item-btn w-full aspect-square rounded-2xl border-4 transition-all flex flex-col items-center justify-center gap-2 p-3
                                         {% if item.id in equipados_ids %}border-purple-500 bg-purple-50 shadow-inner{% else %}border-gray-100 bg-gray-50 hover:border-purple-200 hover:shadow-md{% endif %}">
                                     {% if item.imagen %}
@@ -184,7 +184,7 @@ equipados_ids, ids_poseidos, avatar_equipados, avatar_accesorios.
                     <div data-subpanel data-subtab-group="{{ cat_id }}" data-subtab-target="tengo" class="subpanel">
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" data-items-grid>
                             {% for item in items.tengo %}
-                            <button type="button" data-equipar-item data-item-id="{{ item.id }}" data-item-categoria="{{ item.categoria }}" data-item-subcategoria="{{ item.subcategoria }}" data-item-img="{{ item.imagen_url_segura }}"
+                            <button type="button" data-equipar-item data-item-id="{{ item.id }}" data-item-categoria="{{ item.categoria }}" data-item-subcategoria="{{ item.subcategoria }}" data-item-img="{{ item.imagen_url_segura }}" data-equipado="{% if item.id in equipados_ids %}true{% else %}false{% endif %}"
                                     class="item-btn w-full aspect-square rounded-2xl border-4 transition-all flex flex-col items-center justify-center gap-2 p-3
                                     {% if item.id in equipados_ids %}border-purple-500 bg-purple-50 shadow-inner{% else %}border-gray-100 bg-gray-50 hover:border-purple-200 hover:shadow-md{% endif %}">
                                 {% if item.imagen %}

@@ -249,6 +249,31 @@ def equipar_item_avatar(avatar_obj, item_id):
     return inventario
 
 
+def desequipar_item_avatar(avatar_obj, item_id):
+    """
+    Quita un ítem equipado del avatar sin eliminarlo del inventario.
+
+    Args:
+        avatar_obj: instancia de `Avatar` cuyo inventario se actualiza.
+        item_id (int): identificador del `Item` a desequipar.
+
+    Returns:
+        dict con 'categoria' y 'subcategoria' del ítem, para que el frontend
+        pueda eliminar la capa visual correspondiente.
+
+    Raises:
+        InventarioAvatar.DoesNotExist: si el ítem no está en el inventario del avatar.
+    """
+    inventario = InventarioAvatar.objects.get(avatar=avatar_obj, item_id=item_id)
+    inventario.equipado = False
+    inventario.save(update_fields=['equipado'])
+    logger.info(
+        "Ítem desequipado: avatar=%s item=%s",
+        avatar_obj.pk, inventario.item.pk,
+    )
+    return {'categoria': inventario.item.categoria, 'subcategoria': inventario.item.subcategoria}
+
+
 def comprar_y_equipar_item(usuario, avatar_obj, item_id):
     """
     Compra un ítem para el avatar y lo equipa inmediatamente.

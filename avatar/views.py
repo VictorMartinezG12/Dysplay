@@ -13,6 +13,7 @@ from .services import (
     colocar_item_en_casa,
     comprar_item_para_avatar,
     comprar_y_equipar_item,
+    desequipar_item_avatar,
     equipar_item_avatar,
     obtener_items_colocados_casa,
     obtener_items_tienda_casa,
@@ -282,3 +283,24 @@ def comprar_y_equipar(request):
     except Exception:
         logger.error("Error al comprar y equipar el ítem %s", item_id, exc_info=True)
         return JsonResponse({'exito': False, 'mensaje': 'Ocurrió un error al procesar la compra.'}, status=500)
+
+
+@login_required
+def desequipar_item(request):
+    """Quita un ítem equipado del avatar sin eliminarlo del inventario."""
+    if request.method != 'POST':
+        return JsonResponse({'exito': False}, status=405)
+
+    item_id = request.POST.get('item_id')
+    if not item_id:
+        return JsonResponse({'exito': False, 'mensaje': 'Falta el ítem a desequipar.'}, status=400)
+
+    try:
+        avatar_obj = Avatar.objects.get(usuario=request.user)
+        resultado = desequipar_item_avatar(avatar_obj, item_id)
+        return JsonResponse({'exito': True, **resultado})
+    except Avatar.DoesNotExist:
+        return JsonResponse({'exito': False, 'mensaje': 'Avatar no encontrado.'}, status=404)
+    except Exception:
+        logger.error("Error al desequipar el ítem %s", item_id, exc_info=True)
+        return JsonResponse({'exito': False, 'mensaje': 'Ocurrió un error al quitar el ítem.'}, status=500)

@@ -72,6 +72,7 @@
             return {
                 urlEquiparItem: window.dysPlayCasa.urlEquiparItem,
                 urlComprarYEquipar: window.dysPlayCasa.urlComprarYEquipar,
+                urlDesequiparItem: window.dysPlayCasa.urlDesequiparItem || '',
                 csrfToken: window.dysPlayCasa.csrfToken,
             };
         }
@@ -83,7 +84,7 @@
                 console.error('Error al leer la configuración del armario:', error);
             }
         }
-        return { urlEquiparItem: '', urlComprarYEquipar: '', csrfToken: '' };
+        return { urlEquiparItem: '', urlComprarYEquipar: '', urlDesequiparItem: '', csrfToken: '' };
     }
 
     /**
@@ -227,7 +228,45 @@
             boton.classList.toggle('shadow-inner', esEsteItem);
             boton.classList.toggle('border-gray-100', !esEsteItem);
             boton.classList.toggle('bg-gray-50', !esEsteItem);
+            boton.dataset.equipado = esEsteItem ? 'true' : 'false';
         });
+    }
+
+    /**
+     * Elimina la capa visual de un ítem de la vista previa del avatar.
+     * @param {string} categoria - Categoría del ítem.
+     * @param {string} subcategoria - Subcategoría (accesorios).
+     * @returns {void}
+     */
+    function quitarCapaPreview(categoria, subcategoria) {
+        const { capas } = obtenerElementos();
+        if (!capas) return;
+        const esAccesorio = categoria === 'accesorio';
+        const capa = esAccesorio
+            ? capas.querySelector(`img[data-cat="accesorio"][data-subcategoria="${subcategoria}"]`)
+            : capas.querySelector(`img[data-cat="${categoria}"]`);
+        if (capa) {
+            capa.classList.add('scale-0');
+            setTimeout(() => capa.remove(), 300);
+        }
+    }
+
+    /**
+     * Envía la solicitud para desequipar (quitar) un ítem sin eliminarlo del inventario.
+     * @param {string} itemId - Identificador del ítem a desequipar.
+     * @returns {Promise<Object>} Respuesta JSON del servidor.
+     */
+    async function desequiparItemPeticion(itemId) {
+        const { urlDesequiparItem, csrfToken } = obtenerConfig();
+        const formData = new FormData();
+        formData.append('item_id', itemId);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        const response = await fetch(urlDesequiparItem, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        return response.json();
     }
 
     /**
@@ -281,8 +320,32 @@
         const categoria = boton.dataset.itemCategoria;
         const subcategoria = boton.dataset.itemSubcategoria;
         const imagenUrl = boton.dataset.itemImg;
+        const yaEquipado = boton.dataset.equipado === 'true';
 
         boton.disabled = true;
+
+        if (yaEquipado) {
+            // Toggle: el ítem ya está puesto → quitárselo
+            try {
+                const resultado = await desequiparItemPeticion(itemId);
+                if (resultado.exito) {
+                    quitarCapaPreview(resultado.categoria || categoria, resultado.subcategoria || subcategoria);
+                    boton.classList.remove('border-purple-500', 'bg-purple-50', 'shadow-inner');
+                    boton.classList.add('border-gray-100', 'bg-gray-50');
+                    boton.dataset.equipado = 'false';
+                } else {
+                    mostrarMensaje(resultado.mensaje || 'No se pudo quitar el ítem.', false);
+                }
+            } catch (error) {
+                console.error('Error al desequipar ítem:', error);
+                mostrarMensaje('Ocurrió un error de conexión. Inténtalo de nuevo.', false);
+            } finally {
+                boton.disabled = false;
+            }
+            return;
+        }
+
+        // Ítem no equipado → equiparlo normalmente
         actualizarCapaPreview(categoria, subcategoria, imagenUrl);
 
         try {

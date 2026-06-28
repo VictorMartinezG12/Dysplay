@@ -74,6 +74,11 @@ class ReactionsTests(TestCase):
             'bienvenida_diaria',
             'historia_completada',
             'desafio_completado',
+            'bienvenida_niveles',
+            'bienvenida_historias',
+            'bienvenida_camara',
+            'bienvenida_desafio',
+            'bienvenida_estadisticas',
         }
         self.assertEqual(set(REACCIONES.keys()), tipos_esperados)
 
