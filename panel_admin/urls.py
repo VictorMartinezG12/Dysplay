@@ -7,6 +7,7 @@ app_name = 'panel_admin'
 urlpatterns = [
     path('', views.PanelHomeView.as_view(), name='home'),
     path('configuracion-sistema/', views.ConfiguracionSistemaView.as_view(), name='configuracion_sistema'),
+    path('configuracion-sistema/evento-demo/', views.ActivarEventoDemoView.as_view(), name='activar_evento_demo'),
     path('<slug:slug>/', views.RecursoListView.as_view(), name='lista'),
     path('<slug:slug>/nuevo/', views.RecursoCreateView.as_view(), name='crear'),
     path('<slug:slug>/<int:pk>/editar/', views.RecursoUpdateView.as_view(), name='editar'),

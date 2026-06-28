@@ -1,0 +1,71 @@
+{% if evento_activo %}
+{% with tipo=evento_activo.tipo %}
+
+<style>
+@keyframes flotar {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-18px) rotate(5deg); }
+    66% { transform: translateY(-8px) rotate(-4deg); }
+}
+@keyframes flotar2 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-22px) rotate(-6deg); }
+}
+@keyframes nevar {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0.3; }
+}
+.deco-float { animation: flotar 4s ease-in-out infinite; pointer-events: none; user-select: none; }
+.deco-float2 { animation: flotar2 5s ease-in-out infinite; pointer-events: none; user-select: none; }
+.deco-float3 { animation: flotar 6s ease-in-out infinite 1s; pointer-events: none; user-select: none; }
+.deco-float4 { animation: flotar2 3.5s ease-in-out infinite 0.5s; pointer-events: none; user-select: none; }
+
+{% if tipo == 'navidad' %}
+.evento-banner { background: linear-gradient(90deg, #b91c1c, #991b1b, #b91c1c); color: white; }
+@keyframes brillo { 0%,100%{opacity:1} 50%{opacity:0.7} }
+.evento-estrella { animation: brillo 2s ease-in-out infinite; }
+{% elif tipo == 'halloween' %}
+.evento-banner { background: linear-gradient(90deg, #7c2d12, #c2410c, #7c2d12); color: white; }
+{% elif tipo == 'vacaciones' %}
+.evento-banner { background: linear-gradient(90deg, #0369a1, #0ea5e9, #0369a1); color: white; }
+{% endif %}
+</style>
+
+<!-- ══ BANNER DEL EVENTO ══ -->
+<div class="evento-banner w-full py-2.5 px-4 text-center font-black text-base tracking-wide z-[60] relative overflow-hidden">
+    {% if tipo == 'navidad' %}
+        <span class="evento-estrella">❄️</span>
+        &nbsp;🎄&nbsp; {{ evento_activo.nombre }} &nbsp;🎄&nbsp;
+        <span class="evento-estrella" style="animation-delay:0.5s">❄️</span>
+    {% elif tipo == 'halloween' %}
+        🎃 &nbsp;👻&nbsp; {{ evento_activo.nombre }} &nbsp;👻&nbsp; 🎃
+    {% elif tipo == 'vacaciones' %}
+        ☀️ &nbsp;🌴&nbsp; {{ evento_activo.nombre }} &nbsp;🌴&nbsp; ☀️
+    {% endif %}
+</div>
+
+<!-- ══ DECORACIONES FLOTANTES ══ -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-[55]" aria-hidden="true">
+    {% if tipo == 'navidad' %}
+        <span class="deco-float  absolute text-5xl" style="left:2%;  top:12%;">❄️</span>
+        <span class="deco-float2 absolute text-4xl" style="right:3%; top:18%;">🎄</span>
+        <span class="deco-float3 absolute text-4xl" style="left:5%;  bottom:20%;">⭐</span>
+        <span class="deco-float4 absolute text-5xl" style="right:4%; bottom:15%;">🎁</span>
+        <span class="deco-float  absolute text-3xl" style="left:50%; top:8%; opacity:0.5;">❄️</span>
+    {% elif tipo == 'halloween' %}
+        <span class="deco-float  absolute text-5xl" style="left:2%;  top:12%;">🎃</span>
+        <span class="deco-float2 absolute text-4xl" style="right:3%; top:18%;">👻</span>
+        <span class="deco-float3 absolute text-4xl" style="left:5%;  bottom:20%;">🕷️</span>
+        <span class="deco-float4 absolute text-5xl" style="right:4%; bottom:15%;">🦇</span>
+        <span class="deco-float  absolute text-3xl" style="left:50%; top:8%; opacity:0.5;">🕸️</span>
+    {% elif tipo == 'vacaciones' %}
+        <span class="deco-float  absolute text-5xl" style="left:2%;  top:12%;">☀️</span>
+        <span class="deco-float2 absolute text-4xl" style="right:3%; top:18%;">🌴</span>
+        <span class="deco-float3 absolute text-4xl" style="left:5%;  bottom:20%;">🏖️</span>
+        <span class="deco-float4 absolute text-5xl" style="right:4%; bottom:15%;">🌊</span>
+        <span class="deco-float  absolute text-3xl" style="left:50%; top:8%; opacity:0.5;">🐚</span>
+    {% endif %}
+</div>
+
+{% endwith %}
+{% endif %}

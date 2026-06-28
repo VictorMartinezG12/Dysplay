@@ -110,6 +110,8 @@
 </head>
 <body class="bg-bgBase text-textMain min-h-screen flex flex-col items-center relative overflow-x-hidden">
 
+    {% include '_evento_especial.html' %}
+
     <!-- HEADER GLOBAL -->
     <header class="w-full flex items-center justify-between p-6 md:p-8 max-w-[1200px] z-50">
         <a href="{% url 'home' %}" class="flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-soft hover:bg-gray-50 active:bg-gray-100 min-h-[64px] transition-all focus:outline-none focus:ring-4 focus:ring-primary">

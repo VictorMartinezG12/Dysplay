@@ -7,7 +7,10 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
+from django.utils import timezone
+
 from configuracion.models import ConfiguracionGlobal
+from recompensas.models import EventoEspecial
 from .mixins import StaffRequiredMixin
 from .registry import REGISTRO, REGISTRO_POR_SLUG, grupos_para_sidebar
 
@@ -61,6 +64,7 @@ class ConfiguracionSistemaView(StaffRequiredMixin, TemplateView):
         primera = ConfiguracionGlobal.objects.first()
         contexto['motor_voz_actual'] = primera.motor_voz if primera else 'navegador'
         contexto['opciones_motor_voz'] = ConfiguracionGlobal.MOTOR_VOZ_CHOICES
+        contexto['evento_demo_activo'] = EventoEspecial.objects.filter(activo=True).first()
         return contexto
 
     def post(self, request, *args, **kwargs):
@@ -75,6 +79,38 @@ class ConfiguracionSistemaView(StaffRequiredMixin, TemplateView):
         except Exception:
             logger.error('Error al actualizar motor_voz globalmente', exc_info=True)
             messages.error(request, 'Ocurrió un error al guardar. Inténtalo de nuevo.')
+        return redirect('panel_admin:configuracion_sistema')
+
+
+class ActivarEventoDemoView(StaffRequiredMixin, TemplateView):
+    """Activa o desactiva un evento especial al instante para demos en vivo."""
+
+    TIPOS_VALIDOS = {val for val, _ in EventoEspecial.TIPO_CHOICES}
+
+    def post(self, request, *args, **kwargs):
+        tipo = request.POST.get('tipo', '').strip()
+
+        EventoEspecial.objects.all().update(activo=False)
+
+        if tipo and tipo in self.TIPOS_VALIDOS:
+            hoy = timezone.localdate()
+            evento, creado = EventoEspecial.objects.get_or_create(
+                tipo=tipo,
+                defaults={
+                    'nombre': dict(EventoEspecial.TIPO_CHOICES)[tipo],
+                    'fecha_inicio': hoy,
+                    'fecha_fin': hoy,
+                },
+            )
+            if not creado:
+                evento.fecha_inicio = hoy
+                evento.fecha_fin = hoy
+            evento.activo = True
+            evento.save()
+            messages.success(request, f'Evento "{evento.nombre}" activado. Recarga cualquier página para verlo.')
+        else:
+            messages.success(request, 'Todos los eventos desactivados.')
+
         return redirect('panel_admin:configuracion_sistema')
 
 
