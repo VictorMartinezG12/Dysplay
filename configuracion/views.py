@@ -23,7 +23,7 @@ def ver_configuracion(request):
     if request.method == 'POST':
         config = services.guardar_configuracion(request.user, request.POST)
         services.actualizar_correo_tutor(request.user, request.POST.get('correo_tutor'))
-        return redirect('configuracion:ver')
+        return redirect('home')
 
     return render(request, 'configuracion/panel.html', {'config': config})
 
