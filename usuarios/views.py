@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Autenticación gestionada por django-allauth. Este módulo no expone vistas propias.

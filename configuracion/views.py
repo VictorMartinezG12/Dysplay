@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from servicios.utils import sintetizar_voz_azure
 
@@ -28,6 +29,7 @@ def ver_configuracion(request):
     return render(request, 'configuracion/panel.html', {'config': config})
 
 
+@require_POST
 @login_required
 def sintetizar_audio(request):
     """Vista delgada: orquesta la síntesis de voz neural con Azure Speech."""

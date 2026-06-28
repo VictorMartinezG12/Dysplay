@@ -5,11 +5,9 @@ from django.urls import path, reverse
 
 from . import services
 from .models import (
-    FragmentoGenerado,
     FragmentoHistoria,
     Historia,
     HistoriaGenerada,
-    OpcionGenerada,
     OpcionRespuesta,
     ProgresoHistoria,
 )

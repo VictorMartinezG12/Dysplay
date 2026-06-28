@@ -12,7 +12,6 @@ Django==6.0.5
 django-allauth==65.17.0
 google-api-core==2.31.0
 google-auth==2.54.0
-google-cloud-vision==3.14.0
 google-genai==2.8.0
 googleapis-common-protos==1.75.0
 greenlet==3.5.2
@@ -26,7 +25,6 @@ jiter==0.15.0
 numpy==2.4.6
 openai==2.43.0
 pillow==12.2.0
-playwright==1.60.0
 proto-plus==1.28.0
 protobuf==7.35.1
 pyasn1==0.6.3

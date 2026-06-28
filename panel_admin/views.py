@@ -12,7 +12,7 @@ from django.utils import timezone
 from configuracion.models import ConfiguracionGlobal
 from recompensas.models import EventoEspecial
 from .mixins import StaffRequiredMixin
-from .registry import REGISTRO, REGISTRO_POR_SLUG, grupos_para_sidebar
+from .registry import REGISTRO_POR_SLUG, grupos_para_sidebar
 
 logger = logging.getLogger(__name__)
 

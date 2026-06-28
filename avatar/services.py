@@ -10,7 +10,7 @@ import logging
 
 from django.db import transaction
 
-from recompensas.services import cobrar_monedas, SaldoInsuficienteError
+from recompensas.services import cobrar_monedas
 from .models import CasaAvatar, InventarioAvatar, Item, ItemColocado
 
 # Categorías de ítems que pueden colocarse en la casa del avatar. Se amplía

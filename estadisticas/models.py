@@ -50,9 +50,9 @@ class RegistroActividad(models.Model):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='registros_actividad',
     )
-    fecha = models.DateField(auto_now_add=True)
-    tipo_actividad = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    zona = models.CharField(max_length=20, choices=Nivel.ZONA_CHOICES, blank=True, default='')
+    fecha = models.DateField(auto_now_add=True, db_index=True)
+    tipo_actividad = models.CharField(max_length=10, choices=TIPO_CHOICES, db_index=True)
+    zona = models.CharField(max_length=20, choices=Nivel.ZONA_CHOICES, blank=True, default='', db_index=True)
     score = models.FloatField()
 
     objects = RegistroActividadManager()

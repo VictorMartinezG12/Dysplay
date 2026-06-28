@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 
@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.microsoft',
 ]
 
 MIDDLEWARE = [
@@ -81,11 +80,6 @@ AUTHENTICATION_BACKENDS = [
 # ==========================================
 SITE_ID = 1
 
-# Queremos que inicien sesión con su correo electrónico, no con un "username" complicado.
-#ACCOUNT_AUTHENTICATION_METHOD = 'email'
-#ACCOUNT_EMAIL_REQUIRED = True
-#ACCOUNT_UNIQUE_EMAIL = True
-#ACCOUNT_USERNAME_REQUIRED = False # No les pedimos un nombre de usuario obligatorio
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 
@@ -160,6 +154,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
@@ -176,12 +171,54 @@ if 'test' in sys.argv:
 
 AUTH_USER_MODEL = 'usuarios.UsuarioCustom'
 
-# En desarrollo imprimimos los correos en la consola/logs en lugar de enviarlos por SMTP real.
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# En desarrollo los correos se imprimen en consola; en producción se usa SMTP real.
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_FROM_DEFAULT', 'no-responder@dysplay.app')
 AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY')
 AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION')
-GEMINI_API_KEY= os.environ.get('GEMINI_API_KEY')
-AZURE_OPENAI_API_KEY= os.environ.get('AZURE_OPENAI_API_KEY')
-AZURE_OPENAI_ENDPOINT= os.environ.get('AZURE_OPENAI_ENDPOINT')
-AZURE_OPENAI_DEPLOYMENT_NAME= os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+AZURE_OPENAI_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
+AZURE_OPENAI_ENDPOINT = os.environ.get('AZURE_OPENAI_ENDPOINT')
+AZURE_OPENAI_DEPLOYMENT_NAME = os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'niveles': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+        'historias': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+        'camara_inteligente': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+        'avatar': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+        'recompensas': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+        'desafio': {'handlers': ['console'], 'level': 'DEBUG' if DEBUG else 'WARNING', 'propagate': False},
+    },
+}
