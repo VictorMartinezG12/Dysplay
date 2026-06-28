@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
+from avatar.reactions import obtener_reaccion
 from . import services
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ def desafio_view(request):
             'bloqueado': estado['bloqueado'],
             'segundos_restantes': estado['segundos_restantes'],
         },
+        'avatar_frase_contextual': obtener_reaccion('bienvenida_desafio'),
     }
     return render(request, 'desafio/desafio.html', context)
 

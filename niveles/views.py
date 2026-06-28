@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
+from avatar.reactions import obtener_reaccion
 from .models import Nivel, ProgresoEstudiante, MisionVocabulario
 from . import services
 
@@ -39,6 +40,7 @@ def niveles_view(request):
         },
         'zonas_mapa': (_zonas := services.obtener_mapa_aventura(request.user)),
         'mapa_unico': services.obtener_mapa_unico(_zonas),
+        'avatar_frase_contextual': obtener_reaccion('bienvenida_niveles'),
     }
     return render(request, 'niveles/niveles.html', context)
 

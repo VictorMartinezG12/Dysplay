@@ -38,6 +38,31 @@ REACCIONES = {
     'bienvenida_diaria': [
         '¡Hola de nuevo! Te extrañé. ¿Listo para practicar?',
     ],
+    'bienvenida_niveles': [
+        '¡Bienvenido al mundo de la Aventura! ¿Listo para conquistar el mapa?',
+        '¡El mapa te espera! Elige una zona y a practicar.',
+        '¡Hora de aventura! ¿Cuántos niveles superarás hoy?',
+    ],
+    'bienvenida_historias': [
+        '¡Bienvenido al mundo de las Historias! ¿Qué cuento leeremos hoy?',
+        '¡Las historias te llaman! Vamos a leer juntos.',
+        '¡Hora de un cuento! Elige tu historia favorita.',
+    ],
+    'bienvenida_camara': [
+        '¡Bienvenido a la Cámara Inteligente! Apúntame a algo y lo descubrimos.',
+        '¡Hora de explorar con la cámara! ¿Qué objeto encontrarás hoy?',
+        '¡Di "apunta" y encontraremos algo increíble juntos!',
+    ],
+    'bienvenida_desafio': [
+        '¡Bienvenido al Desafío del día! ¡Tú puedes con esto!',
+        '¡El reto de hoy te espera! ¿Estás listo, campeón?',
+        '¡Un desafío nuevo cada día! Vamos a intentarlo.',
+    ],
+    'bienvenida_estadisticas': [
+        '¡Mira todo lo que has logrado! ¡Eres increíble!',
+        '¡Aquí están tus logros! ¡Sigue así, estrella!',
+        '¡Tus estadísticas brillan! ¡Estoy muy orgulloso de ti!',
+    ],
     'historia_completada': [
         '¡Historia terminada! ¡Eres todo un lector!',
     ],

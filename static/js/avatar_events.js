@@ -160,10 +160,10 @@ class AvatarSystem {
 
         this.setEmocion(reaccion.emocion);
 
-        let mensaje = reaccion.mensaje;
+        let mensaje = data?.mensajeOverride || reaccion.mensaje;
         if (data) {
             Object.keys(data).forEach(key => {
-                mensaje = mensaje.replace(`{${key}}`, data[key]);
+                if (key !== 'mensajeOverride') mensaje = mensaje.replace(`{${key}}`, data[key]);
             });
         }
 

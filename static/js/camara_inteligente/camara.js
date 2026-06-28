@@ -768,6 +768,13 @@
      * Navega de vuelta a la pantalla principal de DysPlay.
      * @returns {void}
      */
+    function volverDesdeEjercicio() {
+        document.getElementById('global-header').classList.remove('hidden');
+        document.getElementById('global-header').classList.add('flex');
+        cambiarVista('view-exercise', 'view-camera');
+        iniciarDeteccionEnVivo();
+    }
+
     function goToMenu() {
         detenerDeteccionEnVivo();
         window.location.href = URL_HOME;
@@ -798,6 +805,7 @@
         document.getElementById('btn-capturar')?.addEventListener('click', capturarObjeto);
         document.getElementById('btn-escuchar')?.addEventListener('click', leerFraseEnVozAlta);
         document.getElementById('btn-grabar')?.addEventListener('click', alternarGrabacion);
+        document.getElementById('btn-volver-ejercicio')?.addEventListener('click', volverDesdeEjercicio);
         document.getElementById('btn-salir-menu')?.addEventListener('click', goToMenu);
         document.getElementById('btn-nuevo-objeto')?.addEventListener('click', resetCamera);
     }

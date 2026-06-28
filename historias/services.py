@@ -505,8 +505,18 @@ def procesar_respuesta_fragmento(usuario, historia, fragmento_id, opcion_id=None
         except FragmentoHistoria.DoesNotExist:
             return {'status': 'error', 'message': 'El fragmento solicitado no existe.'}
 
-        progreso = obtener_o_crear_progreso(usuario, historia)
+        try:
+            progreso = ProgresoHistoria.objects.get(usuario=usuario, historia=historia)
+        except ProgresoHistoria.DoesNotExist:
+            progreso = obtener_o_crear_progreso(usuario, historia)
+
         ya_completada_antes = progreso.completada
+
+        if progreso.fragmento_actual is None:
+            primer_fragmento = historia.fragmentos.order_by('orden').first()
+            if primer_fragmento:
+                progreso.fragmento_actual = primer_fragmento
+                progreso.save()
 
         if progreso.fragmento_actual_id != fragmento.id:
             return {'status': 'error', 'message': 'Este fragmento no corresponde a tu progreso actual.'}

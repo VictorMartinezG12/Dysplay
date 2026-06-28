@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
+from avatar.reactions import obtener_reaccion
 from . import services
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ def camara_view(request):
             'url_evaluar': reverse('camara_evaluar'),
             'url_home': reverse('home'),
         },
+        'avatar_frase_contextual': obtener_reaccion('bienvenida_camara'),
     }
     return render(request, 'camara_inteligente/camara.html', context)
 

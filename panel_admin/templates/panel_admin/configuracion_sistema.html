@@ -1,0 +1,53 @@
+{% extends 'panel_admin/base_panel.html' %}
+
+{% block title %}Configuración del sistema - Panel DysPlay{% endblock %}
+
+{% block panel_content %}
+<div class="mb-6">
+    <a href="{% url 'panel_admin:home' %}" class="text-sm font-bold text-indigo-500 hover:underline">← Inicio del panel</a>
+</div>
+
+<h1 class="text-2xl font-black text-indigo-900 mb-1">⚙️ Configuración del sistema</h1>
+<p class="text-gray-500 mb-8">Los cambios aquí se aplican a <strong>todos los usuarios</strong> de la plataforma.</p>
+
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for mensaje in messages %}
+    <div class="px-5 py-3 rounded-2xl font-bold text-sm
+        {% if mensaje.tags == 'success' %}bg-green-50 border-2 border-green-300 text-green-800
+        {% else %}bg-red-50 border-2 border-red-300 text-red-800{% endif %}">
+        {{ mensaje }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="bg-white rounded-2xl shadow-soft border-2 border-indigo-100 p-6 max-w-lg">
+    <h2 class="text-lg font-black text-indigo-800 mb-1 flex items-center gap-2">
+        <span>🔊</span> Motor de Voz (narración)
+    </h2>
+    <p class="text-sm text-gray-500 mb-5">
+        <strong>Navegador</strong> es rápido y no tiene costo.<br>
+        <strong>Voz natural (IA)</strong> usa Azure Speech — requiere que las credenciales estén configuradas en el servidor.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex gap-3 mb-6">
+            {% for val, label in opciones_motor_voz %}
+            <label class="flex-1 cursor-pointer">
+                <input type="radio" name="motor_voz" value="{{ val }}" class="peer hidden"
+                       {% if motor_voz_actual == val %}checked{% endif %}>
+                <div class="p-4 border-4 border-gray-100 rounded-2xl peer-checked:border-fuchsia-500 peer-checked:bg-fuchsia-50 transition-all text-center font-bold text-sm">
+                    {{ label }}
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+        <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl transition-colors">
+            Guardar y aplicar a todos
+        </button>
+    </form>
+</div>
+{% endblock %}

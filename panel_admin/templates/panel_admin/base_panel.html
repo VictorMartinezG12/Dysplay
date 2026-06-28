@@ -37,6 +37,9 @@ llenar `{% block panel_content %}`.
             <a href="{% url 'panel_admin:home' %}" class="block px-4 py-2.5 rounded-xl font-bold text-sm text-indigo-700 hover:bg-indigo-50 transition-colors">
                 🏠 Inicio del panel
             </a>
+            <a href="{% url 'panel_admin:configuracion_sistema' %}" class="block px-4 py-2.5 rounded-xl font-bold text-sm text-indigo-700 hover:bg-indigo-50 transition-colors">
+                ⚙️ Configuración del sistema
+            </a>
             {% for grupo, recursos in grupos_sidebar.items %}
             <div class="pt-3 pb-1 px-4 text-xs font-black uppercase tracking-wide text-gray-400">{{ grupo }}</div>
             {% for r in recursos %}

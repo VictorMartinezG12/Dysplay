@@ -615,14 +615,21 @@
                 mostrarResolucion(data);
                 cambiarVista('view-thinking', 'view-resolution');
             } else {
-                alert('No se pudo procesar tu respuesta. ' + data.message);
+                console.error('Error al evaluar fragmento:', data.message);
+                mostrarErrorConAvatar('¡Ups! Algo salió mal. ¡Inténtalo de nuevo!');
                 renderizarFragmento(fragmentoActual);
             }
         } catch (error) {
             console.error(error);
-            alert('Hubo un problema comunicándose con el servidor.');
+            mostrarErrorConAvatar('Hubo un problema. ¡Vuelve a intentarlo!');
             renderizarFragmento(fragmentoActual);
         }
+    }
+
+    function mostrarErrorConAvatar(mensaje) {
+        window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
+            detail: { tipo: 'pronunciacion_incorrecta', data: { mensajeOverride: mensaje } },
+        }));
     }
 
     /**

@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.forms import modelform_factory
 from django.http import Http404
@@ -5,8 +7,11 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
+from configuracion.models import ConfiguracionGlobal
 from .mixins import StaffRequiredMixin
 from .registry import REGISTRO, REGISTRO_POR_SLUG, grupos_para_sidebar
+
+logger = logging.getLogger(__name__)
 
 
 def _obtener_recurso(slug):
@@ -44,6 +49,33 @@ class PanelHomeView(StaffRequiredMixin, TemplateView):
         ]
         contexto['tarjetas'] = tarjetas
         return contexto
+
+
+class ConfiguracionSistemaView(StaffRequiredMixin, TemplateView):
+    """Permite al admin cambiar el motor de voz para TODOS los usuarios de una sola vez."""
+
+    template_name = 'panel_admin/configuracion_sistema.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        primera = ConfiguracionGlobal.objects.first()
+        contexto['motor_voz_actual'] = primera.motor_voz if primera else 'navegador'
+        contexto['opciones_motor_voz'] = ConfiguracionGlobal.MOTOR_VOZ_CHOICES
+        return contexto
+
+    def post(self, request, *args, **kwargs):
+        motor_voz = request.POST.get('motor_voz')
+        opciones_validas = {val for val, _ in ConfiguracionGlobal.MOTOR_VOZ_CHOICES}
+        if motor_voz not in opciones_validas:
+            messages.error(request, 'Opción de motor de voz no válida.')
+            return redirect('panel_admin:configuracion_sistema')
+        try:
+            actualizados = ConfiguracionGlobal.objects.all().update(motor_voz=motor_voz)
+            messages.success(request, f'Motor de voz actualizado para {actualizados} usuario(s).')
+        except Exception:
+            logger.error('Error al actualizar motor_voz globalmente', exc_info=True)
+            messages.error(request, 'Ocurrió un error al guardar. Inténtalo de nuevo.')
+        return redirect('panel_admin:configuracion_sistema')
 
 
 class RecursoListView(StaffRequiredMixin, ListView):

@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
+from avatar.reactions import obtener_reaccion
 from . import services
 from .models import Historia
 
@@ -42,6 +43,7 @@ def historias_view(request):
             'lectura': lectura,
             'url_evaluar': url_evaluar,
         },
+        'avatar_frase_contextual': obtener_reaccion('bienvenida_historias'),
     }
     return render(request, 'historias/historias.html', context)
 
