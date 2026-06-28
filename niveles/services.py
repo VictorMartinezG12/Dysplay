@@ -38,6 +38,15 @@ TIPOS_MIME_WAV_VALIDOS = {'audio/x-wav', 'audio/wav', 'audio/vnd.wave'}
 # estudiante superó la misión de pronunciación. Definido en el Master Plan.
 UMBRAL_SUPERACION_NIVEL = 70
 
+# Bonus que se suma al score bruto de Azure según la dificultad de la zona,
+# solo para decidir si el nivel se supera (el score real no se altera).
+# Fácil es más generoso porque el niño está aprendiendo; difícil exige precisión.
+BONUS_POR_DIFICULTAD = {
+    'facil': 15,
+    'medio': 7,
+    'dificil': 0,
+}
+
 # Recompensas de primera vez según estrellas obtenidas (estrellas → monedas).
 # Definir aquí para poder ajustar sin tocar lógica dispersa.
 RECOMPENSA_PRIMERA_VEZ = {1: 25, 2: 50, 3: 100}
@@ -58,6 +67,14 @@ def score_a_estrellas(score, es_principiante=False):
     elif score >= UMBRAL_SUPERACION_NIVEL:
         return 2
     return 1
+
+
+def _dificultad_de_zona(clave_zona):
+    """Devuelve la dificultad ('facil', 'medio', 'dificil') para la clave de zona dada."""
+    for zona in ZONAS_MAPA_AVENTURA:
+        if zona['clave'] == clave_zona:
+            return zona['dificultad']
+    return 'dificil'
 
 
 def procesar_audio_subido(request_file):
@@ -719,25 +736,36 @@ def procesar_intento_nivel(usuario, archivo_audio, palabra_objetivo, nivel_id):
         if resultado_azure['status'] != 'success':
             return {'status': 'error', 'message': resultado_azure['message']}
 
-        progreso, avanzo_de_nivel, ya_completado = guardar_progreso_estudiante(usuario, nivel_id, resultado_azure)
-        recompensas = calcular_recompensas(usuario, resultado_azure['score_global'], ya_completado)
-        reaccion_avatar = construir_reaccion_avatar(resultado_azure['score_global'], avanzo_de_nivel)
-
+        # Aplicar bonus de dificultad: zonas fáciles perdonan más el score bruto
+        # de Azure para que el umbral de superación sea más alcanzable.
+        # El score real (sin bonus) se guarda en el registro y se muestra al admin.
         zona_nivel = Nivel.objects.filter(numero=nivel_id).values_list('zona', flat=True).first() or ''
+        dificultad = _dificultad_de_zona(zona_nivel)
+        bonus = BONUS_POR_DIFICULTAD.get(dificultad, 0)
+        score_real = resultado_azure['score_global']
+        score_efectivo = min(100, score_real + bonus)
+
+        # Para progreso y recompensas se usa el score efectivo (con bonus),
+        # pero el RegistroActividad y la respuesta al frontend reciben el score real.
+        resultado_con_bonus = {**resultado_azure, 'score_global': score_efectivo}
+        progreso, avanzo_de_nivel, ya_completado = guardar_progreso_estudiante(usuario, nivel_id, resultado_con_bonus)
+        recompensas = calcular_recompensas(usuario, score_efectivo, ya_completado)
+        reaccion_avatar = construir_reaccion_avatar(score_efectivo, avanzo_de_nivel)
+
         RegistroActividad.objects.registrar(
-            usuario, RegistroActividad.TIPO_NIVEL, resultado_azure['score_global'], zona=zona_nivel,
+            usuario, RegistroActividad.TIPO_NIVEL, score_real, zona=zona_nivel,
         )
 
         return {
             'status': 'success',
-            'score': resultado_azure['score_global'],
+            'score': score_real,
             'score_exactitud': resultado_azure.get('score_exactitud'),
             'palabras': resultado_azure.get('palabras', []),
             'avanzo_de_nivel': avanzo_de_nivel,
             'monedas_ganadas': recompensas['monedas_ganadas'],
             'monedas_totales': recompensas['monedas_totales'],
             'reaccion_avatar': reaccion_avatar,
-            'estrellas': score_a_estrellas(resultado_azure['score_global']),
+            'estrellas': score_a_estrellas(score_efectivo),
         }
     except Exception:
         logger.error("Error inesperado al procesar el intento de nivel", exc_info=True)
