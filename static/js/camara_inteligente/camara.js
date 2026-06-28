@@ -722,15 +722,20 @@
      */
     function mostrarResultado(data) {
         const scoreRedondeado = Math.round(data.score);
-        const colorPrincipal = data.correcta ? '#48BB78' : '#F56565';
 
-        document.getElementById('score-text').textContent = `${scoreRedondeado}%`;
-        document.getElementById('score-chart').style.background = `conic-gradient(${colorPrincipal} ${scoreRedondeado}%, #edf2f7 0)`;
+        // Círculo de puntuación — solo visible para admins (si el elemento existe en el DOM)
+        const scoreText = document.getElementById('score-text');
+        const scoreChart = document.getElementById('score-chart');
+        if (scoreText) scoreText.textContent = `${scoreRedondeado}%`;
+        if (scoreChart) scoreChart.style.background = `conic-gradient(#48BB78 ${scoreRedondeado}%, #edf2f7 0)`;
 
-        document.getElementById('resultado-titulo').textContent = data.correcta ? '¡Increíble!' : '¡Sigue practicando!';
+        document.getElementById('resultado-titulo').textContent = data.correcta ? '¡Increíble!' : '¡Lo intentaste genial!';
         document.getElementById('resultado-subtitulo').textContent = data.correcta
-            ? 'Leíste correctamente la frase.'
-            : 'Casi lo logras, inténtalo de nuevo.';
+            ? '¡Leíste la frase muy bien!'
+            : '¡Inténtalo otra vez, tú puedes!';
+
+        // Estrellas — siempre visible, mínimo 1 estrella para que sea alentador
+        _animarEstrellasCamara(scoreRedondeado);
 
         const elementoMensaje = document.getElementById('resultado-mensaje-avatar');
         if (data.reaccion_avatar && data.reaccion_avatar.mensaje) {
@@ -744,6 +749,10 @@
             window.dispatchEvent(new CustomEvent('AVATAR_EVENT', {
                 detail: { tipo: tipoAutoAvatar, data: {} },
             }));
+        }
+
+        if (data.correcta) {
+            lanzarConfettiGlobal();
         }
 
         const cajaMonedas = document.getElementById('caja-monedas');
@@ -762,6 +771,28 @@
         btnGrabar.classList.remove('bg-error', 'text-white', 'animate-pulse');
         btnGrabar.classList.add('bg-white', 'text-error');
         textGrabar.textContent = 'Grabar';
+    }
+
+    /**
+     * Anima las 3 estrellas del resultado según el score obtenido.
+     * Siempre muestra al menos 1 estrella para mantener el tono positivo.
+     * @param {number} score - Porcentaje de 0 a 100.
+     * @returns {void}
+     */
+    function _animarEstrellasCamara(score) {
+        const cantidadEstrellas = score >= 90 ? 3 : score >= 70 ? 2 : 1;
+        [1, 2, 3].forEach((n, idx) => {
+            const el = document.getElementById(`estrella-camara-${n}`);
+            if (!el) return;
+            el.textContent = '☆';
+            el.classList.remove('scale-125');
+            if (n <= cantidadEstrellas) {
+                setTimeout(() => {
+                    el.textContent = '⭐';
+                    el.classList.add('scale-125');
+                }, idx * 250);
+            }
+        });
     }
 
     /**

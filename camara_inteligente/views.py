@@ -19,6 +19,7 @@ def camara_view(request):
             'url_evaluar': reverse('camara_evaluar'),
             'url_home': reverse('home'),
         },
+        'mostrar_puntuacion_detallada': request.user.is_staff,
         'avatar_frase_contextual': obtener_reaccion('bienvenida_camara'),
     }
     return render(request, 'camara_inteligente/camara.html', context)

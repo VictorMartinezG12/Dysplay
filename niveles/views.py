@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings as django_settings
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -12,7 +11,6 @@ from . import services
 
 logger = logging.getLogger(__name__)
 
-MOSTRAR_PUNTUACION_DETALLADA = getattr(django_settings, 'MOSTRAR_PUNTUACION_DETALLADA', False)
 
 
 @login_required
@@ -34,7 +32,7 @@ def niveles_view(request):
         'niveles': niveles,
         'progreso': progreso,
         'mision_actual': mision_actual,
-        'mostrar_puntuacion_detallada': MOSTRAR_PUNTUACION_DETALLADA,
+        'mostrar_puntuacion_detallada': request.user.is_staff,
         'niveles_config': {
             'url_guardar_progreso': reverse('guardar_progreso'),
         },

@@ -28,6 +28,7 @@ def desafio_view(request):
             'bloqueado': estado['bloqueado'],
             'segundos_restantes': estado['segundos_restantes'],
         },
+        'mostrar_puntuacion_detallada': request.user.is_staff,
         'avatar_frase_contextual': obtener_reaccion('bienvenida_desafio'),
     }
     return render(request, 'desafio/desafio.html', context)

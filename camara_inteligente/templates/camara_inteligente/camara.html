@@ -223,10 +223,18 @@
             <div class="bg-white rounded-2xl p-12 md:p-16 shadow-soft w-full flex flex-col items-center text-center border-4 border-success/20 mb-8 relative z-10">
 
                 <h2 id="resultado-titulo" class="text-[40px] md:text-[48px] font-bold text-success mb-2 drop-shadow-sm">¡Increíble!</h2>
-                <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-2">Leíste correctamente la frase.</p>
-                <p id="resultado-mensaje-avatar" class="text-[18px] text-gray-500 mb-8"></p>
+                <p id="resultado-subtitulo" class="text-[24px] text-gray-600 mb-2">¡Leíste la frase muy bien!</p>
+                <p id="resultado-mensaje-avatar" class="text-[18px] text-gray-500 mb-6"></p>
 
-                <!-- Círculo de Puntuación -->
+                <!-- Estrellas — siempre visibles, mínimo 1 estrella -->
+                <div id="resultado-estrellas-camara" class="flex gap-3 mb-8" aria-label="Estrellas obtenidas">
+                    <span id="estrella-camara-1" class="text-[52px] transition-transform">☆</span>
+                    <span id="estrella-camara-2" class="text-[52px] transition-transform">☆</span>
+                    <span id="estrella-camara-3" class="text-[52px] transition-transform">☆</span>
+                </div>
+
+                {% if mostrar_puntuacion_detallada %}
+                <!-- Círculo de Puntuación — solo visible para administradores -->
                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
                     <div id="score-chart" class="absolute inset-0 rounded-full" style="background: conic-gradient(#48BB78 0%, #edf2f7 0);"></div>
                     <div class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
@@ -234,6 +242,7 @@
                         <span class="text-[16px] text-gray-500 font-bold uppercase tracking-widest mt-1">Precisión</span>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Recompensa en Monedas -->
                 <div id="caja-monedas" class="hidden bg-reward/10 rounded-full px-8 py-4 items-center gap-3 border-2 border-reward/20 mb-10">

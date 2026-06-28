@@ -290,12 +290,16 @@
      */
     function mostrarResultado(data) {
         const scoreRedondeado = Math.round(data.score);
-        document.getElementById('score-text').textContent = `${scoreRedondeado}%`;
-        document.getElementById('score-chart').style.background = `conic-gradient(#10B981 ${scoreRedondeado}%, #edf2f7 0)`;
+
+        // Solo existen en el DOM para admins (mostrar_puntuacion_detallada)
+        const scoreText = document.getElementById('score-text');
+        const scoreChart = document.getElementById('score-chart');
+        if (scoreText) scoreText.textContent = `${scoreRedondeado}%`;
+        if (scoreChart) scoreChart.style.background = `conic-gradient(#10B981 ${scoreRedondeado}%, #edf2f7 0)`;
 
         document.getElementById('resultado-titulo').textContent = data.ejercicio_superado
             ? '¡Bien hecho!'
-            : '¡Sigue practicando!';
+            : '¡Lo intentaste genial!';
 
         mostrarMensajeAvatar(data.reaccion_avatar);
         mostrarIndicadoresPalabras(data.palabras);
@@ -368,6 +372,8 @@
      */
     function mostrarIndicadoresPalabras(palabras) {
         const contenedor = document.getElementById('resultado-palabras');
+        if (!contenedor) return;  // No existe en modo estudiante
+
         contenedor.innerHTML = '';
 
         if (!palabras || palabras.length === 0) {
