@@ -1,0 +1,1176 @@
+[
+{
+  "model": "niveles.zona",
+  "pk": 1,
+  "fields": {
+    "clave": "bosque_encantado",
+    "nombre": "Bosque Encantado",
+    "orden": 0,
+    "cerrada": false,
+    "descripcion": "Vocales y sonidos básicos"
+  }
+},
+{
+  "model": "niveles.zona",
+  "pk": 2,
+  "fields": {
+    "clave": "montana_letras",
+    "nombre": "Montaña de las Letras",
+    "orden": 1,
+    "cerrada": false,
+    "descripcion": "Consonantes y combinaciones"
+  }
+},
+{
+  "model": "niveles.zona",
+  "pk": 3,
+  "fields": {
+    "clave": "valle_silabas",
+    "nombre": "Valle de las Sílabas",
+    "orden": 2,
+    "cerrada": false,
+    "descripcion": "Sílabas y ritmo"
+  }
+},
+{
+  "model": "niveles.zona",
+  "pk": 4,
+  "fields": {
+    "clave": "castillo_palabras",
+    "nombre": "Castillo de las Palabras",
+    "orden": 3,
+    "cerrada": false,
+    "descripcion": "Palabras completas"
+  }
+},
+{
+  "model": "niveles.zona",
+  "pk": 5,
+  "fields": {
+    "clave": "reino_lectura",
+    "nombre": "Reino de la Lectura",
+    "orden": 4,
+    "cerrada": false,
+    "descripcion": "Frases y comprensión"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 1,
+  "fields": {
+    "numero": 1,
+    "titulo": "La Aventura del León",
+    "descripcion": "",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 1,
+    "narrativa_intro": "Las vocales mágicas del bosque se han perdido entre los árboles. ¡El reino necesita que las encuentres pronunciándolas correctamente!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 2,
+  "fields": {
+    "numero": 2,
+    "titulo": "El Vuelo de la Mariposa",
+    "descripcion": "",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 2,
+    "narrativa_intro": ""
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 3,
+  "fields": {
+    "numero": 3,
+    "titulo": "El Salto del Sapo",
+    "descripcion": "",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 3,
+    "narrativa_intro": ""
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 4,
+  "fields": {
+    "numero": 4,
+    "titulo": "El Lapiz",
+    "descripcion": "El Lapiz largo escribe ligero",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 4,
+    "narrativa_intro": "El Lapiz largo escribe ligero"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 5,
+  "fields": {
+    "numero": 5,
+    "titulo": "leon",
+    "descripcion": "..",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 5,
+    "narrativa_intro": ""
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 6,
+  "fields": {
+    "numero": 6,
+    "titulo": "leon2",
+    "descripcion": "",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 6,
+    "narrativa_intro": ""
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 7,
+  "fields": {
+    "numero": 17,
+    "titulo": "prueba",
+    "descripcion": "esta es una prueba",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 1,
+    "narrativa_intro": ""
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 8,
+  "fields": {
+    "numero": 7,
+    "titulo": "El Oso Dormilón",
+    "descripcion": "Practica la palabra 'oso'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 7,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"oso\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 9,
+  "fields": {
+    "numero": 8,
+    "titulo": "La Uva Dulce",
+    "descripcion": "Practica la palabra 'uva'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 8,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"uva\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 10,
+  "fields": {
+    "numero": 9,
+    "titulo": "Las Alas del Ave",
+    "descripcion": "Practica la palabra 'ala'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 9,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"ala\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 11,
+  "fields": {
+    "numero": 10,
+    "titulo": "El Eco del Bosque",
+    "descripcion": "Practica la palabra 'eco'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 10,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"eco\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 12,
+  "fields": {
+    "numero": 11,
+    "titulo": "La Isla Dorada",
+    "descripcion": "Practica la palabra 'isla'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 11,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"isla\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 13,
+  "fields": {
+    "numero": 12,
+    "titulo": "La Ola Tranquila",
+    "descripcion": "Practica la palabra 'ola'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 12,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"ola\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 14,
+  "fields": {
+    "numero": 13,
+    "titulo": "El Aire Suave",
+    "descripcion": "Practica la palabra 'aire'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 13,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"aire\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 15,
+  "fields": {
+    "numero": 14,
+    "titulo": "La Abeja Viajera",
+    "descripcion": "Practica la palabra 'abeja'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 14,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"abeja\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 16,
+  "fields": {
+    "numero": 15,
+    "titulo": "La Araña Tejedora",
+    "descripcion": "Practica la palabra 'araña'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 15,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"araña\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 17,
+  "fields": {
+    "numero": 16,
+    "titulo": "La Oveja Tranquila",
+    "descripcion": "Practica la palabra 'oveja'.",
+    "puntos_recompensa": 50,
+    "zona": "bosque_encantado",
+    "orden_en_zona": 16,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"oveja\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 18,
+  "fields": {
+    "numero": 18,
+    "titulo": "El Perro Veloz",
+    "descripcion": "Practica la palabra 'perro'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 2,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"perro\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 19,
+  "fields": {
+    "numero": 19,
+    "titulo": "El Gato Dormilón",
+    "descripcion": "Practica la palabra 'gato'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 3,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"gato\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 20,
+  "fields": {
+    "numero": 20,
+    "titulo": "La Mesa de Madera",
+    "descripcion": "Practica la palabra 'mesa'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 4,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"mesa\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 21,
+  "fields": {
+    "numero": 21,
+    "titulo": "La Pelota Saltarina",
+    "descripcion": "Practica la palabra 'pelota'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 5,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pelota\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 22,
+  "fields": {
+    "numero": 22,
+    "titulo": "La Cama Cómoda",
+    "descripcion": "Practica la palabra 'cama'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 6,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"cama\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 23,
+  "fields": {
+    "numero": 23,
+    "titulo": "El Dado Mágico",
+    "descripcion": "Practica la palabra 'dado'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 7,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"dado\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 24,
+  "fields": {
+    "numero": 24,
+    "titulo": "La Taza Llena",
+    "descripcion": "Practica la palabra 'taza'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 8,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"taza\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 25,
+  "fields": {
+    "numero": 25,
+    "titulo": "El Pato Nadador",
+    "descripcion": "Practica la palabra 'pato'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 9,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pato\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 26,
+  "fields": {
+    "numero": 26,
+    "titulo": "La Luna Brillante",
+    "descripcion": "Practica la palabra 'luna'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 10,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"luna\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 27,
+  "fields": {
+    "numero": 27,
+    "titulo": "La Casa Bonita",
+    "descripcion": "Practica la palabra 'casa'.",
+    "puntos_recompensa": 50,
+    "zona": "montana_letras",
+    "orden_en_zona": 11,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"casa\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 28,
+  "fields": {
+    "numero": 28,
+    "titulo": "La Mano Amiga",
+    "descripcion": "Practica la palabra 'mano'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 1,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"mano\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 29,
+  "fields": {
+    "numero": 29,
+    "titulo": "El Pelo Rizado",
+    "descripcion": "Practica la palabra 'pelo'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 2,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pelo\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 30,
+  "fields": {
+    "numero": 30,
+    "titulo": "La Sopa Caliente",
+    "descripcion": "Practica la palabra 'sopa'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 3,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"sopa\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 31,
+  "fields": {
+    "numero": 31,
+    "titulo": "El Lobo Aullador",
+    "descripcion": "Practica la palabra 'lobo'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 4,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"lobo\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 32,
+  "fields": {
+    "numero": 32,
+    "titulo": "El Dedo Guía",
+    "descripcion": "Practica la palabra 'dedo'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 5,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"dedo\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 33,
+  "fields": {
+    "numero": 33,
+    "titulo": "El Pomo Brillante",
+    "descripcion": "Practica la palabra 'pomo'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 6,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pomo\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 34,
+  "fields": {
+    "numero": 34,
+    "titulo": "La Bota de Cuero",
+    "descripcion": "Practica la palabra 'bota'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 7,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"bota\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 35,
+  "fields": {
+    "numero": 35,
+    "titulo": "La Lupa Mágica",
+    "descripcion": "Practica la palabra 'lupa'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 8,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"lupa\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 36,
+  "fields": {
+    "numero": 36,
+    "titulo": "La Copa de Cristal",
+    "descripcion": "Practica la palabra 'copa'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 9,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"copa\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 37,
+  "fields": {
+    "numero": 37,
+    "titulo": "La Pala Trabajadora",
+    "descripcion": "Practica la palabra 'pala'.",
+    "puntos_recompensa": 50,
+    "zona": "valle_silabas",
+    "orden_en_zona": 10,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pala\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 38,
+  "fields": {
+    "numero": 38,
+    "titulo": "El Elefante Fuerte",
+    "descripcion": "Practica la palabra 'elefante'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 1,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"elefante\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 39,
+  "fields": {
+    "numero": 39,
+    "titulo": "La Computadora Mágica",
+    "descripcion": "Practica la palabra 'computadora'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 2,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"computadora\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 40,
+  "fields": {
+    "numero": 40,
+    "titulo": "La Biblioteca Grande",
+    "descripcion": "Practica la palabra 'biblioteca'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 3,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"biblioteca\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 41,
+  "fields": {
+    "numero": 41,
+    "titulo": "El Dinosaurio Antiguo",
+    "descripcion": "Practica la palabra 'dinosaurio'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 4,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"dinosaurio\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 42,
+  "fields": {
+    "numero": 42,
+    "titulo": "El Chocolate Delicioso",
+    "descripcion": "Practica la palabra 'chocolate'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 5,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"chocolate\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 43,
+  "fields": {
+    "numero": 43,
+    "titulo": "El Paraguas Protector",
+    "descripcion": "Practica la palabra 'paraguas'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 6,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"paraguas\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 44,
+  "fields": {
+    "numero": 44,
+    "titulo": "La Escalera Alta",
+    "descripcion": "Practica la palabra 'escalera'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 7,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"escalera\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 45,
+  "fields": {
+    "numero": 45,
+    "titulo": "La Ventana Luminosa",
+    "descripcion": "Practica la palabra 'ventana'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 8,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"ventana\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 46,
+  "fields": {
+    "numero": 46,
+    "titulo": "El Jardín Florido",
+    "descripcion": "Practica la palabra 'jardín'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 9,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"jardín\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 47,
+  "fields": {
+    "numero": 47,
+    "titulo": "La Montaña Alta",
+    "descripcion": "Practica la palabra 'montaña'.",
+    "puntos_recompensa": 50,
+    "zona": "castillo_palabras",
+    "orden_en_zona": 10,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"montaña\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 48,
+  "fields": {
+    "numero": 48,
+    "titulo": "El Sol Brillante",
+    "descripcion": "Practica la palabra 'sol'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 1,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"sol\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 49,
+  "fields": {
+    "numero": 49,
+    "titulo": "Los Pájaros Cantores",
+    "descripcion": "Practica la palabra 'pájaros'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 2,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"pájaros\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 50,
+  "fields": {
+    "numero": 50,
+    "titulo": "El Río Tranquilo",
+    "descripcion": "Practica la palabra 'río'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 3,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"río\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 51,
+  "fields": {
+    "numero": 51,
+    "titulo": "Las Estrellas Brillantes",
+    "descripcion": "Practica la palabra 'estrellas'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 4,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"estrellas\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 52,
+  "fields": {
+    "numero": 52,
+    "titulo": "El Viento Fuerte",
+    "descripcion": "Practica la palabra 'viento'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 5,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"viento\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 53,
+  "fields": {
+    "numero": 53,
+    "titulo": "La Lluvia Suave",
+    "descripcion": "Practica la palabra 'lluvia'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 6,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"lluvia\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 54,
+  "fields": {
+    "numero": 54,
+    "titulo": "El Bosque Misterioso",
+    "descripcion": "Practica la palabra 'bosque'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 7,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"bosque\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 55,
+  "fields": {
+    "numero": 55,
+    "titulo": "Los Niños Felices",
+    "descripcion": "Practica la palabra 'niños'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 8,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"niños\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 56,
+  "fields": {
+    "numero": 56,
+    "titulo": "El Mar Azul",
+    "descripcion": "Practica la palabra 'mar'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 9,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"mar\"!"
+  }
+},
+{
+  "model": "niveles.nivel",
+  "pk": 57,
+  "fields": {
+    "numero": 57,
+    "titulo": "La Nieve Blanca",
+    "descripcion": "Practica la palabra 'nieve'.",
+    "puntos_recompensa": 50,
+    "zona": "reino_lectura",
+    "orden_en_zona": 10,
+    "narrativa_intro": "¡Una nueva aventura te espera con la palabra \"nieve\"!"
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 1,
+  "fields": {
+    "nombre": "Cabello Estándar",
+    "categoria": "cabello",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "Peinado básico de inicio",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 2,
+  "fields": {
+    "nombre": "Ropa Estándar",
+    "categoria": "ropa",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "Vestimenta básica de inicio",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 3,
+  "fields": {
+    "nombre": "Camiseta Divertida",
+    "categoria": "ropa_superior",
+    "subcategoria": "",
+    "imagen": "avatar/items/superior_1_torso_0Q2bo70.png",
+    "manga_sup_izq": "avatar/items/mangas/superior_1_manga_sup_izq_KhxF1K4.png",
+    "manga_inf_izq": "avatar/items/mangas/superior_1_manga_inf_izq_owZ6e91.png",
+    "manga_sup_der": "avatar/items/mangas/superior_1_manga_sup_der_Sd3aUTL.png",
+    "manga_inf_der": "avatar/items/mangas/superior_1_manga_inf_der_HQr9KCT.png",
+    "descripcion": "Una camiseta muy cómoda para jugar.",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 4,
+  "fields": {
+    "nombre": "Pantalón Azul",
+    "categoria": "ropa_inferior",
+    "subcategoria": "",
+    "imagen": "avatar/items/inferior_1.png",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "Ideal para correr por el parque.",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 5,
+  "fields": {
+    "nombre": "Zapatillas Mágicas",
+    "categoria": "calzado",
+    "subcategoria": "",
+    "imagen": "avatar/items/calzado_1.png",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "¡Te ayudan a saltar más alto!",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 6,
+  "fields": {
+    "nombre": "Peinado Morado",
+    "categoria": "cabello",
+    "subcategoria": "",
+    "imagen": "avatar/items/cabello_01.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 7,
+  "fields": {
+    "nombre": "Peinado Dorado",
+    "categoria": "cabello",
+    "subcategoria": "",
+    "imagen": "avatar/items/cabello_02.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 8,
+  "fields": {
+    "nombre": "Corte Verde",
+    "categoria": "cabello",
+    "subcategoria": "",
+    "imagen": "avatar/items/cabello_03.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 9,
+  "fields": {
+    "nombre": "Lentes Cool",
+    "categoria": "accesorio",
+    "subcategoria": "gafas",
+    "imagen": "avatar/items/lentes.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 10,
+  "fields": {
+    "nombre": "Gorra Roja",
+    "categoria": "accesorio",
+    "subcategoria": "sombrero",
+    "imagen": "avatar/items/gorra.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 11,
+  "fields": {
+    "nombre": "Capa de Mago",
+    "categoria": "accesorio",
+    "subcategoria": "otro",
+    "imagen": "avatar/items/capa.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 12,
+  "fields": {
+    "nombre": "Traje Estándar",
+    "categoria": "ropa_superior",
+    "subcategoria": "",
+    "imagen": "avatar/items/estandar.svg",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 13,
+  "fields": {
+    "nombre": "cabello furina",
+    "categoria": "cabello",
+    "subcategoria": "",
+    "imagen": "avatar/items/cabello_1.png",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "de genshin impact",
+    "activo": true,
+    "precio_monedas": 0,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 24,
+  "fields": {
+    "nombre": "Reloj Dorado",
+    "categoria": "accesorio",
+    "subcategoria": "reloj",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 30,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 25,
+  "fields": {
+    "nombre": "Mesa de Estudio",
+    "categoria": "mueble",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 40,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 26,
+  "fields": {
+    "nombre": "Estante con Libros",
+    "categoria": "mueble",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 50,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 27,
+  "fields": {
+    "nombre": "Silla Cómoda",
+    "categoria": "mueble",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 35,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 28,
+  "fields": {
+    "nombre": "Cama Estrellada",
+    "categoria": "mueble",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 60,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 29,
+  "fields": {
+    "nombre": "Cuadro Colorido",
+    "categoria": "decoracion",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 20,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 30,
+  "fields": {
+    "nombre": "Lampara Estelar",
+    "categoria": "habitacion",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 25,
+    "evento_especial": null
+  }
+},
+{
+  "model": "avatar.item",
+  "pk": 31,
+  "fields": {
+    "nombre": "Alfombra Arcoiris",
+    "categoria": "fondo",
+    "subcategoria": "",
+    "imagen": "",
+    "manga_sup_izq": "",
+    "manga_inf_izq": "",
+    "manga_sup_der": "",
+    "manga_inf_der": "",
+    "descripcion": "",
+    "activo": true,
+    "precio_monedas": 15,
+    "evento_especial": null
+  }
+}
+]
